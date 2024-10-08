@@ -2,6 +2,9 @@
 
 all: build
 
+build: install
+	poetry build
+
 install:
 	poetry install
 
