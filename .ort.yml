@@ -1,8 +1,5 @@
 ---
 excludes:
-  paths:
-    - pattern: "examples/**"
-      reason: "EXAMPLE_OF"
   scopes:
     - pattern: "lint"
       reason: "DEV_DEPENDENCY_OF"
