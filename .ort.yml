@@ -12,7 +12,7 @@ excludes:
       comment: "Packages for testing only."
 resolutions:
   rule_violations:
-    - message: ".*PyPI::httpcore:1\\.0\\.05*"
+    - message: ".*PyPI::httpcore:1\\.0\\.5*"
       reason: "CANT_FIX_EXCEPTION"
       comment: "BSD 3-Clause New or Revised License: https://github.com/encode/httpcore/blob/0.18.0/LICENSE.md"
     - message: ".*PyPI::httpx:0\\.25\\.2.*"
