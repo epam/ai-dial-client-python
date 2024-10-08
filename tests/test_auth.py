@@ -20,13 +20,9 @@ async def _test_async_getter() -> str:
             _test_getter,
             {"api-key": "test-value"},
         ),
-        (
-            _test_async_getter,
-            {"api-key": "test-value"},
-        ),
     ],
 )
-async def test_api_key(api_key_value, expected_headers):
+def test_api_key(api_key_value, expected_headers):
     client = Dial(api_key=api_key_value, base_url="http://dial.core")
     assert client.auth_headers() == expected_headers
 

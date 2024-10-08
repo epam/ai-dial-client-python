@@ -40,6 +40,7 @@ codespell = "^2.3.0"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+filterwarnings = ["error::pytest.PytestUnhandledCoroutineWarning"]
 
 [tool.pyright]
 typeCheckingMode = "basic"
@@ -52,7 +53,6 @@ exclude = [
   ".pytest_cache",
   "**/__pycache__",
   "build",
-  'examples',
 ]
 
 [tool.black]
@@ -64,7 +64,6 @@ exclude = '''
   | \.nox
   | \.pytest_cache
   | \.__pycache__
-  | examples
 )/
 '''
 
@@ -78,7 +77,7 @@ remove_all_unused_imports = true
 in_place = true
 recursive = true
 quiet = true
-exclude = [".nox", ".pytest_cache", "\\.venv", 'examples']
+exclude = [".nox", ".pytest_cache", "\\.venv"]
 
 [tool.coverage.run]
 source = ["."]
@@ -88,5 +87,4 @@ omit = [
   "noxfile.py",
   'aidial_client/_compatibility/pydantic_v1.py',
   'htmlcov/*',
-  'examples/*',
 ]

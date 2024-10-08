@@ -32,7 +32,13 @@ def lint(session: nox.Session):
 def coverage(session: nox.Session) -> None:
     """Run tests and generate coverage report"""
     session.run("poetry", "install", external=True)
-    session.run("pytest", "--cov=.", "--cov-report=xml", "--cov-report=term")
+    session.run(
+        "pytest",
+        f"--cov={SRC}",
+        "--cov-report=xml",
+        "--cov-report=term",
+        "--ignore=tests/integration",
+    )
     session.run("coverage", "html")
 
 
@@ -50,9 +56,11 @@ def format(session: nox.Session):
 def test(session: nox.Session, pydantic: str, httpx: str, openai: str) -> None:
     """Runs tests"""
     session.run("poetry", "install", external=True)
-    session.install(f"pydantic=={pydantic}")
-    session.install(f"httpx=={httpx}")
-    session.install(f"openai=={openai}")
+    session.install(
+        f"pydantic=={pydantic}",
+        f"httpx=={httpx}",
+        f"openai=={openai}",
+    )
     session.run("pytest", "tests", "--ignore=tests/integration")
 
 
@@ -62,6 +70,8 @@ def test(session: nox.Session, pydantic: str, httpx: str, openai: str) -> None:
 def integration_test(session: nox.Session, pydantic: str, openai: str) -> None:
     """Run integration tests"""
     session.run("poetry", "install", external=True)
-    session.install(f"pydantic=={pydantic}")
-    session.install(f"openai=={openai}")
+    session.install(
+        f"pydantic=={pydantic}",
+        f"openai=={openai}",
+    )
     session.run("pytest", "tests/integration")
