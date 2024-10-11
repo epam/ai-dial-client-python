@@ -55,7 +55,10 @@ def test_parse_storage_resource_valid(
     url, dial_api_url, resource_type, expected
 ):
     result = parse_storage_resource(
-        url, dial_api_url, resource_type, ignore_non_dial_url=False
+        url=url,
+        dial_api_url=dial_api_url,
+        expected_resource_type=resource_type,
+        ignore_non_dial_url=False,
     )
     assert result.dict() == expected
 
@@ -88,23 +91,26 @@ def test_parse_storage_resource_valid(
 def test_parse_storage_resource_invalid_url(url, dial_api_url, resource_type):
     with pytest.raises(InvalidDialURLError):
         parse_storage_resource(
-            url, dial_api_url, resource_type, ignore_non_dial_url=False
+            url=url,
+            dial_api_url=dial_api_url,
+            expected_resource_type=resource_type,
+            ignore_non_dial_url=False,
         )
 
 
 def test_parse_storage_resource_non_dial_ignore():
     with pytest.raises(InvalidDialURLError):
         parse_storage_resource(
-            "https://example.com/files/my-bucket/file.txt",
-            "https://dial.core/v1/",
-            "files",
+            url="https://example.com/files/my-bucket/file.txt",
+            dial_api_url="https://dial.core/v1/",
+            expected_resource_type="files",
             ignore_non_dial_url=False,
         )
     assert (
         parse_storage_resource(
-            "https://example.com/files/my-bucket/file.txt",
-            "https://dial.core/v1/",
-            "files",
+            url="https://example.com/files/my-bucket/file.txt",
+            dial_api_url="https://dial.core/v1/",
+            expected_resource_type="files",
             ignore_non_dial_url=True,
         )
         is None

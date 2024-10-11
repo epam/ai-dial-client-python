@@ -1,5 +1,5 @@
 from pathlib import PurePosixPath
-from typing import Literal, Optional, overload
+from typing import Literal, Optional, cast, overload
 from urllib.parse import urljoin, urlparse
 
 from aidial_client._compatibility.pydantic_v1 import BaseModel
@@ -40,27 +40,30 @@ class DialStorageResource(BaseModel):
 
 @overload
 def parse_storage_resource(
+    *,
     url: str,
     dial_api_url: str,
-    resource_type: StorageResourceType,
     ignore_non_dial_url: Literal[True],
+    expected_resource_type: Optional[StorageResourceType] = None,
 ) -> Optional[DialStorageResource]: ...
 
 
 @overload
 def parse_storage_resource(
+    *,
     url: str,
     dial_api_url: str,
-    resource_type: StorageResourceType,
     ignore_non_dial_url: Literal[False],
+    expected_resource_type: Optional[StorageResourceType] = None,
 ) -> DialStorageResource: ...
 
 
 def parse_storage_resource(
+    *,
     url: str,
     dial_api_url: str,
-    resource_type: StorageResourceType,
     ignore_non_dial_url: bool,
+    expected_resource_type: Optional[StorageResourceType] = None,
 ) -> Optional[DialStorageResource]:
     dial_api_url = enforce_trailing_slash(dial_api_url)
     url = remove_leading_slash(url)
@@ -88,10 +91,20 @@ def parse_storage_resource(
         )
 
     resource_path = api_path.parents[len(api_path.parents) - 2]
-    if str(resource_path) != resource_type:
+    parsed_resource_type = str(resource_path)
+
+    if parsed_resource_type not in StorageResourceType.__args__:
+        raise InvalidDialURLError(
+            f"Invalid resource type: {parsed_resource_type}"
+        )
+    # If user provided expected resource type, check it
+    if (
+        expected_resource_type is not None
+        and parsed_resource_type != expected_resource_type
+    ):
         raise InvalidDialURLError(
             f"Invalid resource type for url: {url}\n"
-            f"Expected: {resource_type}, got: {resource_path}"
+            f"Expected: {expected_resource_type}, got: {parsed_resource_type}"
         )
 
     if len(api_path.parents) < 3:
@@ -100,7 +113,7 @@ def parse_storage_resource(
     bucket_path = api_path.parents[len(api_path.parents) - 3]
 
     return DialStorageResource(
-        resource_type=resource_type,
+        resource_type=cast(StorageResourceType, parsed_resource_type),
         absolute_url=absolute_url,
         api_path=str(api_path),
         bucket=str(bucket_path.relative_to(resource_path)),
@@ -130,10 +143,10 @@ class DialStorageResourceMixin(BaseModel):
             DialStorageResource: The storage resource object
         """
         return parse_storage_resource(
-            url,
-            self.dial_api_url,
-            self.resource_type,
+            url=url,
+            dial_api_url=self.dial_api_url,
             ignore_non_dial_url=False,
+            expected_resource_type=self.resource_type,
         )
 
     def get_api_path(self, url: str) -> str:
