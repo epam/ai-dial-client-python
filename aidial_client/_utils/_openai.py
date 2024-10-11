@@ -1,4 +1,4 @@
-from typing import AsyncIterator, Iterator, Union
+from typing import AsyncIterator, Iterator
 
 import openai
 from openai.types.chat import ChatCompletion as OpenAIChatCompletion
