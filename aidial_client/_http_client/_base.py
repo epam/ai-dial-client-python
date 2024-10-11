@@ -115,17 +115,17 @@ class BaseHTTPClient(ABC, Generic[_HttpInternalClientT, AuthValueT]):
             # We can't read the response body as it has been closed
             # before it was read. This can happen if an event hook
             # raises a status error.
-            return DialException(message="", status_code=response.status_code)
+            return DialException(
+                message="Stream was interrupted",
+                status_code=response.status_code,
+            )
 
         try:
             message_data = response.json()
             assert is_mapping(message_data)
             error_data = message_data["error"]
             assert is_mapping(error_data)
-            message = error_data["message"]
-            assert isinstance(message, str)
             return DialException.from_error_data(
-                message=message,
                 status_code=response.status_code,
                 error_data=error_data,
             )

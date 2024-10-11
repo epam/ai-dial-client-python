@@ -50,8 +50,10 @@ class DialException(Exception):
 
     @classmethod
     def from_error_data(
-        cls, message: str, status_code: int, error_data: Mapping
+        cls, status_code: int, error_data: Mapping
     ) -> "DialException":
+        message = error_data["message"]
+        assert isinstance(message, str)
         return cls(
             message=message,
             status_code=status_code,
