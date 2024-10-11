@@ -21,7 +21,7 @@ from aidial_client._constants import (
     OPENAI_PREFIX,
 )
 from aidial_client._http_client import AsyncHTTPClient, SyncHTTPClient
-from aidial_client.helpers.url import enforce_trailing_slash
+from aidial_client.helpers._url import enforce_trailing_slash
 from aidial_client.types.bucket import AppData
 
 _HttpClientT = TypeVar(

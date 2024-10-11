@@ -9,13 +9,13 @@ from tests.client_mock import get_async_client_mock, get_client_mock
 
 
 @pytest.mark.parametrize(
-    "exception",
+    "exception, expected_message",
     [
-        httpx.TimeoutException("Request timed out"),
-        Exception("Some unknown error"),
+        (httpx.TimeoutException("Request timed out"), "Request timed out"),
+        (Exception("Unknown"), "Unknown error during request"),
     ],
 )
-def test_exception_retry_sync(exception):
+def test_exception_retry_sync(exception, expected_message):
     client = get_client_mock(
         status_code=None,
         exception_mock=exception,
@@ -28,24 +28,26 @@ def test_exception_retry_sync(exception):
     # If retries are not exhausted, the request should be retried
     remaining_retries_mock.return_value = 1
     client.bucket.get_bucket()
-    assert retry_request_mock.called
+    assert retry_request_mock.call_count == 1
     # After retries are exhausted, the exception should be raised
     remaining_retries_mock.return_value = 0
     with pytest.raises(Exception) as e:
         client.bucket.get_bucket()
-        assert isinstance(e, exception.__class__)
-        assert not retry_request_mock.called
+    assert isinstance(e.value, DialException)
+    assert e.value.message == expected_message
+    # Retry request should not be called again
+    assert retry_request_mock.call_count == 1
 
 
 @pytest.mark.parametrize(
-    "exception",
+    "exception, expected_message",
     [
-        httpx.TimeoutException("Request timed out"),
-        Exception("Some unknown error"),
+        (httpx.TimeoutException("Request timed out"), "Request timed out"),
+        (Exception("Unknown"), "Unknown error during request"),
     ],
 )
 @pytest.mark.asyncio
-async def test_exception_retry_async(exception):
+async def test_exception_retry_async(exception, expected_message):
     client = get_async_client_mock(
         status_code=None,
         exception_mock=exception,
@@ -58,13 +60,14 @@ async def test_exception_retry_async(exception):
     # If retries are not exhausted, the request should be retried
     remaining_retries_mock.return_value = 1
     await client.bucket.get_bucket()
-    assert retry_request_mock.called
+    assert retry_request_mock.call_count == 1
     # After retries are exhausted, the exception should be raised
     remaining_retries_mock.return_value = 0
     with pytest.raises(Exception) as e:
         await client.bucket.get_bucket()
-        assert isinstance(e, exception.__class__)
-        assert not retry_request_mock.called
+    assert isinstance(e.value, DialException)
+    assert e.value.message == expected_message
+    assert retry_request_mock.call_count == 1
 
 
 @pytest.mark.parametrize(
@@ -92,8 +95,8 @@ def test_status_codes_retries(status_code, is_retry_called):
     else:
         with pytest.raises(DialException) as e:
             client.bucket.get_bucket()
-            assert e.status_code == status_code  # type: ignore
-            assert not retry_request_mock.called
+        assert e.value.status_code == status_code  # type: ignore
+        assert not retry_request_mock.called
 
 
 @pytest.mark.parametrize(
@@ -122,4 +125,4 @@ async def test_status_codes_retries_async(status_code, is_retry_called):
     else:
         with pytest.raises(DialException) as e:
             await client.bucket.get_bucket()
-            assert e.status_code == status_code  # type: ignore
+        assert e.value.status_code == status_code  # type: ignore

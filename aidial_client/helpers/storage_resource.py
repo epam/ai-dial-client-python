@@ -11,9 +11,12 @@ from aidial_client.helpers._url import (
     remove_prefix,
 )
 
+StorageResourceType = Literal["files", "conversations", "prompts"]
+
 
 class DialStorageResource(BaseModel):
-    resource_type: Literal["files", "conversations", "prompts"]
+    resource_type: StorageResourceType
+
     """Bucket name, like 'my-bucket'"""
     bucket: str
 
@@ -39,7 +42,7 @@ class DialStorageResource(BaseModel):
 def parse_storage_resource(
     url: str,
     dial_api_url: str,
-    resource_type: Literal["files", "conversations", "prompts"],
+    resource_type: StorageResourceType,
     ignore_non_dial_url: Literal[True],
 ) -> Optional[DialStorageResource]: ...
 
@@ -48,7 +51,7 @@ def parse_storage_resource(
 def parse_storage_resource(
     url: str,
     dial_api_url: str,
-    resource_type: Literal["files", "conversations", "prompts"],
+    resource_type: StorageResourceType,
     ignore_non_dial_url: Literal[False],
 ) -> DialStorageResource: ...
 
@@ -56,7 +59,7 @@ def parse_storage_resource(
 def parse_storage_resource(
     url: str,
     dial_api_url: str,
-    resource_type: Literal["files", "conversations", "prompts"],
+    resource_type: StorageResourceType,
     ignore_non_dial_url: bool,
 ) -> Optional[DialStorageResource]:
     dial_api_url = enforce_trailing_slash(dial_api_url)
@@ -115,7 +118,7 @@ class DialStorageResourceMixin(BaseModel):
     - /v1/prompts
     """
 
-    resource_type: Literal["files", "conversations", "prompts"]
+    resource_type: StorageResourceType
     dial_api_url: str
 
     def get_storage_resource(self, url: str) -> DialStorageResource:
@@ -136,20 +139,11 @@ class DialStorageResourceMixin(BaseModel):
     def get_api_path(self, url: str) -> str:
         """
         Convert URL, that could relative or absolute, to relative URL
-        Args:
-            url (str): The URL to be processed.
-            dial_api_url (str): The DIAL API URL to validate against.
-        Returns:
-            str: relative to DIAL API URL
         """
         return self.get_storage_resource(url).api_path
 
     def get_display_name(self, url: str) -> str:
         """
         Get the display name of the resource from the URL
-        Args:
-            url (str): The URL to be processed.
-        Returns:
-            str: The display name of the resource
         """
         return self.get_storage_resource(url).bucket_path

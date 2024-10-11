@@ -6,7 +6,7 @@ def enforce_trailing_slash(url: str) -> str:
 
 def remove_prefix(s: str, prefix: str) -> str:
     if s.startswith(prefix):
-        return s[len(prefix) :]
+        s = s.lstrip(prefix)
     return s
 
 

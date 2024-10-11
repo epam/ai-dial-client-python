@@ -4,6 +4,7 @@ from urllib.parse import urljoin
 from aidial_client._constants import METADATA_PREFIX
 from aidial_client._exception import DialException
 from aidial_client._internal_types._http_request import FinalRequestOptions
+from aidial_client.helpers.storage_resource import StorageResourceType
 from aidial_client.resources.base import AsyncResource, Resource
 from aidial_client.types.metadata import (
     ConversationMetadata,
@@ -13,7 +14,7 @@ from aidial_client.types.metadata import (
 
 
 def _get_cast_to(
-    resource: Literal["files", "conversations", "prompts"]
+    resource: StorageResourceType,
 ) -> Union[
     Type[FileMetadata], Type[ConversationMetadata], Type[PromptMetadata]
 ]:
@@ -47,7 +48,7 @@ class Metadata(Resource):
 
     def get(
         self,
-        resource: Literal["files", "conversations", "prompts"],
+        resource: StorageResourceType,
         relative_url: str,
     ) -> Union[FileMetadata, ConversationMetadata, PromptMetadata]:
         return self.http_client.request(
@@ -77,7 +78,7 @@ class AsyncMetadata(AsyncResource):
 
     async def get(
         self,
-        resource: Literal["files", "conversations", "prompts"],
+        resource: StorageResourceType,
         relative_url: str,
     ) -> Union[FileMetadata, ConversationMetadata, PromptMetadata]:
         return await self.http_client.request(

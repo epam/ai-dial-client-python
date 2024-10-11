@@ -1,6 +1,6 @@
 import pytest
 
-from aidial_client.helpers.url import (
+from aidial_client.helpers._url import (
     enforce_trailing_slash,
     remove_leading_slash,
 )

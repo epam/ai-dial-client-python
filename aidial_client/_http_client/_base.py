@@ -10,7 +10,7 @@ from aidial_client._constants import INITIAL_RETRY_DELAY, MAX_RETRY_DELAY
 from aidial_client._exception import DialException
 from aidial_client._internal_types._http_request import FinalRequestOptions
 from aidial_client._utils._type_guard import is_mapping
-from aidial_client.helpers.url import enforce_trailing_slash
+from aidial_client.helpers._url import enforce_trailing_slash
 
 _HttpInternalClientT = TypeVar(
     "_HttpInternalClientT", bound=Union[httpx.Client, httpx.AsyncClient]
