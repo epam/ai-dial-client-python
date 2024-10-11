@@ -32,4 +32,4 @@ def process_block_response(
                 message=f"Error during parsing of response data: {str(e)}"
             )
     else:
-        raise NotImplementedError("This cast_to type is not supported yet")
+        raise NotImplementedError("This cast_to type is not supported.")

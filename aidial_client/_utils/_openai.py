@@ -8,9 +8,7 @@ from aidial_client._exception import DialException
 from aidial_client.types.chat import ChatCompletionChunk, ChatCompletionResponse
 
 
-def convert_openai_error(
-    error: Union[openai.APIError, openai.APIStatusError],
-) -> DialException:
+def convert_openai_error(error: openai.APIError) -> DialException:
     status_code = (
         error.status_code if isinstance(error, openai.APIStatusError) else 500
     )
