@@ -1,7 +1,7 @@
 import pydantic
 
-from aidial_client._compatibility.openai import PYDANTIC_V2
 from aidial_client._compatibility.openai import BaseModel as OpenAIBaseModel
+from aidial_client._compatibility.pydantic import PYDANTIC_V2
 from aidial_client._compatibility.pydantic_v1 import BaseModel, Extra
 
 

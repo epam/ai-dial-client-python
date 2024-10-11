@@ -1,12 +1,21 @@
 from typing import List, Literal, Optional
 
+from aidial_client._compatibility.pydantic import PYDANTIC_V2
 from aidial_client._internal_types._model import ExtraAllowModel
 from aidial_client._utils._alias import to_camel
 
 
 class BaseMetadata(ExtraAllowModel):
-    class Config:
-        alias_generator = to_camel
+    if PYDANTIC_V2:
+        model_config = {
+            "alias_generator": to_camel,
+            "allow_population_by_field_name": True,
+        }
+    else:
+
+        class Config:
+            alias_generator = to_camel
+
         allow_population_by_field_name = True
 
     name: str
