@@ -142,10 +142,10 @@ class Dial(BaseDialClient[SyncHTTPClient, SyncAuthValue]):
             self._my_appdata = self._get_my_appdata()
         return self._my_appdata
 
-    def my_appdata_home(self) -> Optional[str]:
+    def my_appdata_home(self) -> Optional[PurePosixPath]:
         appdata = self.my_appdata()
         if appdata:
-            return appdata.raw
+            return PurePosixPath(appdata.raw)
         return None
 
     def auth_headers(self) -> Dict[str, str]:
@@ -223,10 +223,10 @@ class AsyncDial(BaseDialClient[AsyncHTTPClient, AsyncAuthValue]):
             self._my_appdata = await self._get_my_appdata()
         return self._my_appdata
 
-    async def my_appdata_home(self) -> Optional[str]:
+    async def my_appdata_home(self) -> Optional[PurePosixPath]:
         appdata = await self.my_appdata()
         if appdata:
-            return appdata.raw
+            return PurePosixPath(appdata.raw)
         return None
 
     async def auth_headers(self) -> Dict[str, str]:
