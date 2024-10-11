@@ -35,6 +35,7 @@ class BaseDialClient(Generic[_HttpClientT, AuthValueT], ABC):
     _base_url: str
     _http_client: _HttpClientT
     _auth_headers: Dict[str, str]
+    _my_bucket: Optional[str]
 
     def __init__(
         self,
@@ -55,6 +56,7 @@ class BaseDialClient(Generic[_HttpClientT, AuthValueT], ABC):
         self._base_url = enforce_trailing_slash(base_url)
         self._api_version = api_version
         self._http_client = http_client or self._create_http_client()
+        self._my_bucket = None
         self._init_resources()
 
     @abstractmethod
@@ -119,7 +121,7 @@ class Dial(BaseDialClient[SyncHTTPClient, SyncAuthValue]):
         return self.bucket.get_bucket()
 
     def my_bucket(self) -> str:
-        if not hasattr(self, "_my_bucket") or not getattr(self, "_my_bucket"):
+        if self._my_bucket is None:
             self._my_bucket = self._get_my_bucket()
         return cast(str, self._my_bucket)
 
@@ -200,11 +202,9 @@ class AsyncDial(BaseDialClient[AsyncHTTPClient, AsyncAuthValue]):
         return await self.bucket.get_bucket()
 
     async def my_bucket(self) -> str:
-        if not hasattr(self, "_my_bucket") or not getattr(self, "_my_bucket"):
+        if self._my_bucket is None:
             self._my_bucket = await self._get_my_bucket()
-            return self._my_bucket
-        else:
-            return cast(str, self._my_bucket)
+        return cast(str, self._my_bucket)
 
     async def my_files_home(self) -> PurePosixPath:
         return "files" / PurePosixPath(await self.my_bucket())
