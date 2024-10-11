@@ -90,10 +90,9 @@ def test_get_api_path_invalid_dial_url(resource_type):
         resource_type=resource_type, dial_api_url=DIAL_API_URL
     )
     url = "https://other-dial.core/v1/files/bucket/file.txt"
-    with pytest.raises(
-        InvalidDialURLError, match="Provided url is not DIAL url"
-    ):
+    with pytest.raises(InvalidDialURLError) as e:
         mixin.get_api_path(url)
+    assert e.value.message == f"Provided url is not DIAL url: {url}"
 
 
 @pytest.mark.parametrize(

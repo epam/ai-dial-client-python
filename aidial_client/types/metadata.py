@@ -9,14 +9,13 @@ class BaseMetadata(ExtraAllowModel):
     if PYDANTIC_V2:
         model_config = {
             "alias_generator": to_camel,
-            "allow_population_by_field_name": True,
+            "populate_by_name": True,
         }
     else:
 
         class Config:
             alias_generator = to_camel
-
-        allow_population_by_field_name = True
+            allow_population_by_field_name = True
 
     name: str
     parent_path: Optional[str] = None
