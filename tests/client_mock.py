@@ -55,7 +55,7 @@ def get_client_mock(
         else:
             raise NotImplementedError()
 
-    client_mock._http_client._client.send = send_mock
+    client_mock._http_client._internal_client.send = send_mock
     return client_mock
 
 
@@ -92,5 +92,5 @@ def get_async_client_mock(
         else:
             raise NotImplementedError()
 
-    client_mock._http_client._client.send = send_mock
+    client_mock._http_client._internal_client.send = send_mock
     return client_mock

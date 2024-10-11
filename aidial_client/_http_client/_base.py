@@ -18,7 +18,7 @@ _HttpInternalClientT = TypeVar(
 
 
 class BaseHTTPClient(ABC, Generic[_HttpInternalClientT, AuthValueT]):
-    _client: _HttpInternalClientT
+    _internal_client: _HttpInternalClientT
     _auth_value: AuthValueT
     _auth_type: AuthType
 
@@ -36,7 +36,9 @@ class BaseHTTPClient(ABC, Generic[_HttpInternalClientT, AuthValueT]):
         self._auth_type = auth_type
         self._max_retries = max_retries
         self._timeout = timeout
-        self._client = internal_client or self._create_internal_client()
+        self._internal_client = (
+            internal_client or self._create_internal_client()
+        )
 
     @abstractmethod
     def _create_internal_client(
@@ -58,7 +60,7 @@ class BaseHTTPClient(ABC, Generic[_HttpInternalClientT, AuthValueT]):
         auth_headers: Dict[str, str],
     ) -> httpx.Request:
         custom_headers = options.headers or {}
-        return self._client.build_request(
+        return self._internal_client.build_request(
             headers={**auth_headers, **custom_headers},
             method=options.method,
             url=self._prepare_url(options.url),
@@ -136,4 +138,4 @@ class BaseHTTPClient(ABC, Generic[_HttpInternalClientT, AuthValueT]):
 
     @property
     def internal_http_client(self) -> _HttpInternalClientT:
-        return self._client
+        return self._internal_client

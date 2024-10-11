@@ -120,7 +120,7 @@ class Dial(BaseDialClient[SyncHTTPClient, SyncAuthValue]):
         )
 
     def _get_my_bucket(self) -> str:
-        """Wrapper for convenience of unit tests"""
+        # Wrapper for convenience of unit tests
         return self.bucket.get_bucket()
 
     def my_bucket(self) -> str:

@@ -57,7 +57,7 @@ class AsyncHTTPClient(BaseHTTPClient[httpx.AsyncClient, AsyncAuthValue]):
 
         request = self._build_request(options, auth_headers)
         try:
-            response = await self._client.send(request)
+            response = await self._internal_client.send(request)
         except httpx.TimeoutException as err:
             logger.debug("Request failed by timeout")
 

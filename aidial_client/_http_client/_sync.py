@@ -56,7 +56,7 @@ class SyncHTTPClient(BaseHTTPClient[httpx.Client, SyncAuthValue]):
         request = self._build_request(options, auth_headers)
 
         try:
-            response = self._client.send(request)
+            response = self._internal_client.send(request)
 
         except httpx.TimeoutException as err:
             logger.debug("Request failed by timeout")

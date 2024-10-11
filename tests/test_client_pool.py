@@ -43,6 +43,6 @@ def test_pools(pool, api_key):
     assert id(client_1) != id(client_2)
     assert id(client_1._http_client) != id(client_2._http_client)
     # Clients are different, but internal httpx client is the same
-    assert id(client_1._http_client._client) == id(
-        client_2._http_client._client
+    assert id(client_1._http_client._internal_client) == id(
+        client_2._http_client._internal_client
     )
