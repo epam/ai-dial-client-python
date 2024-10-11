@@ -1,8 +1,6 @@
 from http import HTTPStatus
 from typing import Mapping, Optional
 
-from aidial_client._utils._dict import remove_none
-
 
 class DialException(Exception):
     def __init__(
@@ -34,19 +32,6 @@ class DialException(Exception):
 
     def __str__(self) -> str:
         return self.__repr__()
-
-    def json_error(self) -> dict:
-        return {
-            "error": remove_none(
-                {
-                    "message": self.message,
-                    "type": self.type,
-                    "param": self.param,
-                    "code": self.code,
-                    "display_message": self.display_message,
-                }
-            )
-        }
 
     @classmethod
     def from_error_data(
