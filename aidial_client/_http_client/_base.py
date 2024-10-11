@@ -66,7 +66,7 @@ class BaseHTTPClient(ABC, Generic[_HttpInternalClientT, AuthValueT]):
                 httpx.QueryParams(options.params) if options.params else None
             ),
             json=options.json_data,
-            files=options.files,  # type: ignore
+            files=options.files,
             timeout=options.get_timeout(self._timeout),
         )
 
