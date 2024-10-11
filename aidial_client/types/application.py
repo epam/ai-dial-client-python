@@ -30,7 +30,7 @@ class Application(ExtraAllowModel):
     created_at: int
     updated_at: Optional[int] = None
     features: Features
-    input_attachment_types: Optional[List[str]]
+    input_attachment_types: Optional[List[str]] = None
     defaults: Dict = {}
 
 

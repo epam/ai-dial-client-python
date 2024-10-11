@@ -1,7 +1,11 @@
 from typing import Dict, List, Literal, Optional, Union
 
+from aidial_client._compatibility.pydantic import PYDANTIC_V2
 from aidial_client._compatibility.pydantic_v1 import root_validator
 from aidial_client._internal_types._model import ExtraAllowModel
+
+if PYDANTIC_V2:
+    from pydantic import model_validator
 
 
 class Attachment(ExtraAllowModel):
@@ -12,11 +16,26 @@ class Attachment(ExtraAllowModel):
     reference_type: Optional[str] = None
     reference_url: Optional[str] = None
 
-    @root_validator(pre=True)
-    def validate_data_or_url(cls, values):
-        if "data" not in values and "url" not in values:
-            raise ValueError("Either data or url must be provided")
-        return values
+    if PYDANTIC_V2:
+
+        @model_validator(mode="before")
+        @classmethod
+        def validate_data_or_url_v2(cls, values):
+            if (
+                isinstance(values, dict)
+                and "data" not in values
+                and "url" not in values
+            ):
+                raise ValueError("Either data or url must be provided")
+            return values
+
+    else:
+
+        @root_validator(pre=True)
+        def validate_data_or_url_v1(cls, values):
+            if "data" not in values and "url" not in values:
+                raise ValueError("Either data or url must be provided")
+            return values
 
 
 class CustomContent(ExtraAllowModel):
