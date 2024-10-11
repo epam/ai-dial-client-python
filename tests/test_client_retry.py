@@ -95,7 +95,7 @@ def test_status_codes_retries(status_code, is_retry_called):
     else:
         with pytest.raises(DialException) as e:
             client.bucket.get_bucket()
-        assert e.value.status_code == status_code  # type: ignore
+        assert e.value.status_code == status_code
         assert not retry_request_mock.called
 
 
@@ -125,4 +125,4 @@ async def test_status_codes_retries_async(status_code, is_retry_called):
     else:
         with pytest.raises(DialException) as e:
             await client.bucket.get_bucket()
-        assert e.value.status_code == status_code  # type: ignore
+        assert e.value.status_code == status_code
