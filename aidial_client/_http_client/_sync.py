@@ -10,7 +10,7 @@ from aidial_client._http_client._base import BaseHTTPClient
 from aidial_client._internal_types._generic import ResponseT
 from aidial_client._internal_types._http_request import FinalRequestOptions
 from aidial_client._log import logger
-from aidial_client._utils._response_processing import default_process_non_stream
+from aidial_client._utils._response_processing import process_block_response
 
 
 class SyncHTTPClient(BaseHTTPClient[httpx.Client, SyncAuthValue]):
@@ -107,4 +107,4 @@ class SyncHTTPClient(BaseHTTPClient[httpx.Client, SyncAuthValue]):
             )
             raise raised_error from err
 
-        return default_process_non_stream(cast_to=cast_to, response=response)
+        return process_block_response(cast_to=cast_to, response=response)

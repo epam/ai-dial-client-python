@@ -10,7 +10,7 @@ from aidial_client._internal_types._model import (
 )
 
 
-def default_process_non_stream(
+def process_block_response(
     cast_to: Type[ResponseT], response: httpx.Response
 ) -> ResponseT:
     if cast_to == httpx.Response:
