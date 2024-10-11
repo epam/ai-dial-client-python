@@ -12,7 +12,7 @@ class Deployments(Resource):
             options=FinalRequestOptions(method="GET", url="openai/deployments"),
         )
 
-    def get(self) -> List[Deployment]:
+    def list(self) -> List[Deployment]:
         return self.raw_get().data
 
 
@@ -23,5 +23,5 @@ class AsyncDeployments(AsyncResource):
             options=FinalRequestOptions(method="GET", url="openai/deployments"),
         )
 
-    async def get(self) -> List[Deployment]:
+    async def list(self) -> List[Deployment]:
         return (await self.raw_get()).data

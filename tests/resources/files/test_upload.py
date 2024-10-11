@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 
-from aidial_client._exception import InvalidDialURLException
+from aidial_client._exception import InvalidDialURLError
 from aidial_client.types.metadata import FileMetadata
 from tests.client_mock import get_async_client_mock, get_client_mock
 
@@ -50,7 +50,7 @@ async def test_upload_file_object_async():
 
     with open(current_file_path, "rb") as file:
         with pytest.raises(
-            InvalidDialURLException, match="Invalid resource type for url"
+            InvalidDialURLError, match="Invalid resource type for url"
         ):
             await client.files.upload(
                 url="prompts/test-bucket/folder1/folder2/file.png", file=file
