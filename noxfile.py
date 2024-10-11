@@ -53,7 +53,7 @@ def format(session: nox.Session):
 @nox.parametrize("pydantic", ["1.10.17", "2.8.2"])
 @nox.parametrize("httpx", ["0.25.0", "0.27.0"])
 @nox.parametrize("openai", ["1.0.0", "1.51.0"])
-@nox.parametrize("aiofiles", ["24.1.0", "0.5.0"])
+@nox.parametrize("aiofiles", ["0.5.0", "22.1.0", "24.1.0"])
 def test(
     session: nox.Session, pydantic: str, httpx: str, openai: str, aiofiles: str
 ) -> None:
