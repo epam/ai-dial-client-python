@@ -18,7 +18,7 @@ from aidial_client.types.file import FileDownloadResponse
 from aidial_client.types.metadata import FileMetadata
 
 
-def _error_processor(error: httpx.HTTPStatusError) -> Optional[DialException]:
+def _on_http_error(error: httpx.HTTPStatusError) -> Optional[DialException]:
     try:
         response = error.response
         error_message = response.text
@@ -49,7 +49,7 @@ class Files(Resource, DialStorageResourceMixin):
                 url=urljoin(API_PREFIX, self.get_api_path(str(url))),
                 files={"file": file},
             ),
-            error_processor=_error_processor,
+            error_processor=_on_http_error,
         )
 
     def download(self, url: Union[str, PurePosixPath]) -> FileDownloadResponse:
@@ -60,7 +60,7 @@ class Files(Resource, DialStorageResourceMixin):
                 method="GET",
                 url=urljoin(API_PREFIX, storage_resource.api_path),
             ),
-            error_processor=_error_processor,
+            error_processor=_on_http_error,
         )
         assert storage_resource.filename
         return FileDownloadResponse(
@@ -74,7 +74,7 @@ class Files(Resource, DialStorageResourceMixin):
                 method="DELETE",
                 url=urljoin(API_PREFIX, self.get_api_path(str(url))),
             ),
-            error_processor=_error_processor,
+            error_processor=_on_http_error,
         )
 
     def get_metadata(self, url: Union[str, PurePosixPath]) -> FileMetadata:
@@ -99,7 +99,7 @@ class AsyncFiles(AsyncResource, DialStorageResourceMixin):
                 url=urljoin(API_PREFIX, self.get_api_path(str(url))),
                 files={"file": file},
             ),
-            error_processor=_error_processor,
+            _on_http_error=_on_http_error,
         )
 
     async def download(
@@ -112,7 +112,7 @@ class AsyncFiles(AsyncResource, DialStorageResourceMixin):
                 method="GET",
                 url=urljoin(API_PREFIX, storage_resource.api_path),
             ),
-            error_processor=_error_processor,
+            _on_http_error=_on_http_error,
         )
         assert storage_resource.filename
         return FileDownloadResponse(
@@ -126,7 +126,7 @@ class AsyncFiles(AsyncResource, DialStorageResourceMixin):
                 method="DELETE",
                 url=urljoin(API_PREFIX, self.get_api_path(str(url))),
             ),
-            error_processor=_error_processor,
+            _on_http_error=_on_http_error,
         )
 
     async def get_metadata(
