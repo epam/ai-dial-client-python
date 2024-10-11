@@ -86,6 +86,11 @@ def test_parse_storage_resource_valid(
             "https://dial.core/v1/",
             "files",
         ),
+        (
+            "/files/test-bucket/files.txt",
+            "https://dial.core/v1/",
+            "files",
+        ),
     ],
 )
 def test_parse_storage_resource_invalid_url(url, dial_api_url, resource_type):

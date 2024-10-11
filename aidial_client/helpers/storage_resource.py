@@ -66,9 +66,15 @@ def parse_storage_resource(
     expected_resource_type: Optional[StorageResourceType] = None,
 ) -> Optional[DialStorageResource]:
     dial_api_url = enforce_trailing_slash(dial_api_url)
-    url = remove_leading_slash(url)
-    # If the URL starts with API_PREFIX, remove it
-    url = remove_prefix(url, API_PREFIX)
+
+    if url.startswith(API_PREFIX) or url.startswith(f"/{API_PREFIX}"):
+        url = remove_leading_slash(url)
+        url = remove_prefix(url, API_PREFIX)
+
+    if url.startswith("/"):
+        raise InvalidDialURLError(
+            f"Provided url does not have API prefix: {url}"
+        )
 
     absolute_url = urljoin(dial_api_url, remove_leading_slash(url))
     url_parsed = urlparse(absolute_url)
