@@ -52,10 +52,7 @@ class Files(Resource, DialStorageResourceMixin):
             error_processor=_error_processor,
         )
 
-    def download(
-        self,
-        url: Union[str, PurePosixPath],
-    ) -> FileDownloadResponse:
+    def download(self, url: Union[str, PurePosixPath]) -> FileDownloadResponse:
         storage_resource = self.get_storage_resource(str(url))
         response = self.http_client.request(
             cast_to=httpx.Response,
@@ -70,10 +67,7 @@ class Files(Resource, DialStorageResourceMixin):
             response=response, filename=storage_resource.filename
         )
 
-    def delete(
-        self,
-        url: Union[str, PurePosixPath],
-    ) -> None:
+    def delete(self, url: Union[str, PurePosixPath]) -> None:
         return self.http_client.request(
             cast_to=NoneType,
             options=FinalRequestOptions(
@@ -83,10 +77,7 @@ class Files(Resource, DialStorageResourceMixin):
             error_processor=_error_processor,
         )
 
-    def get_metadata(
-        self,
-        url: Union[str, PurePosixPath],
-    ) -> FileMetadata:
+    def get_metadata(self, url: Union[str, PurePosixPath]) -> FileMetadata:
         return self.metadata.get(
             resource="files",
             relative_url=self.get_api_path(str(url)),
@@ -112,8 +103,7 @@ class AsyncFiles(AsyncResource, DialStorageResourceMixin):
         )
 
     async def download(
-        self,
-        url: Union[str, PurePosixPath],
+        self, url: Union[str, PurePosixPath]
     ) -> FileDownloadResponse:
         storage_resource = self.get_storage_resource(str(url))
         response = await self.http_client.request(
@@ -129,10 +119,7 @@ class AsyncFiles(AsyncResource, DialStorageResourceMixin):
             response=response, filename=storage_resource.filename
         )
 
-    async def delete(
-        self,
-        url: Union[str, PurePosixPath],
-    ) -> None:
+    async def delete(self, url: Union[str, PurePosixPath]) -> None:
         return await self.http_client.request(
             cast_to=NoneType,
             options=FinalRequestOptions(
@@ -143,8 +130,7 @@ class AsyncFiles(AsyncResource, DialStorageResourceMixin):
         )
 
     async def get_metadata(
-        self,
-        url: Union[str, PurePosixPath],
+        self, url: Union[str, PurePosixPath]
     ) -> FileMetadata:
         return await self.metadata.get(
             resource="files",
