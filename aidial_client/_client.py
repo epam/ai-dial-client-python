@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from pathlib import PurePosixPath
-from typing import Dict, Generic, Optional, TypeVar, Union, cast
+from typing import Dict, Generic, Optional, TypeVar, Union
 from urllib.parse import urljoin
 
 import openai
@@ -123,7 +123,7 @@ class Dial(BaseDialClient[SyncHTTPClient, SyncAuthValue]):
     def my_bucket(self) -> str:
         if self._my_bucket is None:
             self._my_bucket = self._get_my_bucket()
-        return cast(str, self._my_bucket)
+        return self._my_bucket
 
     def my_files_home(self) -> PurePosixPath:
         return "files" / PurePosixPath(self.my_bucket())
@@ -204,7 +204,7 @@ class AsyncDial(BaseDialClient[AsyncHTTPClient, AsyncAuthValue]):
     async def my_bucket(self) -> str:
         if self._my_bucket is None:
             self._my_bucket = await self._get_my_bucket()
-        return cast(str, self._my_bucket)
+        return self._my_bucket
 
     async def my_files_home(self) -> PurePosixPath:
         return "files" / PurePosixPath(await self.my_bucket())
