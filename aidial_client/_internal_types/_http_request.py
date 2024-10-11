@@ -1,4 +1,4 @@
-from io import IOBase
+from io import BufferedReader
 from typing import (
     IO,
     Any,
@@ -16,7 +16,14 @@ from httpx import Timeout
 from aidial_client._compatibility.pydantic_v1 import BaseModel
 from aidial_client._internal_types._defaults import NOT_GIVEN, NotGiven
 
-FileContent = Union[IO[bytes], bytes, str, IOBase]
+FileContent = Union[
+    IO[bytes],
+    bytes,
+    str,
+    # Somehow, pydantic doesn't recognize result of open('...', 'rb') as IO[bytes]
+    # even though BufferedReader is a subclass of IO[bytes]
+    BufferedReader,
+]
 FileTypes = Union[
     # file (or bytes)
     FileContent,
