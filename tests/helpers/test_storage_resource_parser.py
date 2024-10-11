@@ -1,6 +1,6 @@
 import pytest
 
-from aidial_client._exception import InvalidDialURLException
+from aidial_client._exception import InvalidDialURLError
 from aidial_client.helpers.storage_resource import parse_storage_resource
 
 
@@ -86,14 +86,14 @@ def test_parse_storage_resource_valid(
     ],
 )
 def test_parse_storage_resource_invalid_url(url, dial_api_url, resource_type):
-    with pytest.raises(InvalidDialURLException):
+    with pytest.raises(InvalidDialURLError):
         parse_storage_resource(
             url, dial_api_url, resource_type, ignore_non_dial_url=False
         )
 
 
 def test_parse_storage_resource_non_dial_ignore():
-    with pytest.raises(InvalidDialURLException):
+    with pytest.raises(InvalidDialURLError):
         parse_storage_resource(
             "https://example.com/files/my-bucket/file.txt",
             "https://dial.core/v1/",

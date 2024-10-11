@@ -4,7 +4,7 @@ from urllib.parse import urljoin, urlparse
 
 from aidial_client._compatibility.pydantic_v1 import BaseModel
 from aidial_client._constants import API_PREFIX
-from aidial_client._exception import InvalidDialURLException
+from aidial_client._exception import InvalidDialURLError
 from aidial_client.helpers._url import (
     enforce_trailing_slash,
     remove_leading_slash,
@@ -74,28 +74,26 @@ def parse_storage_resource(
     if url_parsed.netloc != dial_api_parsed.netloc:
         if ignore_non_dial_url:
             return None
-        raise InvalidDialURLException(
-            message="Provided url is not DIAL url: {url}"
-        )
+        raise InvalidDialURLError(message="Provided url is not DIAL url: {url}")
     try:
         url_path = PurePosixPath(url_parsed.path)
         api_path = url_path.relative_to(dial_api_parsed.path)
     except ValueError:
 
-        raise InvalidDialURLException(
+        raise InvalidDialURLError(
             f"Provided url path {url_parsed.path} does not match with"
             f" DIAL API url {dial_api_parsed.path}"
         )
 
     resource_path = api_path.parents[len(api_path.parents) - 2]
     if str(resource_path) != resource_type:
-        raise InvalidDialURLException(
+        raise InvalidDialURLError(
             f"Invalid resource type for url: {url}\n"
             f"Expected: {resource_type}, got: {resource_path}"
         )
 
     if len(api_path.parents) < 3:
-        raise InvalidDialURLException(f"Missing bucket in url: {url}")
+        raise InvalidDialURLError(f"Missing bucket in url: {url}")
 
     bucket_path = api_path.parents[len(api_path.parents) - 3]
 

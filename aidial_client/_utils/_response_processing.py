@@ -2,7 +2,7 @@ from typing import Type, cast
 
 import httpx
 
-from aidial_client._exception import ParsingDataException
+from aidial_client._exception import ParsingDataError
 from aidial_client._internal_types._generic import NoneType, ResponseT
 from aidial_client._internal_types._model import (
     ExtraAllowModel,
@@ -21,14 +21,12 @@ def process_block_response(
         return cast(ResponseT, response.text)
     elif cast_to == NoneType:
         return cast(ResponseT, None)
-    elif issubclass(cast_to, ExtraForbidModel) or issubclass(
-        cast_to, ExtraAllowModel
-    ):
+    elif issubclass(cast_to, (ExtraForbidModel, ExtraAllowModel)):
         try:
             data = response.json()
             return cast_to(**data)
         except Exception as e:
-            raise ParsingDataException(
+            raise ParsingDataError(
                 message=f"Error during parsing of response data: {str(e)}"
             )
     else:

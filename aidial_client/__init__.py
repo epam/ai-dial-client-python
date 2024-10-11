@@ -3,10 +3,10 @@ from aidial_client._client import AsyncDial, Dial
 from aidial_client._client_pool import AsyncDialClientPool, DialClientPool
 from aidial_client._exception import (
     DialException,
-    InvalidBucketException,
-    InvalidDialURLException,
-    InvalidRequestException,
-    ParsingDataException,
+    InvalidBucketError,
+    InvalidDialURLError,
+    InvalidRequestError,
+    ParsingDataError,
 )
 
 __all__ = [
@@ -19,8 +19,8 @@ __all__ = [
     "AsyncAuthValue",
     # Exceptions
     "DialException",
-    "InvalidDialURLException",
-    "InvalidBucketException",
-    "InvalidRequestException",
-    "ParsingDataException",
+    "InvalidDialURLError",
+    "InvalidBucketError",
+    "InvalidRequestError",
+    "ParsingDataError",
 ]

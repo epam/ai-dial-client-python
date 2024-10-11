@@ -49,7 +49,7 @@ class DialException(Exception):
         )
 
 
-class InvalidRequestException(DialException):
+class InvalidRequestError(DialException):
     def __init__(self, message: str, **kwargs) -> None:
         super().__init__(
             message=message,
@@ -59,15 +59,15 @@ class InvalidRequestException(DialException):
         )
 
 
-class InvalidDialURLException(InvalidRequestException):
+class InvalidDialURLError(InvalidRequestError):
     pass
 
 
-class InvalidBucketException(InvalidRequestException):
+class InvalidBucketError(InvalidRequestError):
     pass
 
 
-class ParsingDataException(DialException):
+class ParsingDataError(DialException):
     def __init__(self, message: str, **kwargs) -> None:
         super().__init__(
             message=message,

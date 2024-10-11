@@ -5,7 +5,7 @@ from urllib.parse import urljoin
 import httpx
 
 from aidial_client._constants import API_PREFIX
-from aidial_client._exception import DialException, InvalidBucketException
+from aidial_client._exception import DialException, InvalidBucketError
 from aidial_client._internal_types._generic import NoneType
 from aidial_client._internal_types._http_request import (
     FileTypes,
@@ -28,7 +28,7 @@ def _error_processor(error: httpx.HTTPStatusError) -> Optional[DialException]:
             #  when adapter will return it for this particular error
             and "Url has invalid bucket" in error_message
         ):
-            return InvalidBucketException(error_message)
+            return InvalidBucketError(error_message)
     except Exception:
         return None
     else:
