@@ -88,4 +88,3 @@ class ChatCompletionChunk(ExtraAllowModel):
     created: int
     model: Optional[str] = None
     usage: Optional[CompletionUsage] = None
-    error: Optional[Dict] = None

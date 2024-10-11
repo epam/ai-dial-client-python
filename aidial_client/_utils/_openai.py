@@ -42,21 +42,11 @@ def convert_openai_response(
 def convert_openai_stream(
     openai_response: Iterator[OpenAIChatCompletionChunk],
 ) -> Iterator[ChatCompletionChunk]:
-    response_id = None
     try:
         for chunk in openai_response:
-            response_id = chunk.id
             yield ChatCompletionChunk(**chunk.model_dump())
     except openai.APIError as e:
-        yield ChatCompletionChunk(
-            id=response_id or str(uuid.uuid4()),
-            object="chat.completion.chunk",
-            choices=[],
-            created=int(time.time()),
-            model=None,
-            usage=None,
-            error=convert_openai_error(e).json_error(),
-        )
+        raise convert_openai_error(e) from e
 
 
 async def convert_openai_async_stream(
