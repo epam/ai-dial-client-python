@@ -1,6 +1,8 @@
 from enum import Enum
 from inspect import isawaitable
-from typing import Awaitable, Callable, Dict, TypeVar, Union
+from typing import Awaitable, Callable, Dict, TypeVar, Union, overload
+
+from typing_extensions import assert_never
 
 
 class AuthType(Enum):
@@ -17,44 +19,50 @@ AuthValueT = TypeVar(
 )
 
 
+@overload
+def get_auth_value(auth_value: SyncAuthValue) -> str: ...
+
+
+@overload
+def get_auth_value(
+    auth_value: AsyncAuthValue,
+) -> Union[str, Awaitable[str]]: ...
+
+
+def get_auth_value(
+    auth_value: Union[SyncAuthValue, AsyncAuthValue]
+) -> Union[str, Awaitable[str]]:
+    if isinstance(auth_value, str):
+        return auth_value
+    elif callable(auth_value):
+        return auth_value()
+    else:
+        assert_never(auth_value)
+
+
+def _get_auth_headers(auth_type: AuthType, auth_value: str) -> Dict[str, str]:
+    if auth_type == AuthType.API_KEY:
+        return {"api-key": auth_value}
+    elif auth_type == AuthType.BEARER:
+        return {"Authorization": f"Bearer {auth_value}"}
+    else:
+        assert_never(auth_type)
+
+
 def get_auth_headers(
     *,
     auth_value: SyncAuthValue,
     auth_type: AuthType,
 ) -> Dict[str, str]:
-    if auth_type == AuthType.API_KEY:
-        if isinstance(auth_value, str):
-            return {"api-key": auth_value}
-        elif callable(auth_value):
-            return {"api-key": auth_value()}
-    elif auth_type == AuthType.BEARER:
-        if isinstance(auth_value, str):
-            return {"Authorization": f"Bearer {auth_value}"}
-        elif callable(auth_value):
-            return {"Authorization": f"Bearer {auth_value()}"}
-    else:
-        raise NotImplementedError("Unsupported auth")
+    processed_auth_value = get_auth_value(auth_value)
+    return _get_auth_headers(auth_type, processed_auth_value)
 
 
-async def get_async_auth_headers(
+async def aget_auth_headers(
     auth_value: AsyncAuthValue,
     auth_type: AuthType,
 ) -> Dict[str, str]:
-    if auth_type == AuthType.API_KEY:
-        if isinstance(auth_value, str):
-            return {"api-key": auth_value}
-        elif callable(auth_value):
-            result = auth_value()
-            if isawaitable(result):
-                return {"api-key": await result}
-            return {"api-key": result}
-    elif auth_type == AuthType.BEARER:
-        if isinstance(auth_value, str):
-            return {"Authorization": f"Bearer {auth_value}"}
-        elif callable(auth_value):
-            result = auth_value()
-            if isawaitable(result):
-                return {"Authorization": f"Bearer {await result}"}
-            return {"Authorization": f"Bearer {result}"}
-    else:
-        raise NotImplementedError("Unsupported auth")
+    processed_auth_value = get_auth_value(auth_value)
+    if isawaitable(processed_auth_value):
+        processed_auth_value = await processed_auth_value
+    return _get_auth_headers(auth_type, processed_auth_value)

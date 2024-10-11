@@ -4,7 +4,7 @@ from typing import Callable, Dict, Optional, Type
 
 import httpx
 
-from aidial_client._auth import AsyncAuthValue, get_async_auth_headers
+from aidial_client._auth import AsyncAuthValue, aget_auth_headers
 from aidial_client._exception import DialException
 from aidial_client._http_client._base import BaseHTTPClient
 from aidial_client._internal_types._generic import ResponseT
@@ -20,7 +20,7 @@ class AsyncHTTPClient(BaseHTTPClient[httpx.AsyncClient, AsyncAuthValue]):
         )
 
     async def auth_headers(self) -> Dict[str, str]:
-        return await get_async_auth_headers(
+        return await aget_auth_headers(
             auth_value=self._auth_value, auth_type=self._auth_type
         )
 
