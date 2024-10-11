@@ -40,6 +40,13 @@ def get_auth_value(
         assert_never(auth_value)
 
 
+async def aget_auth_value(auth_value: AsyncAuthValue) -> str:
+    processed_auth_value = get_auth_value(auth_value)
+    if isawaitable(processed_auth_value):
+        return await processed_auth_value
+    return processed_auth_value
+
+
 def _get_auth_headers(auth_type: AuthType, auth_value: str) -> Dict[str, str]:
     if auth_type == AuthType.API_KEY:
         return {"api-key": auth_value}
@@ -62,7 +69,5 @@ async def aget_auth_headers(
     auth_value: AsyncAuthValue,
     auth_type: AuthType,
 ) -> Dict[str, str]:
-    processed_auth_value = get_auth_value(auth_value)
-    if isawaitable(processed_auth_value):
-        processed_auth_value = await processed_auth_value
+    processed_auth_value = await aget_auth_value(auth_value)
     return _get_auth_headers(auth_type, processed_auth_value)
