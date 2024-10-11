@@ -3,11 +3,12 @@ from typing import Literal, Optional, overload
 from urllib.parse import urljoin, urlparse
 
 from aidial_client._compatibility.pydantic_v1 import BaseModel
+from aidial_client._constants import API_PREFIX
 from aidial_client._exception import InvalidDialURLException
-from aidial_client.helpers.url import (
+from aidial_client.helpers._url import (
     enforce_trailing_slash,
-    remove_api_prefix,
     remove_leading_slash,
+    remove_prefix,
 )
 
 
@@ -61,7 +62,7 @@ def parse_storage_resource(
     dial_api_url = enforce_trailing_slash(dial_api_url)
     url = remove_leading_slash(url)
     # If the URL starts with API_PREFIX, remove it
-    url = remove_api_prefix(url)
+    url = remove_prefix(url, API_PREFIX)
 
     absolute_url = urljoin(dial_api_url, remove_leading_slash(url))
     url_parsed = urlparse(absolute_url)
@@ -86,8 +87,8 @@ def parse_storage_resource(
     resource_path = api_path.parents[len(api_path.parents) - 2]
     if str(resource_path) != resource_type:
         raise InvalidDialURLException(
-            f"Invalid resource type for url: {url}"
-            f"Expected: {resource_type},got: {resource_type}"
+            f"Invalid resource type for url: {url}\n"
+            f"Expected: {resource_type}, got: {resource_path}"
         )
 
     if len(api_path.parents) < 3:
