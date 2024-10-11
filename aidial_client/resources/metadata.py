@@ -1,6 +1,8 @@
 from typing import Literal, Type, Union, overload
 from urllib.parse import urljoin
 
+from typing_extensions import assert_never
+
 from aidial_client._constants import METADATA_PREFIX
 from aidial_client._exception import DialException
 from aidial_client._internal_types._http_request import FinalRequestOptions
@@ -25,9 +27,7 @@ def _get_cast_to(
     elif resource == "prompts":
         return PromptMetadata
     else:
-        raise DialException(
-            message="Not supported type of resource for metadata"
-        )
+        assert_never(resource)
 
 
 class Metadata(Resource):
