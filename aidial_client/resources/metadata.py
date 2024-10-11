@@ -4,7 +4,6 @@ from urllib.parse import urljoin
 from typing_extensions import assert_never
 
 from aidial_client._constants import METADATA_PREFIX
-from aidial_client._exception import DialException
 from aidial_client._internal_types._http_request import FinalRequestOptions
 from aidial_client.helpers.storage_resource import StorageResourceType
 from aidial_client.resources.base import AsyncResource, Resource

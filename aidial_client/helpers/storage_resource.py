@@ -1,5 +1,5 @@
 from pathlib import PurePosixPath
-from typing import Literal, Optional, cast, overload
+from typing import Literal, Optional, cast, get_args, overload
 from urllib.parse import urljoin, urlparse
 
 from aidial_client._compatibility.pydantic_v1 import BaseModel
@@ -99,7 +99,7 @@ def parse_storage_resource(
     resource_path = api_path.parents[len(api_path.parents) - 2]
     parsed_resource_type = str(resource_path)
 
-    if parsed_resource_type not in StorageResourceType.__args__:
+    if parsed_resource_type not in get_args(StorageResourceType):
         raise InvalidDialURLError(
             f"Invalid resource type: {parsed_resource_type}"
         )
