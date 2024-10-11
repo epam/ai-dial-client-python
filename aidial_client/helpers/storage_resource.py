@@ -74,7 +74,9 @@ def parse_storage_resource(
     if url_parsed.netloc != dial_api_parsed.netloc:
         if ignore_non_dial_url:
             return None
-        raise InvalidDialURLError(message="Provided url is not DIAL url: {url}")
+        raise InvalidDialURLError(
+            message=f"Provided url is not DIAL url: {url}"
+        )
     try:
         url_path = PurePosixPath(url_parsed.path)
         api_path = url_path.relative_to(dial_api_parsed.path)
