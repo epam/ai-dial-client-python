@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from pathlib import PurePosixPath
-from typing import Dict, Generic, Optional, TypeVar, Union
+from typing import Dict, Generic, Optional, TypeVar, Union, cast
 from urllib.parse import urljoin
 
 import openai
@@ -21,6 +21,7 @@ from aidial_client._constants import (
     OPENAI_PREFIX,
 )
 from aidial_client._http_client import AsyncHTTPClient, SyncHTTPClient
+from aidial_client._internal_types._defaults import NOT_GIVEN, NotGiven
 from aidial_client.helpers._url import enforce_trailing_slash
 from aidial_client.types.bucket import AppData
 
@@ -36,6 +37,7 @@ class BaseDialClient(Generic[_HttpClientT, AuthValueT], ABC):
     _http_client: _HttpClientT
     _auth_headers: Dict[str, str]
     _my_bucket: Optional[str]
+    _my_appdata: Union[AppData, None, NotGiven]
 
     def __init__(
         self,
@@ -57,6 +59,7 @@ class BaseDialClient(Generic[_HttpClientT, AuthValueT], ABC):
         self._api_version = api_version
         self._http_client = http_client or self._create_http_client()
         self._my_bucket = None
+        self._my_appdata = NOT_GIVEN
         self._init_resources()
 
     @abstractmethod
@@ -138,9 +141,9 @@ class Dial(BaseDialClient[SyncHTTPClient, SyncAuthValue]):
         return self.bucket.get_appdata()
 
     def my_appdata(self) -> Optional[AppData]:
-        if not hasattr(self, "_my_appdata"):
+        if self._my_appdata is NOT_GIVEN:
             self._my_appdata = self._get_my_appdata()
-        return self._my_appdata
+        return cast(Optional[AppData], self._my_appdata)
 
     def my_appdata_home(self) -> Optional[PurePosixPath]:
         appdata = self.my_appdata()
@@ -221,7 +224,7 @@ class AsyncDial(BaseDialClient[AsyncHTTPClient, AsyncAuthValue]):
     async def my_appdata(self) -> Optional[AppData]:
         if not hasattr(self, "_my_appdata"):
             self._my_appdata = await self._get_my_appdata()
-        return self._my_appdata
+        return cast(Optional[AppData], self._my_appdata)
 
     async def my_appdata_home(self) -> Optional[PurePosixPath]:
         appdata = await self.my_appdata()
