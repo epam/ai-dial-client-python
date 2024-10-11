@@ -1,6 +1,8 @@
 """
-Just copy of alias generators from pydantic V2,
-so we can use library  with pydantic < 2.0 version
+Just copy of alias generators from pydantic V2:
+https://github.com/pydantic/pydantic/blob/c772b43edb952c5fe54bb28da5124b10d5470caf/pydantic/alias_generators.py
+
+So we can use library  with pydantic < 2.0 version
 """
 
 import re
