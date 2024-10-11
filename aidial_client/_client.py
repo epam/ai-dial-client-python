@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from pathlib import PurePosixPath
-from typing import Dict, Generic, Optional, Tuple, TypeVar, Union, cast
+from typing import Dict, Generic, Optional, TypeVar, Union, cast
 from urllib.parse import urljoin
 
 import openai
@@ -12,6 +12,7 @@ from aidial_client._auth import (
     AuthType,
     AuthValueT,
     SyncAuthValue,
+    process_auth,
 )
 from aidial_client._constants import (
     API_PREFIX,
@@ -35,41 +36,25 @@ class BaseDialClient(Generic[_HttpClientT, AuthValueT], ABC):
     _http_client: _HttpClientT
     _auth_headers: Dict[str, str]
 
-    @staticmethod
-    def process_auth(
-        api_key: Optional[AuthValueT] = None,
-        bearer_token: Optional[AuthValueT] = None,
-    ) -> Tuple[AuthType, AuthValueT]:
-        if api_key and bearer_token:
-            raise ValueError(
-                "Either api_key or bearer_token must be provided, but not both"
-            )
-        elif api_key:
-            return AuthType.API_KEY, api_key
-        elif bearer_token:
-            return AuthType.BEARER, bearer_token
-        else:
-            raise ValueError("Either api_key or bearer_token must be provided")
-
     def __init__(
         self,
         *,
+        base_url: str,
         api_key: Optional[AuthValueT] = None,
         bearer_token: Optional[AuthValueT] = None,
-        base_url: str,
         max_retries: int = DEFAULT_MAX_RETRIES,
         timeout: Union[float, Timeout, None] = DEFAULT_TIMEOUT,
         api_version: Optional[str] = None,
-        _http_client: Optional[_HttpClientT] = None,
+        http_client: Optional[_HttpClientT] = None,
     ):
-        self._auth_type, self._auth_value = self.process_auth(
+        self._auth_type, self._auth_value = process_auth(
             api_key=api_key, bearer_token=bearer_token
         )
         self._max_retries = max_retries
         self._timeout = timeout
         self._base_url = enforce_trailing_slash(base_url)
         self._api_version = api_version
-        self._http_client = _http_client or self._create_http_client()
+        self._http_client = http_client or self._create_http_client()
         self._init_resources()
 
     @abstractmethod

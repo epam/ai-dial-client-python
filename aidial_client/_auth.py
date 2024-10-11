@@ -1,6 +1,15 @@
 from enum import Enum
 from inspect import isawaitable
-from typing import Awaitable, Callable, Dict, TypeVar, Union, overload
+from typing import (
+    Awaitable,
+    Callable,
+    Dict,
+    Optional,
+    Tuple,
+    TypeVar,
+    Union,
+    overload,
+)
 
 from typing_extensions import assert_never
 
@@ -71,3 +80,20 @@ async def aget_auth_headers(
 ) -> Dict[str, str]:
     processed_auth_value = await aget_auth_value(auth_value)
     return _get_auth_headers(auth_type, processed_auth_value)
+
+
+def process_auth(
+    *,
+    api_key: Optional[AuthValueT] = None,
+    bearer_token: Optional[AuthValueT] = None,
+) -> Tuple[AuthType, AuthValueT]:
+    if api_key and bearer_token:
+        raise ValueError(
+            "Either api_key or bearer_token must be provided, but not both"
+        )
+    elif api_key:
+        return AuthType.API_KEY, api_key
+    elif bearer_token:
+        return AuthType.BEARER, bearer_token
+    else:
+        raise ValueError("Either api_key or bearer_token must be provided")

@@ -29,14 +29,14 @@ class BaseHTTPClient(ABC, Generic[_HttpInternalClientT, AuthValueT]):
         auth_type: AuthType,
         max_retries: int,
         timeout: Union[float, httpx.Timeout, None],
-        _client: Optional[_HttpInternalClientT] = None,
+        internal_client: Optional[_HttpInternalClientT] = None,
     ):
         self.base_url = httpx.URL(enforce_trailing_slash(base_url))
         self._auth_value = auth_value
         self._auth_type = auth_type
         self._max_retries = max_retries
         self._timeout = timeout
-        self._client = _client or self._create_internal_client()
+        self._client = internal_client or self._create_internal_client()
 
     @abstractmethod
     def _create_internal_client(

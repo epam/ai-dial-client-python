@@ -15,4 +15,4 @@ FILES_PREFIX = urljoin(API_PREFIX, "files/")
 
 
 OPENAI_PREFIX = "openai/"
-APPLICATION_PREFIX = f"{OPENAI_PREFIX}applications/"
+APPLICATION_PREFIX = urljoin(OPENAI_PREFIX, "applications/")
