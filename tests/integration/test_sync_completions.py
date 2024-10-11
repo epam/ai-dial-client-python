@@ -63,7 +63,7 @@ def test_default_api_version(
 
 
 def test_completions_with_streaming(sync_client: Dial):
-    deployments = sync_client.deployments.get()
+    deployments = sync_client.deployments.list()
     assert len(deployments)
     deployment = next((d for d in deployments if d.id.startswith("gpt-")))
     assert deployment
