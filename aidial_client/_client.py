@@ -141,7 +141,7 @@ class Dial(BaseDialClient[SyncHTTPClient, SyncAuthValue]):
         return self.bucket.get_appdata()
 
     def my_appdata(self) -> Optional[AppData]:
-        if self._my_appdata is NOT_GIVEN:
+        if self._my_appdata == NOT_GIVEN:
             self._my_appdata = self._get_my_appdata()
         return cast(Optional[AppData], self._my_appdata)
 
@@ -156,8 +156,6 @@ class Dial(BaseDialClient[SyncHTTPClient, SyncAuthValue]):
 
 
 class AsyncDial(BaseDialClient[AsyncHTTPClient, AsyncAuthValue]):
-    _my_bucket: Optional[str]
-
     def _init_resources(self) -> None:
         openai_client = openai.AsyncAzureOpenAI(
             # set empty string, we will override
@@ -222,7 +220,7 @@ class AsyncDial(BaseDialClient[AsyncHTTPClient, AsyncAuthValue]):
         return await self.bucket.get_appdata()
 
     async def my_appdata(self) -> Optional[AppData]:
-        if not hasattr(self, "_my_appdata"):
+        if self._my_appdata == NOT_GIVEN:
             self._my_appdata = await self._get_my_appdata()
         return cast(Optional[AppData], self._my_appdata)
 
