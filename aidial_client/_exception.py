@@ -67,10 +67,6 @@ class NotDialURLError(InvalidRequestError):
     pass
 
 
-class InvalidBucketError(InvalidRequestError):
-    pass
-
-
 class ParsingDataError(DialException):
     def __init__(self, message: str, **kwargs) -> None:
         super().__init__(

@@ -3,7 +3,6 @@ from aidial_client._client import AsyncDial, Dial
 from aidial_client._client_pool import AsyncDialClientPool, DialClientPool
 from aidial_client._exception import (
     DialException,
-    InvalidBucketError,
     InvalidDialURLError,
     InvalidRequestError,
     ParsingDataError,
@@ -20,7 +19,6 @@ __all__ = [
     # Exceptions
     "DialException",
     "InvalidDialURLError",
-    "InvalidBucketError",
     "InvalidRequestError",
     "ParsingDataError",
 ]

@@ -1,11 +1,11 @@
 from pathlib import PurePosixPath
-from typing import Optional, Union
+from typing import Union
 from urllib.parse import urljoin
 
 import httpx
 
 from aidial_client._constants import API_PREFIX
-from aidial_client._exception import DialException, InvalidBucketError
+from aidial_client._exception import InvalidDialURLError
 from aidial_client._internal_types._generic import NoneType
 from aidial_client._internal_types._http_request import (
     FileTypes,
@@ -16,23 +16,6 @@ from aidial_client.resources.base import AsyncResource, Resource
 from aidial_client.resources.metadata import AsyncMetadata, Metadata
 from aidial_client.types.file import FileDownloadResponse
 from aidial_client.types.metadata import FileMetadata
-
-
-def _on_http_error(error: httpx.HTTPStatusError) -> Optional[DialException]:
-    try:
-        response = error.response
-        error_message = response.text
-        if (
-            response.status_code == 400
-            # TODO: move it to response.code check,
-            #  when adapter will return it for this particular error
-            and "Url has invalid bucket" in error_message
-        ):
-            return InvalidBucketError(error_message)
-    except Exception:
-        return None
-    else:
-        return None
 
 
 class Files(Resource, DialStorageResourceMixin):
@@ -49,20 +32,19 @@ class Files(Resource, DialStorageResourceMixin):
                 url=urljoin(API_PREFIX, self.get_api_path(str(url))),
                 files={"file": file},
             ),
-            error_processor=_on_http_error,
         )
 
     def download(self, url: Union[str, PurePosixPath]) -> FileDownloadResponse:
         storage_resource = self.get_storage_resource(str(url))
+        if storage_resource.filename is None:
+            raise InvalidDialURLError("Url points to a directory, not a file")
         response = self.http_client.request(
             cast_to=httpx.Response,
             options=FinalRequestOptions(
                 method="GET",
                 url=urljoin(API_PREFIX, storage_resource.api_path),
             ),
-            error_processor=_on_http_error,
         )
-        assert storage_resource.filename
         return FileDownloadResponse(
             response=response, filename=storage_resource.filename
         )
@@ -74,7 +56,6 @@ class Files(Resource, DialStorageResourceMixin):
                 method="DELETE",
                 url=urljoin(API_PREFIX, self.get_api_path(str(url))),
             ),
-            error_processor=_on_http_error,
         )
 
     def get_metadata(self, url: Union[str, PurePosixPath]) -> FileMetadata:
@@ -99,22 +80,21 @@ class AsyncFiles(AsyncResource, DialStorageResourceMixin):
                 url=urljoin(API_PREFIX, self.get_api_path(str(url))),
                 files={"file": file},
             ),
-            _on_http_error=_on_http_error,
         )
 
     async def download(
         self, url: Union[str, PurePosixPath]
     ) -> FileDownloadResponse:
         storage_resource = self.get_storage_resource(str(url))
+        if storage_resource.filename is None:
+            raise InvalidDialURLError("Url points to a directory, not a file")
         response = await self.http_client.request(
             cast_to=httpx.Response,
             options=FinalRequestOptions(
                 method="GET",
                 url=urljoin(API_PREFIX, storage_resource.api_path),
             ),
-            _on_http_error=_on_http_error,
         )
-        assert storage_resource.filename
         return FileDownloadResponse(
             response=response, filename=storage_resource.filename
         )
@@ -126,7 +106,6 @@ class AsyncFiles(AsyncResource, DialStorageResourceMixin):
                 method="DELETE",
                 url=urljoin(API_PREFIX, self.get_api_path(str(url))),
             ),
-            _on_http_error=_on_http_error,
         )
 
     async def get_metadata(

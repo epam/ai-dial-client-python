@@ -1,5 +1,5 @@
 from pathlib import PurePosixPath
-from typing import Literal, Optional, Union, cast, get_args, overload
+from typing import Literal, Optional, Union, cast, get_args
 from urllib.parse import urljoin, urlparse
 
 from aidial_client._compatibility.pydantic_v1 import BaseModel
@@ -8,6 +8,10 @@ from aidial_client._exception import InvalidDialURLError, NotDialURLError
 from aidial_client.helpers._url import enforce_trailing_slash
 
 StorageResourceType = Literal["files", "conversations", "prompts"]
+
+
+def is_directory(s: str) -> bool:
+    return s[-1] == "/"
 
 
 class DialStorageResource(BaseModel):
@@ -40,11 +44,14 @@ def safe_parse_storage_resource(
     dial_api_url: str,
     expected_resource_type: Optional[StorageResourceType] = None,
 ) -> Union[DialStorageResource, NotDialURLError, InvalidDialURLError]:
+    """
+    Parse the storage resource from the URL, that could be
+    1. Absolute: "https://dial.core/v1/files/my-bucket/my-file.txt"
+    2. Relative to API prefix: "files/my-bucket/my-file.txt"
+    """
     dial_api_url = enforce_trailing_slash(dial_api_url)
-
     if url.startswith("/"):
         return InvalidDialURLError(f"Relative root url is forbidden: {url}")
-    # URL that came starts with "v1/...", when should be "/v1/..."
     if url.startswith(API_PREFIX):
         return InvalidDialURLError(
             f"API prefix as relative part is not allowed: {url}"
@@ -85,7 +92,6 @@ def safe_parse_storage_resource(
         return InvalidDialURLError(f"Missing bucket in url: {url}")
 
     bucket_path = api_path.parents[len(api_path.parents) - 3]
-
     return DialStorageResource(
         resource_type=cast(StorageResourceType, parsed_resource_type),
         absolute_url=absolute_url,
@@ -93,7 +99,7 @@ def safe_parse_storage_resource(
         bucket=str(bucket_path.relative_to(resource_path)),
         bucket_path=str(api_path.relative_to(bucket_path)),
         relative_url=str(url_path),
-        filename=url_path.name,
+        filename=url_path.name if not is_directory(url) else None,
     )
 
 

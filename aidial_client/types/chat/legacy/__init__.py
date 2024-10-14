@@ -1,3 +1,1 @@
-from .chat_completion import ChatCompletionRequest
-
-__all__ = ["ChatCompletionRequest"]
+from .chat_completion import ChatCompletionRequest  # noqa: F401
