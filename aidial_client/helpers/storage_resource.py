@@ -34,6 +34,7 @@ class DialStorageResource(BaseModel):
 
     """
     Filename, like 'my-file.txt'
+    None for a directory
     """
     filename: Optional[str] = None
 
