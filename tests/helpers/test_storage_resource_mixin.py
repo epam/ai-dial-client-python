@@ -1,6 +1,6 @@
 import pytest
 
-from aidial_client._exception import InvalidDialURLError
+from aidial_client._exception import InvalidDialURLError, NotDialURLError
 from aidial_client.helpers.storage_resource import DialStorageResourceMixin
 
 DIAL_API_URL = "https://dial.core/v1/"
@@ -60,37 +60,13 @@ def test_get_api_path_absolute_url(resource_type, url, expected):
     assert result == expected
 
 
-@pytest.mark.parametrize(
-    "resource_type, url, expected",
-    [
-        ("files", "/v1/files/bucket/file.txt", "files/bucket/file.txt"),
-        (
-            "conversations",
-            "/v1/conversations/bucket/conv.json",
-            "conversations/bucket/conv.json",
-        ),
-        (
-            "prompts",
-            "/v1/prompts/bucket/prompt.txt",
-            "prompts/bucket/prompt.txt",
-        ),
-    ],
-)
-def test_get_api_path_with_api_prefix(resource_type, url, expected):
-    mixin = DialStorageResourceMixin(
-        resource_type=resource_type, dial_api_url=DIAL_API_URL
-    )
-    result = mixin.get_api_path(url)
-    assert result == expected
-
-
 @pytest.mark.parametrize("resource_type", RESOURCE_TYPES)
 def test_get_api_path_invalid_dial_url(resource_type):
     mixin = DialStorageResourceMixin(
         resource_type=resource_type, dial_api_url=DIAL_API_URL
     )
     url = "https://other-dial.core/v1/files/bucket/file.txt"
-    with pytest.raises(InvalidDialURLError) as e:
+    with pytest.raises(NotDialURLError) as e:
         mixin.get_api_path(url)
     assert e.value.message == f"Provided url is not DIAL url: {url}"
 

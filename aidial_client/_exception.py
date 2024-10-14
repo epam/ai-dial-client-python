@@ -63,6 +63,10 @@ class InvalidDialURLError(InvalidRequestError):
     pass
 
 
+class NotDialURLError(InvalidRequestError):
+    pass
+
+
 class InvalidBucketError(InvalidRequestError):
     pass
 
