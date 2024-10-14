@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from pathlib import PurePosixPath
-from typing import Dict, Generic, Optional, TypeVar, Union, cast
+from typing import Dict, Generic, Optional, TypeVar, Union
 from urllib.parse import urljoin
 
 import openai
@@ -141,9 +141,9 @@ class Dial(BaseDialClient[SyncHTTPClient, SyncAuthValue]):
         return self.bucket.get_appdata()
 
     def my_appdata(self) -> Optional[AppData]:
-        if self._my_appdata == NOT_GIVEN:
+        if isinstance(self._my_appdata, NotGiven):
             self._my_appdata = self._get_my_appdata()
-        return cast(Optional[AppData], self._my_appdata)
+        return self._my_appdata
 
     def my_appdata_home(self) -> Optional[PurePosixPath]:
         appdata = self.my_appdata()
@@ -220,9 +220,9 @@ class AsyncDial(BaseDialClient[AsyncHTTPClient, AsyncAuthValue]):
         return await self.bucket.get_appdata()
 
     async def my_appdata(self) -> Optional[AppData]:
-        if self._my_appdata == NOT_GIVEN:
+        if isinstance(self._my_appdata, NotGiven):
             self._my_appdata = await self._get_my_appdata()
-        return cast(Optional[AppData], self._my_appdata)
+        return self._my_appdata
 
     async def my_appdata_home(self) -> Optional[PurePosixPath]:
         appdata = await self.my_appdata()
