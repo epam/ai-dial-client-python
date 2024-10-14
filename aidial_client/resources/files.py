@@ -37,7 +37,7 @@ class Files(Resource, DialStorageResourceMixin):
     def download(self, url: Union[str, PurePosixPath]) -> FileDownloadResponse:
         storage_resource = self.get_storage_resource(str(url))
         if storage_resource.filename is None:
-            raise InvalidDialURLError("Url points to a directory, not a file")
+            raise InvalidDialURLError("URL points to a directory, not a file")
         response = self.http_client.request(
             cast_to=httpx.Response,
             options=FinalRequestOptions(
@@ -87,7 +87,7 @@ class AsyncFiles(AsyncResource, DialStorageResourceMixin):
     ) -> FileDownloadResponse:
         storage_resource = self.get_storage_resource(str(url))
         if storage_resource.filename is None:
-            raise InvalidDialURLError("Url points to a directory, not a file")
+            raise InvalidDialURLError("URL points to a directory, not a file")
         response = await self.http_client.request(
             cast_to=httpx.Response,
             options=FinalRequestOptions(

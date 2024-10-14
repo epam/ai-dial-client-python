@@ -52,7 +52,7 @@ def safe_parse_storage_resource(
     """
     dial_api_url = enforce_trailing_slash(dial_api_url)
     if url.startswith("/"):
-        return InvalidDialURLError(f"Root-relative url is forbidden: {url}")
+        return InvalidDialURLError(f"Root-relative URL is forbidden: {url}")
     if url.startswith(API_PREFIX):
         return InvalidDialURLError(
             f"API prefix as relative part is not allowed: {url}"
@@ -62,14 +62,14 @@ def safe_parse_storage_resource(
     url_parsed = urlparse(absolute_url)
     dial_api_parsed = urlparse(dial_api_url)
     if url_parsed.netloc != dial_api_parsed.netloc:
-        return NotDialURLError(message=f"Provided url is not DIAL url: {url}")
+        return NotDialURLError(message=f"Provided URL is not DIAL URL: {url}")
     try:
         url_path = PurePosixPath(url_parsed.path)
         api_path = url_path.relative_to(dial_api_parsed.path)
     except ValueError:
         return InvalidDialURLError(
-            f"Provided url path {url_parsed.path} does not match with"
-            f" DIAL API url {dial_api_parsed.path}"
+            f"Provided URL path {url_parsed.path} does not match with"
+            f" DIAL API URL {dial_api_parsed.path}"
         )
 
     resource_path = api_path.parents[len(api_path.parents) - 2]
@@ -85,12 +85,12 @@ def safe_parse_storage_resource(
         and parsed_resource_type != expected_resource_type
     ):
         return InvalidDialURLError(
-            f"Invalid resource type for url: {url}\n"
+            f"Invalid resource type for URL: {url}\n"
             f"Expected: {expected_resource_type}, got: {parsed_resource_type}"
         )
 
     if len(api_path.parents) < 3:
-        return InvalidDialURLError(f"Missing bucket in url: {url}")
+        return InvalidDialURLError(f"Missing bucket in URL: {url}")
 
     bucket_path = api_path.parents[len(api_path.parents) - 3]
     return DialStorageResource(

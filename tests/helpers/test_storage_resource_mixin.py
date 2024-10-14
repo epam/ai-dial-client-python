@@ -68,7 +68,7 @@ def test_get_api_path_invalid_dial_url(resource_type):
     url = "https://other-dial.core/v1/files/bucket/file.txt"
     with pytest.raises(NotDialURLError) as e:
         mixin.get_api_path(url)
-    assert e.value.message == f"Provided url is not DIAL url: {url}"
+    assert e.value.message == f"Provided URL is not DIAL URL: {url}"
 
 
 @pytest.mark.parametrize(
@@ -87,7 +87,7 @@ def test_get_api_path_invalid_resource_type(resource_type, url):
         resource_type=resource_type, dial_api_url=DIAL_API_URL
     )
     with pytest.raises(
-        InvalidDialURLError, match="Invalid resource type for url"
+        InvalidDialURLError, match="Invalid resource type for URL"
     ):
         mixin.get_api_path(url)
 
@@ -104,7 +104,7 @@ def test_get_api_path_missing_bucket(resource_type, url):
     mixin = DialStorageResourceMixin(
         resource_type=resource_type, dial_api_url=DIAL_API_URL
     )
-    with pytest.raises(InvalidDialURLError, match="Missing bucket in url"):
+    with pytest.raises(InvalidDialURLError, match="Missing bucket in URL"):
         mixin.get_api_path(url)
 
 
@@ -116,7 +116,7 @@ def test_get_api_path_invalid_path(resource_type):
     url = "https://dial.core/v2/files/bucket/file.txt"
     with pytest.raises(
         InvalidDialURLError,
-        match="Provided url path .* does not match with DIAL API url",
+        match="Provided URL path .* does not match with DIAL API URL",
     ):
         mixin.get_api_path(
             url,

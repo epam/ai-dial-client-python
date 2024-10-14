@@ -50,7 +50,7 @@ async def test_upload_file_object_async():
 
     with open(current_file_path, "rb") as file:
         with pytest.raises(
-            InvalidDialURLError, match="Invalid resource type for url"
+            InvalidDialURLError, match="Invalid resource type for URL"
         ):
             await client.files.upload(
                 url="prompts/test-bucket/folder1/folder2/file.png", file=file

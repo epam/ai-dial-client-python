@@ -26,7 +26,7 @@ class Attachment(ExtraAllowModel):
                 and "data" not in values
                 and "url" not in values
             ):
-                raise ValueError("Either data or url must be provided")
+                raise ValueError("Either data or URL must be provided")
             return values
 
     else:
@@ -34,7 +34,7 @@ class Attachment(ExtraAllowModel):
         @root_validator(pre=True)
         def validate_data_or_url_v1(cls, values):
             if "data" not in values and "url" not in values:
-                raise ValueError("Either data or url must be provided")
+                raise ValueError("Either data or URL must be provided")
             return values
 
 
