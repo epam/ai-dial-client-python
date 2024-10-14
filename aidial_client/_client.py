@@ -201,7 +201,7 @@ class AsyncDial(BaseDialClient[AsyncHTTPClient, AsyncAuthValue]):
         )
 
     async def _get_my_bucket(self) -> str:
-        """Wrapper for convenience of unit tests"""
+        # Wrapper for convenience of unit tests
         return await self.bucket.get_bucket()
 
     async def my_bucket(self) -> str:
