@@ -1,0 +1,168 @@
+from enum import Enum
+from typing import Any, Dict, List, Literal, Mapping, Optional, Union
+
+from aidial_client._compatibility.pydantic_v1 import (
+    ConstrainedFloat,
+    ConstrainedInt,
+    ConstrainedList,
+    PositiveInt,
+    StrictBool,
+    StrictInt,
+    StrictStr,
+)
+from aidial_client._internal_types._model import ExtraForbidModel
+
+
+class FinishReason(str, Enum):
+    STOP = "stop"
+    LENGTH = "length"
+    FUNCTION_CALL = "function_call"
+    TOOL_CALLS = "tool_calls"
+    CONTENT_FILTER = "content_filter"
+
+
+class Status(str, Enum):
+    COMPLETED = "completed"
+    FAILED = "failed"
+
+
+class Attachment(ExtraForbidModel):
+    type: Optional[StrictStr] = "text/markdown"
+    title: Optional[StrictStr] = None
+    data: Optional[StrictStr] = None
+    url: Optional[StrictStr] = None
+    reference_type: Optional[StrictStr] = None
+    reference_url: Optional[StrictStr] = None
+
+
+class Stage(ExtraForbidModel):
+    name: StrictStr
+    status: Status
+    content: Optional[StrictStr] = None
+    attachments: Optional[List[Attachment]] = None
+
+
+class CustomContent(ExtraForbidModel):
+    stages: Optional[List[Stage]] = None
+    attachments: Optional[List[Attachment]] = None
+    state: Optional[Any] = None
+
+
+class FunctionCall(ExtraForbidModel):
+    name: str
+    arguments: str
+
+
+class ToolCall(ExtraForbidModel):
+    # OpenAI API doesn't strictly specify existence of the index field
+    index: Optional[int]
+    id: StrictStr
+    type: Literal["function"]
+    function: FunctionCall
+
+
+class Role(str, Enum):
+    SYSTEM = "system"
+    USER = "user"
+    ASSISTANT = "assistant"
+    FUNCTION = "function"
+    TOOL = "tool"
+
+
+class Message(ExtraForbidModel):
+    role: Role
+    content: Optional[StrictStr] = None
+    custom_content: Optional[CustomContent] = None
+    name: Optional[StrictStr] = None
+    tool_calls: Optional[List[ToolCall]] = None
+    tool_call_id: Optional[StrictStr] = None
+    function_call: Optional[FunctionCall] = None
+
+
+class Addon(ExtraForbidModel):
+    name: Optional[StrictStr] = None
+    url: Optional[StrictStr] = None
+
+
+class Function(ExtraForbidModel):
+    name: StrictStr
+    description: Optional[StrictStr] = None
+    parameters: Optional[Dict] = None
+
+
+class Temperature(ConstrainedFloat):
+    ge = 0
+    le = 2
+
+
+class TopP(ConstrainedFloat):
+    ge = 0
+    le = 1
+
+
+class N(ConstrainedInt):
+    ge = 1
+    le = 128
+
+
+class Stop(ConstrainedList):
+    max_items: int = 4
+    __args__ = tuple([StrictStr])
+
+
+class Penalty(ConstrainedFloat):
+    ge = -2
+    le = 2
+
+
+class Tool(ExtraForbidModel):
+    type: Literal["function"]
+    function: Function
+
+
+class FunctionChoice(ExtraForbidModel):
+    name: StrictStr
+
+
+class ToolChoice(ExtraForbidModel):
+    type: Literal["function"]
+    function: FunctionChoice
+
+
+class ResponseFormat(ExtraForbidModel):
+    type: Literal["text", "json_object"]
+
+
+class AzureChatCompletionRequest(ExtraForbidModel):
+    model: Optional[StrictStr] = None
+    messages: List[Message]
+    functions: Optional[List[Function]] = None
+    function_call: Optional[Union[Literal["auto", "none"], FunctionChoice]] = (
+        None
+    )
+    tools: Optional[List[Tool]] = None
+    tool_choice: Optional[Union[Literal["auto", "none"], ToolChoice]] = None
+    stream: bool = False
+    temperature: Optional[Temperature] = None
+    top_p: Optional[TopP] = None
+    n: Optional[N] = None
+    stop: Optional[Union[StrictStr, Stop]] = None
+    max_tokens: Optional[PositiveInt] = None
+    presence_penalty: Optional[Penalty] = None
+    frequency_penalty: Optional[Penalty] = None
+    logit_bias: Optional[Mapping[int, float]] = None
+    user: Optional[StrictStr] = None
+    seed: Optional[StrictInt] = None
+    logprobs: Optional[StrictBool] = None
+    top_logprobs: Optional[StrictInt] = None
+    response_format: Optional[ResponseFormat] = None
+
+
+class ChatCompletionRequestCustomFields(ExtraForbidModel):
+    configuration: Optional[Dict[str, Any]] = None
+
+
+class ChatCompletionRequest(AzureChatCompletionRequest):
+    addons: Optional[List[Addon]] = None
+    max_prompt_tokens: Optional[PositiveInt] = None
+    custom_fields: Optional[ChatCompletionRequestCustomFields] = None
