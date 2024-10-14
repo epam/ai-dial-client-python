@@ -18,7 +18,7 @@ _HttpInternalClientT = TypeVar(
 
 
 class BaseHTTPClient(ABC, Generic[_HttpInternalClientT, AuthValueT]):
-    _internal_client: _HttpInternalClientT
+    _internal_http_client: _HttpInternalClientT
     _auth_value: AuthValueT
     _auth_type: AuthType
 
@@ -29,15 +29,15 @@ class BaseHTTPClient(ABC, Generic[_HttpInternalClientT, AuthValueT]):
         auth_type: AuthType,
         max_retries: int,
         timeout: Union[float, httpx.Timeout, None],
-        internal_client: Optional[_HttpInternalClientT] = None,
+        internal_http_client: Optional[_HttpInternalClientT] = None,
     ):
         self.base_url = httpx.URL(enforce_trailing_slash(base_url))
         self._auth_value = auth_value
         self._auth_type = auth_type
         self._max_retries = max_retries
         self._timeout = timeout
-        self._internal_client = (
-            internal_client or self._create_internal_client()
+        self._internal_http_client = (
+            internal_http_client or self._create_internal_client()
         )
 
     @abstractmethod
@@ -60,7 +60,7 @@ class BaseHTTPClient(ABC, Generic[_HttpInternalClientT, AuthValueT]):
         auth_headers: Dict[str, str],
     ) -> httpx.Request:
         custom_headers = options.headers or {}
-        return self._internal_client.build_request(
+        return self._internal_http_client.build_request(
             headers={**auth_headers, **custom_headers},
             method=options.method,
             url=self._prepare_url(options.url),
@@ -138,4 +138,4 @@ class BaseHTTPClient(ABC, Generic[_HttpInternalClientT, AuthValueT]):
 
     @property
     def internal_http_client(self) -> _HttpInternalClientT:
-        return self._internal_client
+        return self._internal_http_client

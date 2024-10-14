@@ -45,7 +45,7 @@ class DialClientPool:
                 auth_type=auth_type,
                 max_retries=max_retries,
                 timeout=timeout,
-                internal_client=self._internal_http_client,
+                internal_http_client=self._internal_http_client,
             ),
         )
 
@@ -83,6 +83,6 @@ class AsyncDialClientPool:
                 auth_type=auth_type,
                 max_retries=max_retries,
                 timeout=timeout,
-                internal_client=self._internal_http_client,
+                internal_http_client=self._internal_http_client,
             ),
         )
