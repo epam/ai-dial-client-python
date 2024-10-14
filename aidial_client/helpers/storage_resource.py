@@ -51,7 +51,7 @@ def safe_parse_storage_resource(
     """
     dial_api_url = enforce_trailing_slash(dial_api_url)
     if url.startswith("/"):
-        return InvalidDialURLError(f"Relative root url is forbidden: {url}")
+        return InvalidDialURLError(f"Root-relative url is forbidden: {url}")
     if url.startswith(API_PREFIX):
         return InvalidDialURLError(
             f"API prefix as relative part is not allowed: {url}"
