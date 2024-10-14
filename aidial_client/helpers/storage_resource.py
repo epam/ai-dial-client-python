@@ -10,7 +10,7 @@ from aidial_client.helpers._url import enforce_trailing_slash
 StorageResourceType = Literal["files", "conversations", "prompts"]
 
 
-def is_directory(s: str) -> bool:
+def _is_directory(s: str) -> bool:
     return s[-1] == "/"
 
 
@@ -99,7 +99,7 @@ def safe_parse_storage_resource(
         bucket=str(bucket_path.relative_to(resource_path)),
         bucket_path=str(api_path.relative_to(bucket_path)),
         relative_url=str(url_path),
-        filename=url_path.name if not is_directory(url) else None,
+        filename=url_path.name if not _is_directory(url) else None,
     )
 
 
