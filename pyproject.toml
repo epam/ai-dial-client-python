@@ -6,6 +6,7 @@ authors = ["EPAM RAIL <SpecialEPM-DIALDevTeam@epam.com>"]
 homepage = "https://epam-rail.com"
 license = "Apache-2.0"
 readme = "README.md"
+repository = "https://github.com/epam/ai-dial-client-python"
 packages = [{ include = "aidial_client" }]
 
 [tool.poetry.dependencies]
