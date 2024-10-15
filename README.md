@@ -3,24 +3,24 @@
 ## Table of Contents
 
 - [Authentication](#authentication)
-    - [Using API Key](#using-api-key)
-    - [Using Bearer Token](#using-bearer-token)
-- [Client Pool](#client-pool)
-    - [Synchronous Client Pool](#synchronous-client-pool)
-    - [Asynchronous Client Pool](#asynchronous-client-pool)
+  - [Using API Key](#using-api-key)
+  - [Using Bearer Token](#using-bearer-token)
 - [List deployments](#list-deployments)
 - [Make chat completions request](#make-completions-request)
-    - [Without streaming](#without-streaming)
-    - [With streaming](#with-streaming)
+  - [Without streaming](#without-streaming)
+  - [With streaming](#with-streaming)
 - [Working with files](#working-with-files)
-    - [Working with URLs](#working-with-urls)
-    - [Uploading files](#uploading-files)
-    - [Downloading files](#downloading-files)
-    - [Deleting files](#deleting-files)
-    - [Accessing metadata](#accessing-metadata)
+  - [Working with URLs](#working-with-urls)
+  - [Uploading files](#uploading-files)
+  - [Downloading files](#downloading-files)
+  - [Deleting files](#deleting-files)
+  - [Accessing metadata](#accessing-metadata)
 - [Applications](#applications)
-    - [List applications](#list-applications)
-    - [Get application by id](#get-application-by-id)
+  - [List applications](#list-applications)
+  - [Get application by id](#get-application-by-id)
+- [Client Pool](#client-pool)
+  - [Synchronous Client Pool](#synchronous-client-pool)
+  - [Asynchronous Client Pool](#asynchronous-client-pool)
 
 ## Authentication
 
@@ -29,109 +29,95 @@
 If you have API key, you can pass it during client initialization:
 
 ```python
-from aidial_client import (
-    Dial,
-    AsyncDial,
+from aidial_client import Dial, AsyncDial
+
+dial_client = Dial(api_key="your_api_key", base_url="https://your-dial-instance.com")
+
+async_dial_client = AsyncDial(
+    api_key="your_api_key", base_url="https://your-dial-instance.com"
 )
-
-dial_client = Dial(api_key='your_api_key', base_url='https://your-dial-instance.com')
-
-async_dial_client = AsyncDial(api_key='your_api_key', base_url='https://your-dial-instance.com')
 ```
 
 You also can pass api_key as function without parameters, that returns string
+
 ```python
 def my_key_function():
     # Some your logic to get api key
-    return  'your-api-key'
+    return "your-api-key"
 
-dial_client = Dial(api_key=my_key_function, base_url='https://your-dial-instance.com')
 
-async_dial_client = AsyncDial(api_key=my_key_function, base_url='https://your-dial-instance.com')
+dial_client = Dial(api_key=my_key_function, base_url="https://your-dial-instance.com")
+
+async_dial_client = AsyncDial(
+    api_key=my_key_function, base_url="https://your-dial-instance.com"
+)
 ```
 
 For async client you can use coroutine as well:
+
 ```python
 async def my_key_function():
     # Some your logic to get api key
-    return 'your-api-key'
+    return "your-api-key"
 
-async_dial_client = AsyncDial(api_key=my_key_function, base_url='https://your-dial-instance.com')
+
+async_dial_client = AsyncDial(
+    api_key=my_key_function, base_url="https://your-dial-instance.com"
+)
 ```
 
 ### Using Bearer Token
 
 ```python
-from aidial_client import (
-    Dial,
-    AsyncDial
-)
+from aidial_client import Dial, AsyncDial
 
 
 # Create an instance of the synchronous client
-sync_client = Dial(bearer_token='your_bearer_token_here', base_url='https://your-dial-instance.com')
+sync_client = Dial(
+    bearer_token="your_bearer_token_here", base_url="https://your-dial-instance.com"
+)
 
 # Create an instance of the asynchronous client
-async_client = AsyncDial(bearer_token='your_bearer_token_here', base_url='https://your-dial-instance.com')
+async_client = AsyncDial(
+    bearer_token="your_bearer_token_here", base_url="https://your-dial-instance.com"
+)
 ```
 
 You also can pass bearer_token as function without parameters, that returns string
+
 ```python
 def my_token_function():
     # Some your logic to get bearer token
-    return  'your-bearer-token'
+    return "your-bearer-token"
 
-dial_client = Dial(bearer_token=my_token_function, base_url='https://your-dial-instance.com')
 
-async_dial_client = AsyncDial(bearer_token=my_token_function, base_url='https://your-dial-instance.com')
+dial_client = Dial(
+    bearer_token=my_token_function, base_url="https://your-dial-instance.com"
+)
+
+async_dial_client = AsyncDial(
+    bearer_token=my_token_function, base_url="https://your-dial-instance.com"
+)
 ```
 
 For async client you can use coroutine as well:
+
 ```python
 async def my_token_function():
     # Some your logic to get bearer token
-    return 'your-bearer-token'
+    return "your-bearer-token"
 
-dial_client = Dial(bearer_token=my_token_function, base_url='https://your-dial-instance.com')
-```
 
-## Client Pool
-
-When you need to create multiple DIAL clients, but you want to reuse the HTTP connection to the same DIAL instance for better performance, you can use client pool:
-
-### Synchronous Client Pool
-
-```python
-from aidial_client import (
-    DialClientPool
+dial_client = Dial(
+    bearer_token=my_token_function, base_url="https://your-dial-instance.com"
 )
-client_pool = DialClientPool()
-
-first_client = client_pool.create_client(base_url="https://your-dial-instance.com", api_key="your-api-key")
-
-second_client = client_pool.create_client(base_url="https://your-dial-instance.com", bearer_token="your-bearer-token")
-```
-
-### Asynchronous Client Pool
-
-```python
-from dial_client import (
-    AsyncDialClientPool,
-)
-client_pool = AsyncDialClientPool()
-
-first_client = client_pool.create_client(base_url="https://your-dial-instance.com", api_key="your-api-key")
-
-second_client = client_pool.create_client(base_url="https://your-dial-instance.com", bearer_token="your-bearer-token")
 ```
 
 ## List deployments
 
 If you want to get list of available deployments, use `client.deployments.list()` or method:
 
-```python
-client = Dial(api_key=api_key, base_url=base_url)
-
+```pycon
 >>> client.deployments.list()
 [
     Deployment(id='gpt-35-turbo', model='gpt-35-turbo', owner='organization-owner', object='deployment', status='succeeded', created_at=1724760524, updated_at=1724760524, scale_settings=ScaleSettings(scale_type='standard'), features={'rate': False, 'tokenize': False, 'truncate_prompt': False, 'configuration': False, 'system_prompt': True, 'tools': False, 'seed': False, 'url_attachments': False, 'folder_attachments': False, 'allow_resume': True}),
@@ -145,12 +131,13 @@ client = Dial(api_key=api_key, base_url=base_url)
 ### Without streaming
 
 Sync:
+
 ```python
 ...
-client = Dial(api_key='your-api-key', base_url='https://your-dial-instance.com')
+client = Dial(api_key="your-api-key", base_url="https://your-dial-instance.com")
 
 completion = client.chat.completions.create(
-    deployment_name='gpt-35-turbo',
+    deployment_name="gpt-35-turbo",
     stream=False,
     messages=[
         {
@@ -163,11 +150,14 @@ completion = client.chat.completions.create(
 ```
 
 Async:
+
 ```python
 ...
-async_client = AsyncDial(api_key='your-api-key', base_url='https://your-dial-instance.com')
+async_client = AsyncDial(
+    api_key="your-api-key", base_url="https://your-dial-instance.com"
+)
 completion = await async_client.chat.completions.create(
-    deployment_name='gpt-35-turbo',
+    deployment_name="gpt-35-turbo",
     stream=False,
     messages=[
         {
@@ -180,7 +170,8 @@ completion = await async_client.chat.completions.create(
 ```
 
 Example of response
-```python
+
+```pycon
 >>> completion
 ChatCompletionResponse(
     id='chatcmpl-A18H6rWmocm52WMweXvp8BNnwbfsp',
@@ -213,12 +204,13 @@ ChatCompletionResponse(
 ### With streaming
 
 Sync
+
 ```python
 ...
-client = Dial(api_key='your-api-key', base_url='https://your-dial-instance.com')
+client = Dial(api_key="your-api-key", base_url="https://your-dial-instance.com")
 
 completion = client.chat.completions.create(
-    deployment_name='gpt-35-turbo',
+    deployment_name="gpt-35-turbo",
     # Specify stream parameter
     stream=True,
     messages=[
@@ -234,11 +226,14 @@ for chunk in completion:
 ```
 
 Async
+
 ```python
 ...
-async_client = AsyncDial(api_key='your-api-key', base_url='https://your-dial-instance.com')
+async_client = AsyncDial(
+    api_key="your-api-key", base_url="https://your-dial-instance.com"
+)
 completion = await async_client.chat.completions.create(
-    deployment_name='gpt-35-turbo',
+    deployment_name="gpt-35-turbo",
     # Specify stream parameter
     stream=True,
     messages=[
@@ -254,7 +249,8 @@ async for chunk in completion:
 ```
 
 Example of chunk objects
-```python
+
+```pycon
 >>> chunk
 ChatCompletionChunk(
     id='chatcmpl-A18NiK8Zh39RdcNX91T0eHfERfyU3',
@@ -309,8 +305,8 @@ ChatCompletionChunk(
 ## Working with files
 
 ### Working with URLs
-Files resource operates with URL-like objects, that can be created using `pathlib.PurePosixPath` or `str` objects. You can use them to create new URL-like objects or to get string representation of them.
 
+Files resource operates with URL-like objects, that can be created using `pathlib.PurePosixPath` or `str` objects. You can use them to create new URL-like objects or to get string representation of them.
 
 If you want to upload file to your bucket inside of DIAL Storage, use
 
@@ -323,50 +319,45 @@ or
 to get the URL of your bucket and then use it to upload the file.
 
 Function will return path-like object, so you can use it like this:
+
 ```python
 sync_client.files.upload(
-    url=sync_client.my_files_home() / 'some-relative-path/my-file.txt',
-    ...
+    url=sync_client.my_files_home() / "some-relative-path/my-file.txt", ...
 )
 
 async_client.files.upload(
-    url=await async_client.my_files_home() / 'some-relative-path/my-file.txt',
-    ...
+    url=await async_client.my_files_home() / "some-relative-path/my-file.txt", ...
 )
-
 ```
+
 If you already have relative URL like `files/...`, you can use it as well:
-```python
-relative_url = 'files/test-bucket/some-relative-path/my-file.txt'
-sync_client.files.upload(
-    url=relative_url,
-    ...
-)
-```
-or absolute URL:
-```python
-absolute_url = 'http://dial.core/v1/files/test-bucket/some-relative-path/my-file.txt'
-sync_client.files.upload(
-    url=absolute_url,
-    ...
-)
-```
-If you will provide invalid URL to the function, it will raise `InvalidDialURLException`.
 
+```python
+relative_url = "files/test-bucket/some-relative-path/my-file.txt"
+sync_client.files.upload(url=relative_url, ...)
+```
+
+or absolute URL:
+
+```python
+absolute_url = "http://dial.core/v1/files/test-bucket/some-relative-path/my-file.txt"
+sync_client.files.upload(url=absolute_url, ...)
+```
+
+If you will provide invalid URL to the function, it will raise `InvalidDialURLException`.
 
 ### Uploading files
 
 ```python
-with open('./some-local-file.txt', "rb") as file:
+with open("./some-local-file.txt", "rb") as file:
     # Sync client
     sync_client.files.upload(
-        url=sync_client.my_files_home() / 'some-relative-path/my-file.txt',
-        file=file
+        url=sync_client.my_files_home() / "some-relative-path/my-file.txt", file=file
     )
     # Async client
     await async_client.files.upload(
-        url=await async_client.my_files_home() / 'some-relative-path/my-file.txt',
-        file=file
+        url=await async_client.my_files_home() / "some-relative-path/my-file.txt",
+        file=file,
     )
 ```
 
@@ -376,23 +367,23 @@ To specify filename and content type of uploaded file, you should use tuple inst
 
 ```python
 sync_client.files.upload(
-    ...
-    file=('filename.txt', 'text/plain', file)
+    url=sync_client.my_files_home() / "some-relative-path/my-file.txt",
+    file=("filename.txt", "text/plain", file),
 )
 ```
 
 ### Downloading files
 
-
 ```python
 result = client.files.download(
-    url=client.my_files_home() / 'relative_folder/my-file.txt'
+    url=client.my_files_home() / "relative_folder/my-file.txt"
 )
 
 result = await async_client.files.download(
-    url=await async_client.my_files_home() / 'relative_folder/my-file.txt'
+    url=await async_client.my_files_home() / "relative_folder/my-file.txt"
 )
 ```
+
 Result would be object of type `FileDownloadResponse`, that you can iterate by byte chunks:
 
 ```python
@@ -407,28 +398,26 @@ or get full content as bytes:
 all_content = result.get_content()
 # Async
 all_content = await result.aget_content()
-
 ```
 
 or write it to the file:
 
 ```python
 # Sync
-result.write_to('./some-local-file.txt')
+result.write_to("./some-local-file.txt")
 # Async
-await result.awrite_to('./some-local-file.txt')
+await result.awrite_to("./some-local-file.txt")
 ```
 
 ### Deleting files
 
 ```python
-
 await sync_client.files.delete(
-    url=sync_client.my_files_home() / 'relative_folder/my-file.txt'
+    url=sync_client.my_files_home() / "relative_folder/my-file.txt"
 )
 
 await async_client.files.delete(
-    url=await async_client.my_files_home() / 'relative_folder/my-file.txt'
+    url=await async_client.my_files_home() / "relative_folder/my-file.txt"
 )
 ```
 
@@ -436,28 +425,30 @@ await async_client.files.delete(
 
 ```python
 metadata = await async_client.files.metadata(
-    url=await async_client.my_files_home() / 'relative_folder/my-file.txt'
+    url=await async_client.my_files_home() / "relative_folder/my-file.txt"
 )
 ```
+
 Metadata would look like this:
+
 ```python
 FileMetadata(
-    name='my-file.txt',
-    parent_path='relative_folder',
-    bucket='my-bucket',
-    url='files/my-bucket/test-folder-artifacts/test-file',
-    node_type='ITEM',
-    resource_type='FILE',
+    name="my-file.txt",
+    parent_path="relative_folder",
+    bucket="my-bucket",
+    url="files/my-bucket/test-folder-artifacts/test-file",
+    node_type="ITEM",
+    resource_type="FILE",
     content_length=12,
-    content_type='application/octet-stream',
+    content_type="application/octet-stream",
     items=None,
     updatedAt=1724836248936,
-    etag='9749fad13d6e7092a6337c4af9d83764',
-    createdAt=1724836229736
+    etag="9749fad13d6e7092a6337c4af9d83764",
+    createdAt=1724836229736,
 )
 ```
-## Applications
 
+## Applications
 
 ### List applications
 
@@ -469,39 +460,40 @@ applications = await async_client.application.list()
 ```
 
 Result would be list of `Application` objects:
+
 ```python
 [
-Application(
-    object='application',
-    id='app_id',
-    description='',
-    application='app_id',
-    display_name='app with attachments',
-    display_version='0.0.0',
-    icon_url='...',
-    reference='...',
-    owner='organization-owner',
-    status='succeeded',
-    created_at=1672534800,
-    updated_at=1672534800,
-    features=Features(
-        rate=False,
-        tokenize=False,
-        truncate_prompt=False,
-        configuration=False,
-        system_prompt=True,
-        tools=False,
-        seed=False,
-        url_attachments=False,
-        folder_attachments=False,
-        allow_resume=True
+    Application(
+        object="application",
+        id="app_id",
+        description="",
+        application="app_id",
+        display_name="app with attachments",
+        display_version="0.0.0",
+        icon_url="...",
+        reference="...",
+        owner="organization-owner",
+        status="succeeded",
+        created_at=1672534800,
+        updated_at=1672534800,
+        features=Features(
+            rate=False,
+            tokenize=False,
+            truncate_prompt=False,
+            configuration=False,
+            system_prompt=True,
+            tools=False,
+            seed=False,
+            url_attachments=False,
+            folder_attachments=False,
+            allow_resume=True,
+        ),
+        input_attachment_types=["image/png", "text/txt", "image/jpeg"],
+        defaults={},
+        max_input_attachments=0,
+        description_keywords=[],
     ),
-    input_attachment_types=['image/png', 'text/txt', 'image/jpeg'],
-    defaults={},
-    max_input_attachments=0,
-    description_keywords=[]
-),
-...
+    ...,
 ]
 ```
 
@@ -509,13 +501,47 @@ Application(
 
 ```python
 # Sync
-application = client.application.get('app_id')
+application = client.application.get("app_id")
 # Async
-application = await async_client.application.get('app_id')
+application = await async_client.application.get("app_id")
 ```
 
 Result would be `Application` object, as in example above.
 
+## Client Pool
 
+When you need to create multiple DIAL clients, but you want to reuse the HTTP connection to the same DIAL instance for better performance, you can use client pool:
 
+### Synchronous Client Pool
 
+```python
+from aidial_client import DialClientPool
+
+client_pool = DialClientPool()
+
+first_client = client_pool.create_client(
+    base_url="https://your-dial-instance.com", api_key="your-api-key"
+)
+
+second_client = client_pool.create_client(
+    base_url="https://your-dial-instance.com", bearer_token="your-bearer-token"
+)
+```
+
+### Asynchronous Client Pool
+
+```python
+from dial_client import (
+    AsyncDialClientPool,
+)
+
+client_pool = AsyncDialClientPool()
+
+first_client = client_pool.create_client(
+    base_url="https://your-dial-instance.com", api_key="your-api-key"
+)
+
+second_client = client_pool.create_client(
+    base_url="https://your-dial-instance.com", bearer_token="your-bearer-token"
+)
+```
