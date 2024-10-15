@@ -1,8 +1,11 @@
+from urllib.parse import urljoin
+
 import nox
 
 nox.options.reuse_existing_virtualenvs = True
 
 SRC = "."
+README = urljoin(SRC, "README.md")
 
 
 def format_with_args(session: nox.Session, *args):
@@ -20,6 +23,7 @@ def lint(session: nox.Session):
         session.run("pyright", SRC)
         session.run("flake8", SRC)
         session.run("codespell", SRC)
+        session.run("blacken-docs", README)
         format_with_args(session, SRC, "--check")
     except Exception:
         session.error(
