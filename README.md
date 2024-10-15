@@ -3,30 +3,30 @@
 ## Table of Contents
 
 - [Authentication](#authentication)
-  - [Using API Key](#using-api-key)
-  - [Using Bearer Token](#using-bearer-token)
-- [List deployments](#list-deployments)
-- [Make chat completions request](#make-completions-request)
-  - [Without streaming](#without-streaming)
-  - [With streaming](#with-streaming)
-- [Working with files](#working-with-files)
+  - [API Keys](#api-keys)
+  - [Bearer Token](#bearer-token)
+- [List Deployments](#list-deployments)
+- [Make Chat Completions Requests](#make-completions-requests)
+  - [Without Streaming](#without-streaming)
+  - [With Streaming](#with-streaming)
+- [Working with Files](#working-with-files)
   - [Working with URLs](#working-with-urls)
-  - [Uploading files](#uploading-files)
-  - [Downloading files](#downloading-files)
-  - [Deleting files](#deleting-files)
-  - [Accessing metadata](#accessing-metadata)
+  - [Uploading Files](#uploading-files)
+  - [Downloading Files](#downloading-files)
+  - [Deleting Files](#deleting-files)
+  - [Accessing Metadata](#accessing-metadata)
 - [Applications](#applications)
-  - [List applications](#list-applications)
-  - [Get application by id](#get-application-by-id)
+  - [List Applications](#list-applications)
+  - [Get Application by Id](#get-application-by-id)
 - [Client Pool](#client-pool)
   - [Synchronous Client Pool](#synchronous-client-pool)
   - [Asynchronous Client Pool](#asynchronous-client-pool)
 
 ## Authentication
 
-### Using API Key
+### API Keys
 
-If you have API key, you can pass it during client initialization:
+For authentication with an API key, pass it during the client initialization:
 
 ```python
 from aidial_client import Dial, AsyncDial
@@ -38,11 +38,11 @@ async_dial_client = AsyncDial(
 )
 ```
 
-You also can pass api_key as function without parameters, that returns string
+You can also pass `api_key` as a function without parameters, that returns a `string`:
 
 ```python
 def my_key_function():
-    # Some your logic to get api key
+    # Any custom logic to get an API key
     return "your-api-key"
 
 
@@ -53,11 +53,11 @@ async_dial_client = AsyncDial(
 )
 ```
 
-For async client you can use coroutine as well:
+For `async` clients, you can use coroutine as well:
 
 ```python
 async def my_key_function():
-    # Some your logic to get api key
+    # Any custom logic to get an API key
     return "your-api-key"
 
 
@@ -66,7 +66,9 @@ async_dial_client = AsyncDial(
 )
 ```
 
-### Using Bearer Token
+### Bearer Token
+
+You can use a Bearer Token for a token-based authentication of API calls. Client instances will use it to construct the `Authorization` header when making requests:
 
 ```python
 from aidial_client import Dial, AsyncDial
@@ -83,11 +85,11 @@ async_client = AsyncDial(
 )
 ```
 
-You also can pass bearer_token as function without parameters, that returns string
+You can also pass `bearer_token` as a function without parameters, that returns a `string`:
 
 ```python
 def my_token_function():
-    # Some your logic to get bearer token
+    # Any custom logic to get an API key
     return "your-bearer-token"
 
 
@@ -100,11 +102,11 @@ async_dial_client = AsyncDial(
 )
 ```
 
-For async client you can use coroutine as well:
+For `async` clients, you can use coroutine as well:
 
 ```python
 async def my_token_function():
-    # Some your logic to get bearer token
+    # Any custom logic to get a bearer token
     return "your-bearer-token"
 
 
@@ -113,9 +115,9 @@ dial_client = Dial(
 )
 ```
 
-## List deployments
+## List Deployments
 
-If you want to get list of available deployments, use `client.deployments.list()` or method:
+If you want to get a list of available deployments, use `client.deployments.list()` or method:
 
 ```pycon
 >>> client.deployments.list()
@@ -126,11 +128,11 @@ If you want to get list of available deployments, use `client.deployments.list()
 ]
 ```
 
-## Make completions request
+## Make Completions Requests
 
-### Without streaming
+### Without Streaming
 
-Sync:
+Synchronous:
 
 ```python
 ...
@@ -149,7 +151,7 @@ completion = client.chat.completions.create(
 )
 ```
 
-Async:
+Asynchronous:
 
 ```python
 ...
@@ -169,7 +171,7 @@ completion = await async_client.chat.completions.create(
 )
 ```
 
-Example of response
+Example of a response:
 
 ```pycon
 >>> completion
@@ -201,9 +203,9 @@ ChatCompletionResponse(
 )
 ```
 
-### With streaming
+### With Streaming
 
-Sync
+Synchronous:
 
 ```python
 ...
@@ -211,7 +213,7 @@ client = Dial(api_key="your-api-key", base_url="https://your-dial-instance.com")
 
 completion = client.chat.completions.create(
     deployment_name="gpt-35-turbo",
-    # Specify stream parameter
+    # Specify a stream parameter
     stream=True,
     messages=[
         {
@@ -225,7 +227,7 @@ for chunk in completion:
     ...
 ```
 
-Async
+Asynchronous:
 
 ```python
 ...
@@ -234,7 +236,7 @@ async_client = AsyncDial(
 )
 completion = await async_client.chat.completions.create(
     deployment_name="gpt-35-turbo",
-    # Specify stream parameter
+    # Specify a stream parameter
     stream=True,
     messages=[
         {
@@ -248,7 +250,7 @@ async for chunk in completion:
     ...
 ```
 
-Example of chunk objects
+Example of chunk objects:
 
 ```pycon
 >>> chunk
@@ -302,23 +304,16 @@ ChatCompletionChunk(
 )
 ```
 
-## Working with files
+## Working with Files
 
 ### Working with URLs
 
-Files resource operates with URL-like objects, that can be created using `pathlib.PurePosixPath` or `str` objects. You can use them to create new URL-like objects or to get string representation of them.
+Files are AI DIAL resources that operate with URL-like objects. Use `pathlib.PurePosixPath` or `str` to create to create new URL-like objects or to get a `string` representation of them.
 
-If you want to upload file to your bucket inside of DIAL Storage, use
+* Use `client.my_files_home()` to upload a file into your bucket in the AI DIAL storage.
+* Use `await async_client.my_files_home()` to get the URL of your bucket and then use it to upload files.
 
- `client.my_files_home()`
-
-or
-
-`await async_client.my_files_home()`
-
-to get the URL of your bucket and then use it to upload the file.
-
-Function will return path-like object, so you can use it like this:
+The following example demonstrates how you can use the path-like object returned by `my_files_home()` function:
 
 ```python
 sync_client.files.upload(
@@ -330,23 +325,25 @@ async_client.files.upload(
 )
 ```
 
-If you already have relative URL like `files/...`, you can use it as well:
+If you already have a relative URL like `files/...`, you can use it as well:
 
 ```python
 relative_url = "files/test-bucket/some-relative-path/my-file.txt"
 sync_client.files.upload(url=relative_url, ...)
 ```
 
-or absolute URL:
+You can also use an absolute URL:
 
 ```python
 absolute_url = "http://dial.core/v1/files/test-bucket/some-relative-path/my-file.txt"
 sync_client.files.upload(url=absolute_url, ...)
 ```
 
-If you will provide invalid URL to the function, it will raise `InvalidDialURLException`.
+**Note**, that an invalid URL provided to the function, will raise an `InvalidDialURLException` exception.
 
-### Uploading files
+### Uploading Files
+
+Use `upload()` to add files into your storage bucket:
 
 ```python
 with open("./some-local-file.txt", "rb") as file:
@@ -361,9 +358,7 @@ with open("./some-local-file.txt", "rb") as file:
     )
 ```
 
-File can contain just raw bytes or file-like object.
-
-To specify filename and content type of uploaded file, you should use tuple instead of file object:
+Files can contain raw bytes or file-like objects. To specify filename and content type of the uploaded file, use **tuple** instead of file object:
 
 ```python
 sync_client.files.upload(
@@ -372,7 +367,9 @@ sync_client.files.upload(
 )
 ```
 
-### Downloading files
+### Downloading Files
+
+Use `download()` to download files from your storage bucket:
 
 ```python
 result = client.files.download(
@@ -384,7 +381,7 @@ result = await async_client.files.download(
 )
 ```
 
-Result would be object of type `FileDownloadResponse`, that you can iterate by byte chunks:
+As a result, you will receive an object of type `FileDownloadResponse`, that you can iterate by byte chunks:
 
 ```python
 for bytes_chunk in result:
@@ -409,7 +406,10 @@ result.write_to("./some-local-file.txt")
 await result.awrite_to("./some-local-file.txt")
 ```
 
-### Deleting files
+### Deleting Files
+
+Use `delete()` to remove files from your storage bucket:
+
 
 ```python
 await sync_client.files.delete(
@@ -421,7 +421,9 @@ await async_client.files.delete(
 )
 ```
 
-### Accessing metadata
+### Accessing Metadata
+
+Use `metadata()` to access metadata of a file:
 
 ```python
 metadata = await async_client.files.metadata(
@@ -429,7 +431,7 @@ metadata = await async_client.files.metadata(
 )
 ```
 
-Metadata would look like this:
+Example of metadata:
 
 ```python
 FileMetadata(
@@ -450,7 +452,9 @@ FileMetadata(
 
 ## Applications
 
-### List applications
+### List Applications
+
+To get a list of your DIAL applications:
 
 ```python
 # Sync
@@ -459,7 +463,7 @@ applications = client.application.list()
 applications = await async_client.application.list()
 ```
 
-Result would be list of `Application` objects:
+As a result, you will receive a list of `Application` objects:
 
 ```python
 [
@@ -497,7 +501,9 @@ Result would be list of `Application` objects:
 ]
 ```
 
-### Get application by id
+### Get Application by Id
+
+You can get your DIAL applications by their Ids:
 
 ```python
 # Sync
@@ -506,11 +512,11 @@ application = client.application.get("app_id")
 application = await async_client.application.get("app_id")
 ```
 
-Result would be `Application` object, as in example above.
+As a result, you will receive a list of `Application` objects. Refer to the [previous example](#list-applications).
 
 ## Client Pool
 
-When you need to create multiple DIAL clients, but you want to reuse the HTTP connection to the same DIAL instance for better performance, you can use client pool:
+When you need to create multiple DIAL clients and wish to enhance performance by reusing the HTTP connection for the same DIAL instance, consider using synchronous and asynchronous **client pools**.
 
 ### Synchronous Client Pool
 
