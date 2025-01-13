@@ -1,34 +1,42 @@
-.PHONY: all install clean lint format test spell_check
+VENV ?= .venv
+POETRY ?= $(VENV)/bin/poetry
+POETRY_VERSION ?= 1.8.5
+
+.PHONY: all init_env install clean lint format test spell_check
 
 all: build
 
-build: install
-	poetry build
+init_env:
+	python -m venv $(VENV)
+	$(VENV)/bin/pip install poetry==$(POETRY_VERSION) --quiet
 
-install:
-	poetry install
+install: init_env
+	$(POETRY) install
+
+build: install
+	$(POETRY) build
 
 clean:
-	poetry run clean
-	poetry env remove --all
+	$(POETRY) run clean
+	$(POETRY) env remove --all
 
 lint: install
-	poetry run nox -s lint
+	$(POETRY) run nox -s lint
 
 format: install
-	poetry run nox -s format
+	$(POETRY) run nox -s format
 
 test: install
-	poetry run nox -s test $(if $(PYTHON),--python=$(PYTHON),)
+	$(POETRY) run nox -s test $(if $(PYTHON),--python=$(PYTHON),)
 
 integration_test: install
-	poetry run nox -s integration_test $(if $(PYTHON),--python=$(PYTHON),)
+	$(POETRY) run nox -s integration_test $(if $(PYTHON),--python=$(PYTHON),)
 
 coverage: install
-	poetry run nox -s coverage
+	$(POETRY) run nox -s coverage
 
 publish: build
-	poetry publish -u __token__ -p ${PYPI_TOKEN} --skip-existing
+	$(POETRY) publish -u __token__ -p ${PYPI_TOKEN} --skip-existing
 
 help:
 	@echo '===================='
