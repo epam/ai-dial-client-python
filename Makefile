@@ -1,5 +1,5 @@
-VENV ?= .venv
-POETRY ?= $(VENV)/bin/poetry
+VENV_DIR ?= .venv
+POETRY ?= $(VENV_DIR)/bin/poetry
 POETRY_VERSION ?= 1.8.5
 
 .PHONY: all init_env install clean lint format test spell_check
@@ -7,8 +7,8 @@ POETRY_VERSION ?= 1.8.5
 all: build
 
 init_env:
-	python -m venv $(VENV)
-	$(VENV)/bin/pip install poetry==$(POETRY_VERSION) --quiet
+	python -m venv $(VENV_DIR)
+	$(VENV_DIR)/bin/pip install poetry==$(POETRY_VERSION) --quiet
 
 install: init_env
 	$(POETRY) install
@@ -36,7 +36,7 @@ coverage: install
 	$(POETRY) run nox -s coverage
 
 publish: build
-	$(POETRY) publish -u __token__ -p ${PYPI_TOKEN} --skip-existing
+	$(POETRY) publish -u __token__ -p $(PYPI_TOKEN) --skip-existing
 
 help:
 	@echo '===================='
