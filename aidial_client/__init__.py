@@ -3,9 +3,11 @@ from aidial_client._client import AsyncDial, Dial
 from aidial_client._client_pool import AsyncDialClientPool, DialClientPool
 from aidial_client._exception import (
     DialException,
+    EtagMismatchError,
     InvalidDialURLError,
     InvalidRequestError,
     ParsingDataError,
+    ResourceNotFoundError,
 )
 
 __all__ = [
@@ -21,4 +23,6 @@ __all__ = [
     "InvalidDialURLError",
     "InvalidRequestError",
     "ParsingDataError",
+    "EtagMismatchError",
+    "ResourceNotFoundError",
 ]

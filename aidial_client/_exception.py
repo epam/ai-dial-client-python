@@ -74,3 +74,21 @@ class ParsingDataError(DialException):
             status_code=HTTPStatus.UNPROCESSABLE_ENTITY,
             **kwargs,
         )
+
+
+class EtagMismatchError(DialException):
+    def __init__(self, message: str, **kwargs) -> None:
+        super().__init__(
+            message=message,
+            status_code=HTTPStatus.PRECONDITION_FAILED,
+            **kwargs,
+        )
+
+
+class ResourceNotFoundError(DialException):
+    def __init__(self, message: str, **kwargs) -> None:
+        super().__init__(
+            message=message,
+            status_code=HTTPStatus.NOT_FOUND,
+            **kwargs,
+        )
