@@ -38,6 +38,7 @@ class FileMetadata(BaseMetadata):
     content_length: Optional[int] = None
     content_type: Optional[str] = None
     items: Optional[List[FileItem]] = None
+    etag: Optional[str] = None
 
 
 class ConversationItem(BaseMetadata):

@@ -43,11 +43,11 @@ class SyncHTTPClient(BaseHTTPClient[httpx.Client, SyncAuthValue]):
 
     def request(
         self,
+        *,
         cast_to: Type[ResponseT],
         options: FinalRequestOptions,
         remaining_retries: Optional[int] = None,
-        *,
-        error_processor: Optional[
+        on_http_error: Optional[
             Callable[[httpx.HTTPStatusError], Optional[DialException]]
         ] = None,
     ) -> ResponseT:
@@ -100,7 +100,7 @@ class SyncHTTPClient(BaseHTTPClient[httpx.Client, SyncAuthValue]):
                     remaining_retries=retries,
                 )
             # Try to get custom error from response status_code/code/message
-            custom_error = error_processor(err) if error_processor else None
+            custom_error = on_http_error(err) if on_http_error else None
             # or fallback to default processing
             raised_error = custom_error or self._make_dial_error_from_response(
                 err.response

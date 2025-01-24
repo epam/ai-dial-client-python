@@ -1,8 +1,10 @@
 import os
+import uuid
 
 import pytest
 
 from aidial_client import AsyncDial, Dial
+from aidial_client._exception import ResourceNotFoundError
 
 
 @pytest.fixture
@@ -36,3 +38,19 @@ def test_deployment(sync_client: Dial) -> str:
     deployment = next((d for d in deployments if d.id.startswith("gpt-")))
     assert deployment
     return deployment.id
+
+
+@pytest.fixture
+def absent_test_file(sync_client):
+
+    def _save_delete_file(p):
+        try:
+            sync_client.files.delete(p)
+        except ResourceNotFoundError:
+            pass
+
+    unique_name = f"test-file-{uuid.uuid4()}.txt"
+    full_path = sync_client.my_files_home() / unique_name
+    _save_delete_file(full_path)
+    yield full_path
+    _save_delete_file(full_path)
