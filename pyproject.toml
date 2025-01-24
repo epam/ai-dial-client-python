@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "aidial-client"
-version = "0.1.0rc"
+version = "0.1.0"
 
 description = "A Python client library for the AI DIAL API"
 authors = ["EPAM RAIL <SpecialEPM-DIALDevTeam@epam.com>"]
