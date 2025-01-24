@@ -11,7 +11,7 @@ class Deployment(ExtraAllowModel):
     id: str
     model: str
     owner: str
-    object: Literal["deployment"]
+    object: Literal["deployment", "model"]
     status: Literal["succeeded"]
     created_at: int
     updated_at: int
