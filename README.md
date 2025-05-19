@@ -551,3 +551,4 @@ second_client = client_pool.create_client(
     base_url="https://your-dial-instance.com", bearer_token="your-bearer-token"
 )
 ```
+
