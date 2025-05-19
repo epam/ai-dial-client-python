@@ -18,7 +18,7 @@ class Features(ExtraAllowModel):
     folder_attachments: Optional[bool] = None
     allow_resume: Optional[bool] = None
 
-class DialDeploymentBase(ExtraAllowModel):
+class DeploymentBase(ExtraAllowModel):
     id: str
     object: str
     owner: Optional[str] = None
@@ -35,7 +35,7 @@ class DialDeploymentBase(ExtraAllowModel):
     input_attachment_types: Optional[List[str]] = None
     features: Optional[Features] = None
 
-class Deployment(DialDeploymentBase, ExtraAllowModel):
+class Deployment(DeploymentBase, ExtraAllowModel):
     object: Literal["deployment", "model"]
     model: str
 
