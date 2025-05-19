@@ -1,4 +1,4 @@
-from typing import List, Literal, Optional, Dict
+from typing import Dict, List, Literal, Optional
 
 from aidial_client._internal_types._model import ExtraAllowModel
 
