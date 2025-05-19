@@ -35,7 +35,7 @@ class DeploymentBase(ExtraAllowModel):
     input_attachment_types: Optional[List[str]] = None
     features: Optional[Features] = None
 
-class Deployment(DeploymentBase, ExtraAllowModel):
+class Deployment(DeploymentBase):
     object: Literal["deployment", "model"]
     model: str
 
