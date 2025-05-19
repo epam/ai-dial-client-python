@@ -2,8 +2,10 @@ from typing import List, Literal, Optional, Dict
 
 from aidial_client._internal_types._model import ExtraAllowModel
 
+
 class ScaleSettings(ExtraAllowModel):
     scale_type: Literal["standard"]
+
 
 class Features(ExtraAllowModel):
     rate: Optional[bool] = None
@@ -17,6 +19,7 @@ class Features(ExtraAllowModel):
     url_attachments: Optional[bool] = None
     folder_attachments: Optional[bool] = None
     allow_resume: Optional[bool] = None
+
 
 class DeploymentBase(ExtraAllowModel):
     id: str
@@ -35,9 +38,11 @@ class DeploymentBase(ExtraAllowModel):
     input_attachment_types: Optional[List[str]] = None
     features: Optional[Features] = None
 
+
 class Deployment(DeploymentBase):
     object: Literal["deployment", "model"]
     model: str
+
 
 class DeploymentsResponse(ExtraAllowModel):
     data: List[Deployment]
