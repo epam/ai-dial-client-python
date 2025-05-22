@@ -19,6 +19,7 @@ class Features(ExtraAllowModel):
     url_attachments: Optional[bool] = None
     folder_attachments: Optional[bool] = None
     allow_resume: Optional[bool] = None
+    parallel_tool_calls: Optional[bool] = None
 
 
 class DeploymentBase(ExtraAllowModel):
