@@ -1,4 +1,4 @@
-from typing import Dict, List, Literal, Optional, Union
+from typing import Dict, List, Literal, Optional
 
 from aidial_client._compatibility.pydantic import PYDANTIC_V2
 from aidial_client._compatibility.pydantic_v1 import root_validator
@@ -54,10 +54,22 @@ class FunctionCall(ExtraAllowModel):
     name: str
 
 
+class FunctionCallDelta(ExtraAllowModel):
+    arguments: Optional[str] = None
+    name: Optional[str] = None
+
+
 class ChatCompletionMessageToolCall(ExtraAllowModel):
     id: str
     function: FunctionCall
     type: Literal["function"]
+
+
+class ToolCallDelta(ExtraAllowModel):
+    index: int
+    id: Optional[str] = None
+    function: Optional[FunctionCallDelta] = None
+    type: Optional[Literal["function"]] = None
 
 
 class ChatCompletionMessage(ExtraAllowModel):
@@ -68,10 +80,24 @@ class ChatCompletionMessage(ExtraAllowModel):
     tool_calls: Optional[List[ChatCompletionMessageToolCall]] = None
 
 
+class ChatCompletionMessageDelta(ExtraAllowModel):
+    role: Optional[Literal["assistant"]] = None
+    content: Optional[str] = None
+    custom_content: Optional[CustomContent] = None
+    function_call: Optional[FunctionCallDelta] = None
+    tool_calls: Optional[List[ToolCallDelta]] = None
+
+
 class Choice(ExtraAllowModel):
     index: int
     message: ChatCompletionMessage
     finish_reason: Optional[str]
+
+
+class ChoiceDelta(ExtraAllowModel):
+    index: int
+    delta: ChatCompletionMessageDelta
+    finish_reason: Optional[str] = None
 
 
 class ChatCompletionResponse(ExtraAllowModel):
@@ -81,23 +107,6 @@ class ChatCompletionResponse(ExtraAllowModel):
     created: int
     model: Optional[str] = None
     usage: Optional[CompletionUsage] = None
-
-
-class ChunkEmptyDelta(ExtraAllowModel):
-    """
-    Sometimes delta could be just empty, or have just content
-    """
-
-    content: Optional[str] = None
-    object: Literal[None] = None
-    tool_calls: Literal[None] = None
-    role: Literal[None] = None
-
-
-class ChoiceDelta(ExtraAllowModel):
-    index: int
-    delta: Union[ChatCompletionMessage, ChunkEmptyDelta]
-    finish_reason: Optional[str] = None
 
 
 class ChatCompletionChunk(ExtraAllowModel):

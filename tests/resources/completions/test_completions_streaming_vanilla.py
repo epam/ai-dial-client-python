@@ -5,15 +5,27 @@ import pytest
 
 from aidial_client.types.chat import ChatCompletionChunk
 from tests.client_mock import get_async_client_mock, get_client_mock
+from tests.utils.chunks import create_mock_chunk, create_sse_data_field
 
 STREAM_CHUNKS_MOCK: List[bytes] = [
-    b'data: {"id":"chatcmpl-test","choices":[{"delta":{"content":"","role":"assistant"},"finish_reason":null,"index":0,"logprobs":null}],"created":1723806872,"model":"gpt-35-turbo","object":"chat.completion.chunk","system_fingerprint":null}\n\n',  # noqa: E501
-    b'data: {"id":"chatcmpl-test","choices":[{"delta":{"content":"5"},"finish_reason":null,"index":0,"logprobs":null}],"created":1723806872,"model":"gpt-35-turbo","object":"chat.completion.chunk","system_fingerprint":null}\n\n'  # noqa: E501
-    b'data: {"id":"chatcmpl-test","choices":[{"delta":{},"finish_reason":"stop","index":0,"logprobs":null}],"created":1723806872,"model":"gpt-35-turbo","object":"chat.completion.chunk","system_fingerprint":null,"usage":{"completion_tokens":1,"prompt_tokens":11,"total_tokens":12}}\n\n',  # noqa: E501
+    create_sse_data_field(
+        create_mock_chunk(delta={"content": "", "role": "assistant"})
+    )
+    + create_sse_data_field(create_mock_chunk(delta={"content": "5"})),
+    create_sse_data_field(
+        create_mock_chunk(
+            finish_reason="stop",
+            usage={
+                "completion_tokens": 1,
+                "prompt_tokens": 11,
+                "total_tokens": 12,
+            },
+        )
+    ),
 ]
 
 
-def _validate_chunks(chunks):
+def _validate_chunks(chunks: List[ChatCompletionChunk]):
     assert all(len(chunk.choices) for chunk in chunks)
     assert all(chunk.choices[0].delta for chunk in chunks)
     # All except last chunk has some content
