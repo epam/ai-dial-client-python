@@ -1,11 +1,12 @@
 import json
+from typing import Optional, Union
 
 
 def create_mock_chunk(
     *,
-    delta: dict | None = None,
-    finish_reason: str | None = None,
-    usage: dict | None = None,
+    delta: Optional[dict] = None,
+    finish_reason: Optional[str] = None,
+    usage: Optional[dict] = None,
 ) -> dict:
     return {
         "id": "chatcmpl-test",
@@ -25,7 +26,7 @@ def create_mock_chunk(
     }
 
 
-def create_sse_data_field(chunk: dict | str) -> bytes:
+def create_sse_data_field(chunk: Union[dict, str]) -> bytes:
     if isinstance(chunk, dict):
         s = json.dumps(chunk)
     else:
