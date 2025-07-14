@@ -952,4 +952,4 @@ test = ["covdefaults (>=2.3)", "coverage (>=7.2.7)", "coverage-enable-subprocess
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8.1,<4.0"
-content-hash = "306f788a10adacae304c2e90099ee0827e97c56ace59b6f2926b406d2e403599"
+content-hash = "879999e1de3da9332111f3cba2d0e0b721b69d0b3de85b4c1bf5e9ba13527f72"
