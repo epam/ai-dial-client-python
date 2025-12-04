@@ -9,7 +9,9 @@ from httpx import Timeout
 import aidial_client.resources as resources
 from aidial_client._auth import (
     AsyncAuthValue,
-    validate_auth, AuthValueT, SyncAuthValue,
+    AuthValueT,
+    SyncAuthValue,
+    validate_auth,
 )
 from aidial_client._constants import (
     API_PREFIX,

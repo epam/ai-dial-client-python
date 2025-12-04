@@ -1,12 +1,5 @@
 from inspect import isawaitable
-from typing import (
-    Awaitable,
-    Callable,
-    Dict,
-    Optional,
-    Union,
-    TypeVar
-)
+from typing import Awaitable, Callable, Dict, Optional, TypeVar, Union
 
 SyncAuthValue = Union[str, Callable[[], str]]
 AsyncAuthValue = Union[SyncAuthValue, Callable[[], Awaitable[str]]]
@@ -28,16 +21,25 @@ def get_auth_value(auth_value: SyncAuthValue) -> str:
 
 
 async def aget_auth_value(auth_value: AsyncAuthValue) -> str:
-    processed_auth_value = get_auth_value(auth_value)
-    if isawaitable(processed_auth_value):
-        return await processed_auth_value
-    return processed_auth_value
+    if isinstance(auth_value, str):
+        return auth_value
+    elif callable(auth_value):
+        processed_auth_value = auth_value()
+        if isawaitable(processed_auth_value):
+            return await processed_auth_value
+        else:
+            return processed_auth_value
+    elif isawaitable(auth_value):
+        return await auth_value
+    raise TypeError(
+        f"auth_value must be a string, a callable returning a string, or an awaitable returning a string, got {type(auth_value).__name__}"
+    )
 
 
 def get_combined_auth_headers(
-        *,
-        api_key: Optional[SyncAuthValue] = None,
-        bearer_token: Optional[SyncAuthValue] = None,
+    *,
+    api_key: Optional[SyncAuthValue] = None,
+    bearer_token: Optional[SyncAuthValue] = None,
 ) -> Dict[str, str]:
     """
     Get combined authentication headers from both api_key and bearer_token.
@@ -58,9 +60,9 @@ def get_combined_auth_headers(
 
 
 async def aget_combined_auth_headers(
-        *,
-        api_key: Optional[AsyncAuthValue] = None,
-        bearer_token: Optional[AsyncAuthValue] = None,
+    *,
+    api_key: Optional[AsyncAuthValue] = None,
+    bearer_token: Optional[AsyncAuthValue] = None,
 ) -> Dict[str, str]:
     """Get combined authentication headers from both api_key and bearer_token (async)."""
     headers: Dict[str, str] = {}
@@ -77,10 +79,12 @@ async def aget_combined_auth_headers(
 
 
 def validate_auth(
-        *,
-        api_key: Optional[AsyncAuthValue] = None,
-        bearer_token: Optional[AsyncAuthValue] = None,
+    *,
+    api_key: Optional[AsyncAuthValue] = None,
+    bearer_token: Optional[AsyncAuthValue] = None,
 ) -> None:
     """Validate that at least one authentication method is provided."""
     if not api_key and not bearer_token:
-        raise ValueError("At least one of api_key or bearer_token must be provided")
+        raise ValueError(
+            "At least one of api_key or bearer_token must be provided"
+        )

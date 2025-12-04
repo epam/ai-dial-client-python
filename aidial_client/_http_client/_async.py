@@ -4,7 +4,7 @@ from typing import Callable, Dict, Optional, Type
 
 import httpx
 
-from aidial_client._auth import aget_combined_auth_headers, AsyncAuthValue
+from aidial_client._auth import AsyncAuthValue, aget_combined_auth_headers
 from aidial_client._exception import DialException
 from aidial_client._http_client._base import BaseHTTPClient
 from aidial_client._internal_types._generic import ResponseT

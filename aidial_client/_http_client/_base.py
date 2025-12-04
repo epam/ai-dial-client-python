@@ -112,7 +112,7 @@ class BaseHTTPClient(ABC, Generic[_HttpInternalClientT, AuthValueT]):
 
     @staticmethod
     def _make_dial_error_from_response(
-            response: httpx.Response,
+        response: httpx.Response,
     ) -> DialException:
         if response.is_closed and not response.is_stream_consumed:
             # We can't read the response body as it has been closed
