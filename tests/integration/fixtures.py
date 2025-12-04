@@ -35,7 +35,7 @@ def async_client(dial_url, dial_api_key):
 def test_deployment(sync_client: Dial) -> str:
     deployments = sync_client.deployments.list()
     assert len(deployments)
-    deployment = next((d for d in deployments if d.id.startswith("gpt-")))
+    deployment = next((d for d in deployments if d.id.startswith("gpt-4o")))
     assert deployment
     return deployment.id
 

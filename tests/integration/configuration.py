@@ -1,0 +1,5 @@
+import os
+
+INTEGRATION_TEST_DEPLOYMENT_NAME = os.getenv(
+    "INTEGRATION_TEST_DEPLOYMENT_NAME", "gpt-4o"
+)

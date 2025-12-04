@@ -1,6 +1,8 @@
 import json
 from typing import Optional, Union
 
+from tests.integration.configuration import INTEGRATION_TEST_DEPLOYMENT_NAME
+
 
 def create_mock_chunk(
     *,
@@ -19,7 +21,7 @@ def create_mock_chunk(
             }
         ],
         "created": 1723806872,
-        "model": "gpt-35-turbo",
+        "model": INTEGRATION_TEST_DEPLOYMENT_NAME,
         "object": "chat.completion.chunk",
         "system_fingerprint": None,
         **({} if usage is None else {"usage": usage}),

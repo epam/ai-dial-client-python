@@ -2,6 +2,7 @@ import pytest
 
 from aidial_client import AsyncDial
 from aidial_client._exception import DialException
+from tests.integration.configuration import INTEGRATION_TEST_DEPLOYMENT_NAME
 from tests.integration.fixtures import *  # noqa
 
 
@@ -14,7 +15,7 @@ async def test_async_default_api_version(
 ):
     with pytest.raises(DialException):
         await async_client.chat.completions.create(
-            deployment_name="gpt-35-turbo",
+            deployment_name=INTEGRATION_TEST_DEPLOYMENT_NAME,
             stream=False,
             messages=[
                 {

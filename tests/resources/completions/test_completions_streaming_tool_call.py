@@ -5,6 +5,7 @@ import pytest
 
 from aidial_client.types.chat import ChatCompletionChunk, ToolParam
 from tests.client_mock import get_async_client_mock, get_client_mock
+from tests.integration.configuration import INTEGRATION_TEST_DEPLOYMENT_NAME
 from tests.utils.chunks import create_mock_chunk, create_sse_data_field
 
 _TOOL_DEFINITION: ToolParam = {
@@ -172,7 +173,7 @@ def test_sync_streaming_tool_call():
     )
 
     response = client.chat.completions.create(
-        deployment_name="gpt-35-turbo",
+        deployment_name=INTEGRATION_TEST_DEPLOYMENT_NAME,
         messages=[{"role": "user", "content": "what's the weather in Paris?"}],
         tools=[_TOOL_DEFINITION],
         stream=True,
@@ -190,7 +191,7 @@ async def test_async_streaming_tool_call():
         stream_chunks_mock=_STREAM_CHUNKS_MOCK,
     )
     response = await async_client.chat.completions.create(
-        deployment_name="gpt-35-turbo",
+        deployment_name=INTEGRATION_TEST_DEPLOYMENT_NAME,
         messages=[{"role": "user", "content": "what's the weather in Paris?"}],
         tools=[_TOOL_DEFINITION],
         stream=True,

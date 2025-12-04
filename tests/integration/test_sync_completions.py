@@ -2,6 +2,7 @@ import pytest
 
 from aidial_client import Dial
 from aidial_client._exception import DialException
+from tests.integration.configuration import INTEGRATION_TEST_DEPLOYMENT_NAME
 from tests.integration.fixtures import *  # type: ignore # noqa
 
 
@@ -36,7 +37,7 @@ def test_default_api_version(
 ):
     with pytest.raises(DialException):
         sync_client.chat.completions.create(
-            deployment_name="gpt-35-turbo",
+            deployment_name=INTEGRATION_TEST_DEPLOYMENT_NAME,
             stream=False,
             messages=[
                 {
@@ -51,7 +52,7 @@ def test_default_api_version(
         api_version="2024-02-15-preview",
     )
     client_with_default_api_version.chat.completions.create(
-        deployment_name="gpt-35-turbo",
+        deployment_name=INTEGRATION_TEST_DEPLOYMENT_NAME,
         stream=False,
         messages=[
             {

@@ -1,26 +1,40 @@
+<h1 align="center">
+  DIAL Client SDK
+</h1>
+<p align="center">
+  <p align="center">
+  <a href="https://dialx.ai/">
+    <img src="https://dialx.ai/dialx_logo.svg" alt="About DIALX">
+  </a>
+</p>
+<h4 align="center">
+  <a href="https://discord.gg/ukzj9U9tEe">
+    <img src="https://img.shields.io/static/v1?label=DIALX%20Community%20on&message=Discord&color=blue&logo=Discord&style=flat-square" alt="Discord">
+  </a>
+</h4>
+
+- [AI DIAL Client (Python)](#ai-dial-client-python)
+  - [Authentication](#authentication)
+    - [API Keys](#api-keys)
+    - [Bearer Token](#bearer-token)
+  - [List Deployments](#list-deployments)
+  - [Make Completions Requests](#make-completions-requests)
+    - [Without Streaming](#without-streaming)
+    - [With Streaming](#with-streaming)
+  - [Working with Files](#working-with-files)
+    - [Working with URLs](#working-with-urls)
+    - [Uploading Files](#uploading-files)
+    - [Downloading Files](#downloading-files)
+    - [Deleting Files](#deleting-files)
+    - [Accessing Metadata](#accessing-metadata)
+  - [Applications](#applications)
+    - [List Applications](#list-applications)
+    - [Get Application by Id](#get-application-by-id)
+  - [Client Pool](#client-pool)
+    - [Synchronous Client Pool](#synchronous-client-pool)
+    - [Asynchronous Client Pool](#asynchronous-client-pool)
+
 # AI DIAL Client (Python)
-
-## Table of Contents
-
-- [Authentication](#authentication)
-  - [API Keys](#api-keys)
-  - [Bearer Token](#bearer-token)
-- [List Deployments](#list-deployments)
-- [Make Chat Completions Requests](#make-completions-requests)
-  - [Without Streaming](#without-streaming)
-  - [With Streaming](#with-streaming)
-- [Working with Files](#working-with-files)
-  - [Working with URLs](#working-with-urls)
-  - [Uploading Files](#uploading-files)
-  - [Downloading Files](#downloading-files)
-  - [Deleting Files](#deleting-files)
-  - [Accessing Metadata](#accessing-metadata)
-- [Applications](#applications)
-  - [List Applications](#list-applications)
-  - [Get Application by Id](#get-application-by-id)
-- [Client Pool](#client-pool)
-  - [Synchronous Client Pool](#synchronous-client-pool)
-  - [Asynchronous Client Pool](#asynchronous-client-pool)
 
 ## Authentication
 
@@ -139,7 +153,7 @@ Synchronous:
 client = Dial(api_key="your-api-key", base_url="https://your-dial-instance.com")
 
 completion = client.chat.completions.create(
-    deployment_name="gpt-35-turbo",
+    deployment_name="gpt-4o",
     stream=False,
     messages=[
         {
@@ -159,7 +173,7 @@ async_client = AsyncDial(
     api_key="your-api-key", base_url="https://your-dial-instance.com"
 )
 completion = await async_client.chat.completions.create(
-    deployment_name="gpt-35-turbo",
+    deployment_name="gpt-4o",
     stream=False,
     messages=[
         {
@@ -212,7 +226,7 @@ Synchronous:
 client = Dial(api_key="your-api-key", base_url="https://your-dial-instance.com")
 
 completion = client.chat.completions.create(
-    deployment_name="gpt-35-turbo",
+    deployment_name="gpt-4o",
     # Specify a stream parameter
     stream=True,
     messages=[
@@ -235,7 +249,7 @@ async_client = AsyncDial(
     api_key="your-api-key", base_url="https://your-dial-instance.com"
 )
 completion = await async_client.chat.completions.create(
-    deployment_name="gpt-35-turbo",
+    deployment_name="gpt-4o",
     # Specify a stream parameter
     stream=True,
     messages=[
