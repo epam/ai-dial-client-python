@@ -1,23 +1,12 @@
-from enum import Enum
 from inspect import isawaitable
 from typing import (
     Awaitable,
     Callable,
     Dict,
     Optional,
-    Tuple,
-    TypeVar,
     Union,
-    overload,
+    TypeVar
 )
-
-from typing_extensions import assert_never
-
-
-class AuthType(Enum):
-    API_KEY = "API_KEY"
-    BEARER = "BEARER"
-
 
 SyncAuthValue = Union[str, Callable[[], str]]
 AsyncAuthValue = Union[SyncAuthValue, Callable[[], Awaitable[str]]]
@@ -28,25 +17,14 @@ AuthValueT = TypeVar(
 )
 
 
-@overload
-def get_auth_value(auth_value: SyncAuthValue) -> str: ...
-
-
-@overload
-def get_auth_value(
-    auth_value: AsyncAuthValue,
-) -> Union[str, Awaitable[str]]: ...
-
-
-def get_auth_value(
-    auth_value: Union[SyncAuthValue, AsyncAuthValue]
-) -> Union[str, Awaitable[str]]:
+def get_auth_value(auth_value: SyncAuthValue) -> str:
     if isinstance(auth_value, str):
         return auth_value
-    elif callable(auth_value):
+    if callable(auth_value):
         return auth_value()
-    else:
-        assert_never(auth_value)
+    raise TypeError(
+        f"auth_value must be a string or a callable returning a string, got {type(auth_value).__name__}"
+    )
 
 
 async def aget_auth_value(auth_value: AsyncAuthValue) -> str:
@@ -56,44 +34,53 @@ async def aget_auth_value(auth_value: AsyncAuthValue) -> str:
     return processed_auth_value
 
 
-def _get_auth_headers(auth_type: AuthType, auth_value: str) -> Dict[str, str]:
-    if auth_type == AuthType.API_KEY:
-        return {"api-key": auth_value}
-    elif auth_type == AuthType.BEARER:
-        return {"Authorization": f"Bearer {auth_value}"}
-    else:
-        assert_never(auth_type)
-
-
-def get_auth_headers(
-    *,
-    auth_value: SyncAuthValue,
-    auth_type: AuthType,
+def get_combined_auth_headers(
+        *,
+        api_key: Optional[SyncAuthValue] = None,
+        bearer_token: Optional[SyncAuthValue] = None,
 ) -> Dict[str, str]:
-    processed_auth_value = get_auth_value(auth_value)
-    return _get_auth_headers(auth_type, processed_auth_value)
+    """
+    Get combined authentication headers from both api_key and bearer_token.
+
+    Raises:
+        TypeError: If an async callable is provided for either `api_key` or `bearer_token`.
+    """
+    headers: Dict[str, str] = {}
+
+    if api_key is not None:
+        headers["api-key"] = get_auth_value(api_key)
+
+    if bearer_token is not None:
+        bearer_str = get_auth_value(bearer_token)
+        headers["Authorization"] = f"Bearer {bearer_str}"
+
+    return headers
 
 
-async def aget_auth_headers(
-    auth_value: AsyncAuthValue,
-    auth_type: AuthType,
+async def aget_combined_auth_headers(
+        *,
+        api_key: Optional[AsyncAuthValue] = None,
+        bearer_token: Optional[AsyncAuthValue] = None,
 ) -> Dict[str, str]:
-    processed_auth_value = await aget_auth_value(auth_value)
-    return _get_auth_headers(auth_type, processed_auth_value)
+    """Get combined authentication headers from both api_key and bearer_token (async)."""
+    headers: Dict[str, str] = {}
+
+    if api_key is not None:
+        processed_api_key = await aget_auth_value(api_key)
+        headers["api-key"] = processed_api_key
+
+    if bearer_token is not None:
+        processed_bearer_token = await aget_auth_value(bearer_token)
+        headers["Authorization"] = f"Bearer {processed_bearer_token}"
+
+    return headers
 
 
-def process_auth(
-    *,
-    api_key: Optional[AuthValueT] = None,
-    bearer_token: Optional[AuthValueT] = None,
-) -> Tuple[AuthType, AuthValueT]:
-    if api_key and bearer_token:
-        raise ValueError(
-            "Either api_key or bearer_token must be provided, but not both"
-        )
-    elif api_key:
-        return AuthType.API_KEY, api_key
-    elif bearer_token:
-        return AuthType.BEARER, bearer_token
-    else:
-        raise ValueError("Either api_key or bearer_token must be provided")
+def validate_auth(
+        *,
+        api_key: Optional[AsyncAuthValue] = None,
+        bearer_token: Optional[AsyncAuthValue] = None,
+) -> None:
+    """Validate that at least one authentication method is provided."""
+    if not api_key and not bearer_token:
+        raise ValueError("At least one of api_key or bearer_token must be provided")

@@ -1,4 +1,4 @@
-from aidial_client._auth import AsyncAuthValue, AuthType, SyncAuthValue
+from aidial_client._auth import AsyncAuthValue, SyncAuthValue
 from aidial_client._client import AsyncDial, Dial
 from aidial_client._client_pool import AsyncDialClientPool, DialClientPool
 from aidial_client._exception import (
@@ -15,7 +15,6 @@ __all__ = [
     "AsyncDial",
     "DialClientPool",
     "AsyncDialClientPool",
-    "AuthType",
     "SyncAuthValue",
     "AsyncAuthValue",
     # Exceptions
