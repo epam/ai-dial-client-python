@@ -23,16 +23,13 @@ def get_auth_value(auth_value: SyncAuthValue) -> str:
 async def aget_auth_value(auth_value: AsyncAuthValue) -> str:
     if isinstance(auth_value, str):
         return auth_value
-    elif callable(auth_value):
-        processed_auth_value = auth_value()
-        if isawaitable(processed_auth_value):
-            return await processed_auth_value
-        else:
-            return processed_auth_value
-    elif isawaitable(auth_value):
+    if callable(auth_value):
+        result = auth_value()
+        return await result if isawaitable(result) else result
+    if isawaitable(auth_value):
         return await auth_value
     raise TypeError(
-        f"auth_value must be a string, a callable returning a string, or an awaitable returning a string, got {type(auth_value).__name__}"
+        f"auth_value must be a string, a callable, or an awaitable, got {type(auth_value).__name__}"
     )
 
 
