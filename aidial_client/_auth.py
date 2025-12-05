@@ -35,7 +35,7 @@ async def aget_auth_value(auth_value: AsyncAuthValue) -> str:
     if TYPE_CHECKING:
         assert_never(auth_value)
     raise TypeError(
-        f"auth_value must be a string, a callable, or an awaitable, got {type(auth_value).__name__}"
+        f"auth_value must be a string or a callable, got {type(auth_value).__name__}"
     )
 
 
