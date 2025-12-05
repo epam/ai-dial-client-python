@@ -30,8 +30,6 @@ async def aget_auth_value(auth_value: AsyncAuthValue) -> str:
     if callable(auth_value):
         result = auth_value()
         return await result if isawaitable(result) else result
-    if isawaitable(auth_value):
-        return await auth_value
     from typing import TYPE_CHECKING, assert_never
 
     if TYPE_CHECKING:
