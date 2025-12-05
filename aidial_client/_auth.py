@@ -15,6 +15,10 @@ def get_auth_value(auth_value: SyncAuthValue) -> str:
         return auth_value
     if callable(auth_value):
         return auth_value()
+    from typing import TYPE_CHECKING, assert_never
+
+    if TYPE_CHECKING:
+        assert_never(auth_value)
     raise TypeError(
         f"auth_value must be a string or a callable returning a string, got {type(auth_value).__name__}"
     )
@@ -28,6 +32,10 @@ async def aget_auth_value(auth_value: AsyncAuthValue) -> str:
         return await result if isawaitable(result) else result
     if isawaitable(auth_value):
         return await auth_value
+    from typing import TYPE_CHECKING, assert_never
+
+    if TYPE_CHECKING:
+        assert_never(auth_value)
     raise TypeError(
         f"auth_value must be a string, a callable, or an awaitable, got {type(auth_value).__name__}"
     )
@@ -38,12 +46,6 @@ def get_combined_auth_headers(
     api_key: Optional[SyncAuthValue] = None,
     bearer_token: Optional[SyncAuthValue] = None,
 ) -> Dict[str, str]:
-    """
-    Get combined authentication headers from both api_key and bearer_token.
-
-    Raises:
-        TypeError: If an async callable is provided for either `api_key` or `bearer_token`.
-    """
     headers: Dict[str, str] = {}
 
     if api_key is not None:

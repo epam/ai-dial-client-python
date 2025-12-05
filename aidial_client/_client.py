@@ -84,7 +84,6 @@ class BaseDialClient(Generic[_HttpClientT, AuthValueT], ABC):
 
 
 class Dial(BaseDialClient[SyncHTTPClient, SyncAuthValue]):
-    _http_client: SyncHTTPClient
 
     def _init_resources(self) -> None:
         openai_client = openai.AzureOpenAI(
@@ -157,7 +156,6 @@ class Dial(BaseDialClient[SyncHTTPClient, SyncAuthValue]):
 
 
 class AsyncDial(BaseDialClient[AsyncHTTPClient, AsyncAuthValue]):
-    _http_client: AsyncHTTPClient
 
     def _init_resources(self) -> None:
         openai_client = openai.AsyncAzureOpenAI(

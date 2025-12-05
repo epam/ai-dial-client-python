@@ -81,8 +81,7 @@ class BaseHTTPClient(ABC, Generic[_HttpInternalClientT, AuthValueT]):
             else options.get_max_retries(self._max_retries)
         )
 
-    @staticmethod
-    def _should_retry(response: httpx.Response) -> bool:
+    def _should_retry(self, response: httpx.Response) -> bool:
         if response.status_code == HTTPStatus.REQUEST_TIMEOUT:
             return True
 
@@ -108,10 +107,10 @@ class BaseHTTPClient(ABC, Generic[_HttpInternalClientT, AuthValueT]):
             INITIAL_RETRY_DELAY * pow(2.0, nb_retries), MAX_RETRY_DELAY
         )
         timeout = sleep_seconds + uniform(-0.5, 0.5)
-        return max(0.0, timeout)
+        return max(0, timeout)
 
-    @staticmethod
     def _make_dial_error_from_response(
+        self,
         response: httpx.Response,
     ) -> DialException:
         if response.is_closed and not response.is_stream_consumed:
