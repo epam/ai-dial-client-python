@@ -9,10 +9,9 @@ from httpx import Timeout
 import aidial_client.resources as resources
 from aidial_client._auth import (
     AsyncAuthValue,
-    AuthType,
     AuthValueT,
     SyncAuthValue,
-    process_auth,
+    validate_auth,
 )
 from aidial_client._constants import (
     API_PREFIX,
@@ -31,8 +30,8 @@ _HttpClientT = TypeVar(
 
 
 class BaseDialClient(Generic[_HttpClientT, AuthValueT], ABC):
-    _auth_type: AuthType
-    _auth_value: AuthValueT
+    _api_key: Optional[AuthValueT]
+    _bearer_token: Optional[AuthValueT]
     _base_url: str
     _http_client: _HttpClientT
     _auth_headers: Dict[str, str]
@@ -50,9 +49,9 @@ class BaseDialClient(Generic[_HttpClientT, AuthValueT], ABC):
         api_version: Optional[str] = None,
         http_client: Optional[_HttpClientT] = None,
     ):
-        self._auth_type, self._auth_value = process_auth(
-            api_key=api_key, bearer_token=bearer_token
-        )
+        validate_auth(api_key=api_key, bearer_token=bearer_token)
+        self._api_key = api_key
+        self._bearer_token = bearer_token
         self._max_retries = max_retries
         self._timeout = timeout
         self._base_url = enforce_trailing_slash(base_url)
@@ -85,6 +84,7 @@ class BaseDialClient(Generic[_HttpClientT, AuthValueT], ABC):
 
 
 class Dial(BaseDialClient[SyncHTTPClient, SyncAuthValue]):
+
     def _init_resources(self) -> None:
         openai_client = openai.AzureOpenAI(
             api_key="-",
@@ -113,8 +113,8 @@ class Dial(BaseDialClient[SyncHTTPClient, SyncAuthValue]):
     def _create_http_client(self) -> SyncHTTPClient:
         return SyncHTTPClient(
             self._base_url,
-            self._auth_value,
-            self._auth_type,
+            self._api_key,
+            self._bearer_token,
             self._max_retries,
             self._timeout,
         )
@@ -156,10 +156,11 @@ class Dial(BaseDialClient[SyncHTTPClient, SyncAuthValue]):
 
 
 class AsyncDial(BaseDialClient[AsyncHTTPClient, AsyncAuthValue]):
+
     def _init_resources(self) -> None:
         openai_client = openai.AsyncAzureOpenAI(
             # set empty string, we will override
-            # it with our client values during request
+            # it with our client values during a request
             api_key="",
             api_version="",
             base_url=urljoin(self._base_url, OPENAI_PREFIX),
@@ -192,8 +193,8 @@ class AsyncDial(BaseDialClient[AsyncHTTPClient, AsyncAuthValue]):
     def _create_http_client(self) -> AsyncHTTPClient:
         return AsyncHTTPClient(
             self._base_url,
-            self._auth_value,
-            self._auth_type,
+            self._api_key,
+            self._bearer_token,
             self._max_retries,
             self._timeout,
         )

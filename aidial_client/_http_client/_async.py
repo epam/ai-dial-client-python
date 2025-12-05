@@ -4,7 +4,7 @@ from typing import Callable, Dict, Optional, Type
 
 import httpx
 
-from aidial_client._auth import AsyncAuthValue, aget_auth_headers
+from aidial_client._auth import AsyncAuthValue, aget_combined_auth_headers
 from aidial_client._exception import DialException
 from aidial_client._http_client._base import BaseHTTPClient
 from aidial_client._internal_types._generic import ResponseT
@@ -20,8 +20,8 @@ class AsyncHTTPClient(BaseHTTPClient[httpx.AsyncClient, AsyncAuthValue]):
         )
 
     async def auth_headers(self) -> Dict[str, str]:
-        return await aget_auth_headers(
-            auth_value=self._auth_value, auth_type=self._auth_type
+        return await aget_combined_auth_headers(
+            api_key=self._api_key, bearer_token=self._bearer_token
         )
 
     async def _retry_request(
@@ -99,7 +99,7 @@ class AsyncHTTPClient(BaseHTTPClient[httpx.AsyncClient, AsyncAuthValue]):
                     cast_to=cast_to,
                     remaining_retries=retries,
                 )
-            # Try to get custom error from response status_code/code/message
+            # Try to get a custom error from response status_code/code/message
             custom_error = on_http_error(err) if on_http_error else None
             # or fallback to default processing
             raised_error = custom_error or self._make_dial_error_from_response(

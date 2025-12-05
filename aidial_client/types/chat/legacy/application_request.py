@@ -1,6 +1,6 @@
 from typing import Dict, Mapping, Optional
 
-from aidial_client._auth import AuthType, get_auth_headers
+from aidial_client._auth import get_combined_auth_headers
 from aidial_client._compatibility.pydantic_v1 import (
     SecretStr,
     StrictStr,
@@ -49,14 +49,12 @@ class RequestParams(ExtraForbidModel):
     @property
     def auth_headers(self) -> Dict[str, str]:
         if self.jwt_secret is not None:
-            return get_auth_headers(
-                auth_type=AuthType.BEARER,
-                auth_value=self.jwt_secret.get_secret_value(),
+            return get_combined_auth_headers(
+                bearer_token=self.jwt_secret.get_secret_value(),
             )
         else:
-            return get_auth_headers(
-                auth_type=AuthType.API_KEY,
-                auth_value=self.api_key_secret.get_secret_value(),
+            return get_combined_auth_headers(
+                api_key=self.api_key_secret.get_secret_value(),
             )
 
 

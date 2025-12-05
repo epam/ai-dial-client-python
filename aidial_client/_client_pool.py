@@ -2,7 +2,7 @@ from typing import Optional, Union
 
 import httpx
 
-from aidial_client._auth import AsyncAuthValue, SyncAuthValue, process_auth
+from aidial_client._auth import AsyncAuthValue, SyncAuthValue
 from aidial_client._client import AsyncDial, Dial
 from aidial_client._constants import (
     DEFAULT_CONNECTION_LIMITS,
@@ -32,17 +32,14 @@ class DialClientPool:
         max_retries: int = DEFAULT_MAX_RETRIES,
         timeout: Union[httpx.Timeout, float] = DEFAULT_TIMEOUT,
     ) -> Dial:
-        auth_type, auth_value = process_auth(
-            api_key=api_key, bearer_token=bearer_token
-        )
         return Dial(
             base_url=base_url,
             api_key=api_key,
             bearer_token=bearer_token,
             http_client=SyncHTTPClient(
                 base_url=base_url,
-                auth_value=auth_value,
-                auth_type=auth_type,
+                api_key=api_key,
+                bearer_token=bearer_token,
                 max_retries=max_retries,
                 timeout=timeout,
                 internal_http_client=self._internal_http_client,
@@ -70,17 +67,14 @@ class AsyncDialClientPool:
         max_retries: int = DEFAULT_MAX_RETRIES,
         timeout: Union[httpx.Timeout, float] = DEFAULT_TIMEOUT,
     ) -> AsyncDial:
-        auth_type, auth_value = process_auth(
-            api_key=api_key, bearer_token=bearer_token
-        )
         return AsyncDial(
             base_url=base_url,
             api_key=api_key,
             bearer_token=bearer_token,
             http_client=AsyncHTTPClient(
                 base_url=base_url,
-                auth_value=auth_value,
-                auth_type=auth_type,
+                api_key=api_key,
+                bearer_token=bearer_token,
                 max_retries=max_retries,
                 timeout=timeout,
                 internal_http_client=self._internal_http_client,

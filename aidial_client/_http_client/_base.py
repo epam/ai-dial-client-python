@@ -5,7 +5,7 @@ from typing import Dict, Generic, Optional, TypeVar, Union
 
 import httpx
 
-from aidial_client._auth import AuthType, AuthValueT
+from aidial_client._auth import AuthValueT
 from aidial_client._constants import INITIAL_RETRY_DELAY, MAX_RETRY_DELAY
 from aidial_client._exception import DialException
 from aidial_client._internal_types._http_request import FinalRequestOptions
@@ -19,21 +19,21 @@ _HttpInternalClientT = TypeVar(
 
 class BaseHTTPClient(ABC, Generic[_HttpInternalClientT, AuthValueT]):
     _internal_http_client: _HttpInternalClientT
-    _auth_value: AuthValueT
-    _auth_type: AuthType
+    _api_key: Optional[AuthValueT]
+    _bearer_token: Optional[AuthValueT]
 
     def __init__(
         self,
         base_url: str,
-        auth_value: AuthValueT,
-        auth_type: AuthType,
+        api_key: Optional[AuthValueT],
+        bearer_token: Optional[AuthValueT],
         max_retries: int,
         timeout: Union[float, httpx.Timeout, None],
         internal_http_client: Optional[_HttpInternalClientT] = None,
     ):
         self.base_url = httpx.URL(enforce_trailing_slash(base_url))
-        self._auth_value = auth_value
-        self._auth_type = auth_type
+        self._api_key = api_key
+        self._bearer_token = bearer_token
         self._max_retries = max_retries
         self._timeout = timeout
         self._internal_http_client = (
