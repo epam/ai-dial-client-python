@@ -11,7 +11,7 @@ repository = "https://github.com/epam/ai-dial-client-python"
 packages = [{ include = "aidial_client" }]
 
 [tool.poetry.dependencies]
-python = ">=3.9,<4.0"
+python = ">=3.10,<4.0"
 openai = ">=1.1.0,<2.0.0"
 httpx = ">=0.25.0,<1.0"
 pydantic = ">=1.10,<3"
