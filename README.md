@@ -571,10 +571,10 @@ To set up the development environment and run the project, follow the instructio
    - macOS: usually preinstalled.
    - Windows: see https://gnuwin32.sourceforge.net/packages/make.htm or use Chocolatey.
    - Ensure `make` is in PATH (`which make`).
-2. Install Python 3.13
-   - macOS (Homebrew): `brew install python@3.13`
+2. Install Python 3.10
+   - macOS (Homebrew): `brew install python@3.10`
    - Official downloads: https://www.python.org/downloads/
-   - Ensure `python3.13` (or `python3`) is in PATH (`python3.13 --version`).
+   - Ensure `python3.10` (or `python3`, or `python`) is in PATH (`python3.10 --version`).
 
 3. Recommended way - system-wide, independent of any particular python venv:
 
