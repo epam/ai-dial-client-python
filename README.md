@@ -1,6 +1,14 @@
 # AI DIAL Client (Python)
 
-## Table of Contents
+This project contains a Python client for the DIAL Core API.
+
+## Usage
+
+This section outlines how to use the AI DIAL Python client to interact with the DIAL Core API. 
+It covers authentication methods, making chat completion requests, working with files, managing applications, 
+and utilizing client pools for efficient connection management.
+
+### Table of Contents
 
 - [Authentication](#authentication)
   - [API Keys](#api-keys)
@@ -22,9 +30,9 @@
   - [Synchronous Client Pool](#synchronous-client-pool)
   - [Asynchronous Client Pool](#asynchronous-client-pool)
 
-## Authentication
+### Authentication
 
-### API Keys
+#### API Keys
 
 For authentication with an API key, pass it during the client initialization:
 
@@ -66,7 +74,7 @@ async_dial_client = AsyncDial(
 )
 ```
 
-### Bearer Token
+#### Bearer Token
 
 You can use a Bearer Token for a token-based authentication of API calls. Client instances will use it to construct the `Authorization` header when making requests:
 
@@ -115,7 +123,7 @@ dial_client = Dial(
 )
 ```
 
-## List Deployments
+### List Deployments
 
 If you want to get a list of available deployments, use `client.deployments.list()` or method:
 
@@ -128,9 +136,9 @@ If you want to get a list of available deployments, use `client.deployments.list
 ]
 ```
 
-## Make Completions Requests
+### Make Completions Requests
 
-### Without Streaming
+#### Without Streaming
 
 Synchronous:
 
@@ -203,7 +211,7 @@ ChatCompletionResponse(
 )
 ```
 
-### With Streaming
+#### With Streaming
 
 Synchronous:
 
@@ -304,9 +312,9 @@ ChatCompletionChunk(
 )
 ```
 
-## Working with Files
+### Working with Files
 
-### Working with URLs
+#### Working with URLs
 
 Files are AI DIAL resources that operate with URL-like objects. Use `pathlib.PurePosixPath` or `str` to create to create new URL-like objects or to get a `string` representation of them.
 
@@ -341,7 +349,7 @@ sync_client.files.upload(url=absolute_url, ...)
 
 **Note**, that an invalid URL provided to the function, will raise an `InvalidDialURLException` exception.
 
-### Uploading Files
+#### Uploading Files
 
 Use `upload()` to add files into your storage bucket:
 
@@ -367,7 +375,7 @@ sync_client.files.upload(
 )
 ```
 
-### Downloading Files
+#### Downloading Files
 
 Use `download()` to download files from your storage bucket:
 
@@ -406,7 +414,7 @@ result.write_to("./some-local-file.txt")
 await result.awrite_to("./some-local-file.txt")
 ```
 
-### Deleting Files
+#### Deleting Files
 
 Use `delete()` to remove files from your storage bucket:
 
@@ -421,7 +429,7 @@ await async_client.files.delete(
 )
 ```
 
-### Accessing Metadata
+#### Accessing Metadata
 
 Use `metadata()` to access metadata of a file:
 
@@ -450,9 +458,9 @@ FileMetadata(
 )
 ```
 
-## Applications
+### Applications
 
-### List Applications
+#### List Applications
 
 To get a list of your DIAL applications:
 
@@ -501,7 +509,7 @@ As a result, you will receive a list of `Application` objects:
 ]
 ```
 
-### Get Application by Id
+#### Get Application by Id
 
 You can get your DIAL applications by their Ids:
 
@@ -514,11 +522,11 @@ application = await async_client.application.get("app_id")
 
 As a result, you will receive a list of `Application` objects. Refer to the [previous example](#list-applications).
 
-## Client Pool
+### Client Pool
 
 When you need to create multiple DIAL clients and wish to enhance performance by reusing the HTTP connection for the same DIAL instance, consider using synchronous and asynchronous **client pools**.
 
-### Synchronous Client Pool
+#### Synchronous Client Pool
 
 ```python
 from aidial_client import DialClientPool
@@ -534,7 +542,7 @@ second_client = client_pool.create_client(
 )
 ```
 
-### Asynchronous Client Pool
+#### Asynchronous Client Pool
 
 ```python
 from dial_client import (
@@ -551,3 +559,63 @@ second_client = client_pool.create_client(
     base_url="https://your-dial-instance.com", bearer_token="your-bearer-token"
 )
 ```
+
+
+## Development
+
+To set up the development environment and run the project, follow the instructions below.
+
+### Pre-requisites
+
+1. Install Make
+   - macOS: usually preinstalled.
+   - Windows: see https://gnuwin32.sourceforge.net/packages/make.htm or use Chocolatey.
+   - Ensure `make` is in PATH (`which make`).
+2. Install Python 3.13
+   - macOS (Homebrew): `brew install python@3.13`
+   - Official downloads: https://www.python.org/downloads/
+   - Ensure `python3.13` (or `python3`) is in PATH (`python3.13 --version`).
+
+3. Recommended way - system-wide, independent of any particular python venv:
+
+   - MacOS - recommended way to install poetry is to [use pipx](https://python-poetry.org/docs/#installing-with-pipx)
+   - Windows - recommended way to install poetry is to
+     use [official installer](https://python-poetry.org/docs/#installing-with-the-official-installer)
+   - Make sure that `poetry` is in the PATH and works properly (run `poetry --version`).
+   - Alternative - venv-specific (using `pip`):  
+     make sure the correct python venv is activated `make install_poetry`
+
+### Setup
+
+1. Create and activate virtual environment
+
+    ```bash
+    make init_env
+    source .venv/bin/activate
+    ```
+
+2. Install dependencies
+
+    ```bash
+    make install
+    ```
+
+3. Create `.env` file in the root of the project. Copy `.env.template` file data to the `.env` and fill the values.
+
+     ```bash
+     cp .env.template .env
+     ```
+
+### Main commands
+
+| Command                 | Description                                                |
+|-------------------------|------------------------------------------------------------|
+| `make install`          | Install virtual environment and dependencies               |
+| `make build`            | Build the package                                          |
+| `make clean`            | Clean virtual environment and build artifacts              |
+| `make lint`             | Run linters                                                |
+| `make format`           | Run code formatters                                        |
+| `make test`             | Run tests (e.g., `make test PYTHON=3.12`)                  |
+| `make integration_test` | Run integration tests                                      |
+| `make coverage`         | Generate test coverage report                              |
+| `make help`             | Show available commands                                    |
