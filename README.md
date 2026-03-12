@@ -1,34 +1,48 @@
-# AI DIAL Client (Python)
+<h1 align="center">
+  AI DIAL Client (Python)
+</h1>
+<p align="center">
+  <p align="center">
+  <a href="https://dialx.ai/">
+    <img src="https://dialx.ai/logo/dialx_logo.svg" alt="About DIALX">
+  </a>
+</p>
+<h4 align="center">
+  <a href="https://discord.gg/ukzj9U9tEe">
+    <img src="https://img.shields.io/static/v1?label=DIALX%20Community%20on&message=Discord&color=blue&logo=Discord&style=flat-square" alt="Discord">
+  </a>
+</h4>
 
-This project contains a Python client for the DIAL Core API.
+- [Usage](#usage)
+  - [Authentication](#authentication)
+      - [API Keys](#api-keys)
+      - [Bearer Token](#bearer-token)
+  - [List Deployments](#list-deployments)
+  - [Make Chat Completions Requests](#make-completions-requests)
+      - [Without Streaming](#without-streaming)
+      - [With Streaming](#with-streaming)
+  - [Working with Files](#working-with-files)
+      - [Working with URLs](#working-with-urls)
+      - [Uploading Files](#uploading-files)
+      - [Downloading Files](#downloading-files)
+      - [Deleting Files](#deleting-files)
+      - [Accessing Metadata](#accessing-metadata)
+  - [Applications](#applications)
+      - [List Applications](#list-applications)
+      - [Get Application by Id](#get-application-by-id)
+  - [Client Pool](#client-pool)
+      - [Synchronous Client Pool](#synchronous-client-pool)
+      - [Asynchronous Client Pool](#asynchronous-client-pool)
+- [Development](#development)
+  - [Pre-requisites](#pre-requisites)
+  - [Setup](#setup)
+  - [Main commands](#main-commands)
 
 ## Usage
 
 This section outlines how to use the AI DIAL Python client to interact with the DIAL Core API. 
 It covers authentication methods, making chat completion requests, working with files, managing applications, 
 and utilizing client pools for efficient connection management.
-
-### Table of Contents
-
-- [Authentication](#authentication)
-  - [API Keys](#api-keys)
-  - [Bearer Token](#bearer-token)
-- [List Deployments](#list-deployments)
-- [Make Chat Completions Requests](#make-completions-requests)
-  - [Without Streaming](#without-streaming)
-  - [With Streaming](#with-streaming)
-- [Working with Files](#working-with-files)
-  - [Working with URLs](#working-with-urls)
-  - [Uploading Files](#uploading-files)
-  - [Downloading Files](#downloading-files)
-  - [Deleting Files](#deleting-files)
-  - [Accessing Metadata](#accessing-metadata)
-- [Applications](#applications)
-  - [List Applications](#list-applications)
-  - [Get Application by Id](#get-application-by-id)
-- [Client Pool](#client-pool)
-  - [Synchronous Client Pool](#synchronous-client-pool)
-  - [Asynchronous Client Pool](#asynchronous-client-pool)
 
 ### Authentication
 
