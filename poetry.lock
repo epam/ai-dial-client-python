@@ -335,7 +335,7 @@ description = "Backport of PEP 654 (exception groups)"
 optional = false
 python-versions = ">=3.7"
 groups = ["main", "test"]
-markers = "python_version == \"3.10\""
+markers = "python_version < \"3.11\""
 files = [
     {file = "exceptiongroup-1.2.2-py3-none-any.whl", hash = "sha256:3111b9d131c238bec2f8f516e123e14ba243563fb135d3fe885990585aa7795b"},
     {file = "exceptiongroup-1.2.2.tar.gz", hash = "sha256:47c2edf7c6738fafb49fd34290706d1a1a2f4d1c6df275526b62cbb4aa5393cc"},
@@ -935,7 +935,7 @@ files = [
     {file = "tomli-2.0.1-py3-none-any.whl", hash = "sha256:939de3e7a6161af0c887ef91b7d41a53e7c5a1ca976325f429cb46ea9bc30ecc"},
     {file = "tomli-2.0.1.tar.gz", hash = "sha256:de526c12914f0c550d15924c62d72abc48d6fe7364aa87328337a31007fe8a4f"},
 ]
-markers = {lint = "python_version == \"3.10\"", test = "python_full_version <= \"3.11.0a6\""}
+markers = {lint = "python_version < \"3.11\"", test = "python_full_version <= \"3.11.0a6\""}
 
 [[package]]
 name = "tqdm"
@@ -969,7 +969,7 @@ files = [
     {file = "typing_extensions-4.15.0-py3-none-any.whl", hash = "sha256:f0fa19c6845758ab08074a0cfa8b7aecb71c999ca73d62883bc25cc018c4e548"},
     {file = "typing_extensions-4.15.0.tar.gz", hash = "sha256:0cea48d173cc12fa28ecabc3b837ea3cf6f38c6d1136f85cbaaf598984861466"},
 ]
-markers = {lint = "python_version == \"3.10\"", test = "python_version == \"3.10\""}
+markers = {lint = "python_version < \"3.11\"", test = "python_version < \"3.11\""}
 
 [[package]]
 name = "virtualenv"
@@ -996,4 +996,4 @@ test = ["covdefaults (>=2.3)", "coverage (>=7.2.7)", "coverage-enable-subprocess
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.14"
-content-hash = "33d395195b5d29cd7aa1c28017af7a543b1c33babdd72386ee1dd113c230956f"
+content-hash = "b3bf9575ddfe072d258941339ff1c13a28320622733e7669c4cfaedd70f3d35a"
