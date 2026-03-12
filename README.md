@@ -1,30 +1,52 @@
-# AI DIAL Client (Python)
+<h1 align="center">
+  AI DIAL Client (Python)
+</h1>
+<p align="center">
+  <p align="center">
+  <a href="https://dialx.ai/">
+    <img src="https://dialx.ai/logo/dialx_logo.svg" alt="About DIALX">
+  </a>
+</p>
+<h4 align="center">
+  <a href="https://discord.gg/ukzj9U9tEe">
+    <img src="https://img.shields.io/static/v1?label=DIALX%20Community%20on&message=Discord&color=blue&logo=Discord&style=flat-square" alt="Discord">
+  </a>
+</h4>
 
-## Table of Contents
+- [Usage](#usage)
+  - [Authentication](#authentication)
+      - [API Keys](#api-keys)
+      - [Bearer Token](#bearer-token)
+  - [List Deployments](#list-deployments)
+  - [Make Chat Completions Requests](#make-completions-requests)
+      - [Without Streaming](#without-streaming)
+      - [With Streaming](#with-streaming)
+  - [Working with Files](#working-with-files)
+      - [Working with URLs](#working-with-urls)
+      - [Uploading Files](#uploading-files)
+      - [Downloading Files](#downloading-files)
+      - [Deleting Files](#deleting-files)
+      - [Accessing Metadata](#accessing-metadata)
+  - [Applications](#applications)
+      - [List Applications](#list-applications)
+      - [Get Application by Id](#get-application-by-id)
+  - [Client Pool](#client-pool)
+      - [Synchronous Client Pool](#synchronous-client-pool)
+      - [Asynchronous Client Pool](#asynchronous-client-pool)
+- [Development](#development)
+  - [Pre-requisites](#pre-requisites)
+  - [Setup](#setup)
+  - [Main commands](#main-commands)
 
-- [Authentication](#authentication)
-  - [API Keys](#api-keys)
-  - [Bearer Token](#bearer-token)
-- [List Deployments](#list-deployments)
-- [Make Chat Completions Requests](#make-completions-requests)
-  - [Without Streaming](#without-streaming)
-  - [With Streaming](#with-streaming)
-- [Working with Files](#working-with-files)
-  - [Working with URLs](#working-with-urls)
-  - [Uploading Files](#uploading-files)
-  - [Downloading Files](#downloading-files)
-  - [Deleting Files](#deleting-files)
-  - [Accessing Metadata](#accessing-metadata)
-- [Applications](#applications)
-  - [List Applications](#list-applications)
-  - [Get Application by Id](#get-application-by-id)
-- [Client Pool](#client-pool)
-  - [Synchronous Client Pool](#synchronous-client-pool)
-  - [Asynchronous Client Pool](#asynchronous-client-pool)
+## Usage
 
-## Authentication
+This section outlines how to use the AI DIAL Python client to interact with the DIAL Core API. 
+It covers authentication methods, making chat completion requests, working with files, managing applications, 
+and utilizing client pools for efficient connection management.
 
-### API Keys
+### Authentication
+
+#### API Keys
 
 For authentication with an API key, pass it during the client initialization:
 
@@ -66,7 +88,7 @@ async_dial_client = AsyncDial(
 )
 ```
 
-### Bearer Token
+#### Bearer Token
 
 You can use a Bearer Token for a token-based authentication of API calls. Client instances will use it to construct the `Authorization` header when making requests:
 
@@ -115,7 +137,7 @@ dial_client = Dial(
 )
 ```
 
-## List Deployments
+### List Deployments
 
 If you want to get a list of available deployments, use `client.deployments.list()` or method:
 
@@ -128,9 +150,9 @@ If you want to get a list of available deployments, use `client.deployments.list
 ]
 ```
 
-## Make Completions Requests
+### Make Completions Requests
 
-### Without Streaming
+#### Without Streaming
 
 Synchronous:
 
@@ -203,7 +225,7 @@ ChatCompletionResponse(
 )
 ```
 
-### With Streaming
+#### With Streaming
 
 Synchronous:
 
@@ -304,9 +326,9 @@ ChatCompletionChunk(
 )
 ```
 
-## Working with Files
+### Working with Files
 
-### Working with URLs
+#### Working with URLs
 
 Files are AI DIAL resources that operate with URL-like objects. Use `pathlib.PurePosixPath` or `str` to create to create new URL-like objects or to get a `string` representation of them.
 
@@ -341,7 +363,7 @@ sync_client.files.upload(url=absolute_url, ...)
 
 **Note**, that an invalid URL provided to the function, will raise an `InvalidDialURLException` exception.
 
-### Uploading Files
+#### Uploading Files
 
 Use `upload()` to add files into your storage bucket:
 
@@ -367,7 +389,7 @@ sync_client.files.upload(
 )
 ```
 
-### Downloading Files
+#### Downloading Files
 
 Use `download()` to download files from your storage bucket:
 
@@ -406,7 +428,7 @@ result.write_to("./some-local-file.txt")
 await result.awrite_to("./some-local-file.txt")
 ```
 
-### Deleting Files
+#### Deleting Files
 
 Use `delete()` to remove files from your storage bucket:
 
@@ -421,7 +443,7 @@ await async_client.files.delete(
 )
 ```
 
-### Accessing Metadata
+#### Accessing Metadata
 
 Use `metadata()` to access metadata of a file:
 
@@ -450,9 +472,9 @@ FileMetadata(
 )
 ```
 
-## Applications
+### Applications
 
-### List Applications
+#### List Applications
 
 To get a list of your DIAL applications:
 
@@ -501,7 +523,7 @@ As a result, you will receive a list of `Application` objects:
 ]
 ```
 
-### Get Application by Id
+#### Get Application by Id
 
 You can get your DIAL applications by their Ids:
 
@@ -514,11 +536,11 @@ application = await async_client.application.get("app_id")
 
 As a result, you will receive a list of `Application` objects. Refer to the [previous example](#list-applications).
 
-## Client Pool
+### Client Pool
 
 When you need to create multiple DIAL clients and wish to enhance performance by reusing the HTTP connection for the same DIAL instance, consider using synchronous and asynchronous **client pools**.
 
-### Synchronous Client Pool
+#### Synchronous Client Pool
 
 ```python
 from aidial_client import DialClientPool
@@ -534,7 +556,7 @@ second_client = client_pool.create_client(
 )
 ```
 
-### Asynchronous Client Pool
+#### Asynchronous Client Pool
 
 ```python
 from dial_client import (
@@ -551,3 +573,44 @@ second_client = client_pool.create_client(
     base_url="https://your-dial-instance.com", bearer_token="your-bearer-token"
 )
 ```
+
+
+## Development
+
+To set up the development environment and run the project, follow the instructions below.
+
+### Pre-requisites
+
+The following tools are required to work with the project:
+
+1. `Make`
+2. `Python 3.10`
+3. `Poetry 2.*`. Installation guidance can be found [here](https://python-poetry.org/docs/#installation)
+
+### Setup
+
+1. Create `.env` file in the root of the project. Copy `.env.template` file data to the `.env` and customize the values
+   if needed. You can customize python and poetry locations.
+2. Create and activate virtual environment
+    ```bash
+    make init_env
+    source .venv/bin/activate
+    ```
+3. Install dependencies
+    ```bash
+    make install
+    ```
+
+### Main commands
+
+| Command                 | Description                                   |
+|-------------------------|-----------------------------------------------|
+| `make install`          | Install virtual environment and dependencies  |
+| `make build`            | Build the package                             |
+| `make clean`            | Clean virtual environment and build artifacts |
+| `make lint`             | Run linters                                   |
+| `make format`           | Run code formatters                           |
+| `make test`             | Run tests (e.g., `make test PYTHON=3.12`)     |
+| `make integration_test` | Run integration tests                         |
+| `make coverage`         | Generate test coverage report                 |
+| `make help`             | Show available commands                       |
