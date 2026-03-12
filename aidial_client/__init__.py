@@ -9,6 +9,9 @@ from aidial_client._exception import (
     ParsingDataError,
     ResourceNotFoundError,
 )
+from aidial_client.types.deployment import DeploymentConfig
+from aidial_client.types.model import ModelInfo
+from aidial_client.types.toolset import ToolsetInfo
 
 __all__ = [
     "Dial",
@@ -24,4 +27,7 @@ __all__ = [
     "ParsingDataError",
     "EtagMismatchError",
     "ResourceNotFoundError",
+    "DeploymentConfig",
+    "ToolsetInfo",
+    "ModelInfo",
 ]

@@ -48,3 +48,16 @@ class Deployment(DeploymentBase):
 class DeploymentsResponse(ExtraAllowModel):
     data: List[Deployment]
     object: Literal["list"]
+
+
+class DeploymentConfig(ExtraAllowModel):
+    """JSON Schema document returned by GET /v1/deployments/{id}/configuration.
+
+    No fields are pinned because the schema is entirely deployment-specific
+    and callers are expected to access fields dynamically (e.g. via
+    model.model_extra or model_dump()). The named type exists so that:
+    - http_client.request(cast_to=DeploymentConfig) can deserialise the response;
+    - the public API carries a meaningful return type rather than a bare dict;
+    - common top-level fields (e.g. 'type', '$schema') can be pinned here
+      in a future non-breaking change.
+    """
