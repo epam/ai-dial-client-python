@@ -1,7 +1,12 @@
 import pytest
 
 from aidial_client._exception import DialException
-from aidial_client.types.model import ModelCapabilities, ModelInfo, ModelLimits, ModelPricing
+from aidial_client.types.model import (
+    ModelCapabilities,
+    ModelInfo,
+    ModelLimits,
+    ModelPricing,
+)
 from tests.client_mock import get_async_client_mock, get_client_mock
 
 MODEL_MOCK = {
