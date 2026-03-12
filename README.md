@@ -571,7 +571,7 @@ The following tools are required to work with the project:
 
 1. `Make`
 2. `Python 3.10`
-3. `Poetry 2.3*`. Installation guidance can be found [here](https://python-poetry.org/docs/#installation)
+3. `Poetry 2.*`. Installation guidance can be found [here](https://python-poetry.org/docs/#installation)
 
 ### Setup
 
