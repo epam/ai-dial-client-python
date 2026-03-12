@@ -567,55 +567,36 @@ To set up the development environment and run the project, follow the instructio
 
 ### Pre-requisites
 
-1. Install Make
-   - macOS: usually preinstalled.
-   - Windows: see https://gnuwin32.sourceforge.net/packages/make.htm or use Chocolatey.
-   - Ensure `make` is in PATH (`which make`).
-2. Install Python 3.10
-   - macOS (Homebrew): `brew install python@3.10`
-   - Official downloads: https://www.python.org/downloads/
-   - Ensure `python3.10` (or `python3`, or `python`) is in PATH (`python3.10 --version`).
+The following tools are required to work with the project:
 
-3. Recommended way - system-wide, independent of any particular python venv:
-
-   - MacOS - recommended way to install poetry is to [use pipx](https://python-poetry.org/docs/#installing-with-pipx)
-   - Windows - recommended way to install poetry is to
-     use [official installer](https://python-poetry.org/docs/#installing-with-the-official-installer)
-   - Make sure that `poetry` is in the PATH and works properly (run `poetry --version`).
-   - Alternative - venv-specific (using `pip`):  
-     make sure the correct python venv is activated `make install_poetry`
+1. `Make`
+2. `Python 3.10`
+3. `Poetry 2.3*`. Installation guidance can be found [here](https://python-poetry.org/docs/#installation)
 
 ### Setup
 
-1. Create and activate virtual environment
-
+1. Create `.env` file in the root of the project. Copy `.env.template` file data to the `.env` and customize the values
+   if needed. You can customize python and poetry locations.
+2. Create and activate virtual environment
     ```bash
     make init_env
     source .venv/bin/activate
     ```
-
-2. Install dependencies
-
+3. Install dependencies
     ```bash
     make install
     ```
 
-3. Create `.env` file in the root of the project. Copy `.env.template` file data to the `.env` and fill the values.
-
-     ```bash
-     cp .env.template .env
-     ```
-
 ### Main commands
 
-| Command                 | Description                                                |
-|-------------------------|------------------------------------------------------------|
-| `make install`          | Install virtual environment and dependencies               |
-| `make build`            | Build the package                                          |
-| `make clean`            | Clean virtual environment and build artifacts              |
-| `make lint`             | Run linters                                                |
-| `make format`           | Run code formatters                                        |
-| `make test`             | Run tests (e.g., `make test PYTHON=3.12`)                  |
-| `make integration_test` | Run integration tests                                      |
-| `make coverage`         | Generate test coverage report                              |
-| `make help`             | Show available commands                                    |
+| Command                 | Description                                   |
+|-------------------------|-----------------------------------------------|
+| `make install`          | Install virtual environment and dependencies  |
+| `make build`            | Build the package                             |
+| `make clean`            | Clean virtual environment and build artifacts |
+| `make lint`             | Run linters                                   |
+| `make format`           | Run code formatters                           |
+| `make test`             | Run tests (e.g., `make test PYTHON=3.12`)     |
+| `make integration_test` | Run integration tests                         |
+| `make coverage`         | Generate test coverage report                 |
+| `make help`             | Show available commands                       |
