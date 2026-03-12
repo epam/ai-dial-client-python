@@ -1,14 +1,16 @@
 VENV_DIR ?= .venv
-POETRY ?= $(VENV_DIR)/bin/poetry
-POETRY_VERSION ?= 1.8.5
+POETRY ?= poetry
+POETRY_PYTHON ?= python
 
 .PHONY: all init_env install clean lint format test spell_check
+
+-include .env
+export
 
 all: build
 
 init_env:
-	python -m venv $(VENV_DIR)
-	$(VENV_DIR)/bin/pip install poetry==$(POETRY_VERSION) --quiet
+	$(POETRY) env use $(POETRY_PYTHON)
 
 install: init_env
 	$(POETRY) install
