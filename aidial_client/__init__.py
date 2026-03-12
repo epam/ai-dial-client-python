@@ -10,7 +10,7 @@ from aidial_client._exception import (
     ResourceNotFoundError,
 )
 from aidial_client.types.deployment import DeploymentConfig
-from aidial_client.types.model import ModelInfo
+from aidial_client.types.model import ModelInfo, ModelLimits, ModelPricing
 from aidial_client.types.toolset import ToolsetInfo
 
 __all__ = [
@@ -30,4 +30,6 @@ __all__ = [
     "DeploymentConfig",
     "ToolsetInfo",
     "ModelInfo",
+    "ModelPricing",
+    "ModelLimits",
 ]
