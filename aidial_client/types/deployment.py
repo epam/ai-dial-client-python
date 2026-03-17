@@ -53,4 +53,3 @@ class Deployment(DeploymentBase):
 class DeploymentsResponse(ExtraAllowModel):
     data: List[Deployment]
     object: Literal["list"]
-
