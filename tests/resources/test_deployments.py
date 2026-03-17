@@ -1,7 +1,7 @@
 import pytest
 
 from aidial_client._exception import DialException
-from aidial_client.types.deployment import Deployment, DeploymentConfig
+from aidial_client.types.deployment import Deployment
 from tests.client_mock import get_async_client_mock, get_client_mock
 
 DEPLOYMENT_MOCK = {
@@ -78,22 +78,19 @@ async def test_async_get_deployment_http_error():
 
 def test_get_deployment_config():
     client = get_client_mock(status_code=200, json_mock=CONFIG_MOCK)
-    result = client.deployments.get_config("gpt-4")
-    assert isinstance(result, DeploymentConfig)
-    # DeploymentConfig has no fixed fields; verify the extra fields are present
-    data = result.model_dump()
-    assert data.get("type") == "object"
-    assert "properties" in data
+    result = client.deployments.get_configuration("gpt-4")
+    assert isinstance(result, dict)
+    assert result.get("type") == "object"
+    assert "properties" in result
 
 
 @pytest.mark.asyncio
 async def test_async_get_deployment_config():
     client = get_async_client_mock(status_code=200, json_mock=CONFIG_MOCK)
-    result = await client.deployments.get_config("gpt-4")
-    assert isinstance(result, DeploymentConfig)
-    data = result.model_dump()
-    assert data.get("type") == "object"
-    assert "properties" in data
+    result = await client.deployments.get_configuration("gpt-4")
+    assert isinstance(result, dict)
+    assert result.get("type") == "object"
+    assert "properties" in result
 
 
 def test_get_deployment_config_http_error():
@@ -102,7 +99,7 @@ def test_get_deployment_config_http_error():
         json_mock={"error": {"message": "Unauthorized", "type": "auth_error"}},
     )
     with pytest.raises(DialException):
-        client.deployments.get_config("gpt-4")
+        client.deployments.get_configuration("gpt-4")
 
 
 @pytest.mark.asyncio
@@ -112,4 +109,4 @@ async def test_async_get_deployment_config_http_error():
         json_mock={"error": {"message": "Unauthorized", "type": "auth_error"}},
     )
     with pytest.raises(DialException):
-        await client.deployments.get_config("gpt-4")
+        await client.deployments.get_configuration("gpt-4")

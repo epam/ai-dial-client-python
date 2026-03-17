@@ -1,12 +1,8 @@
-from typing import List
+from typing import Any, Dict, List
 
 from aidial_client._internal_types._http_request import FinalRequestOptions
 from aidial_client.resources.base import AsyncResource, Resource
-from aidial_client.types.deployment import (
-    Deployment,
-    DeploymentConfig,
-    DeploymentsResponse,
-)
+from aidial_client.types.deployment import Deployment, DeploymentsResponse
 
 
 class Deployments(Resource):
@@ -27,9 +23,9 @@ class Deployments(Resource):
             ),
         )
 
-    def get_config(self, deployment_id: str) -> DeploymentConfig:
+    def get_configuration(self, deployment_id: str) -> Dict[str, Any]:
         return self.http_client.request(
-            cast_to=DeploymentConfig,
+            cast_to=dict,
             options=FinalRequestOptions(
                 method="GET",
                 url=f"v1/deployments/{deployment_id}/configuration",
@@ -55,9 +51,9 @@ class AsyncDeployments(AsyncResource):
             ),
         )
 
-    async def get_config(self, deployment_id: str) -> DeploymentConfig:
+    async def get_configuration(self, deployment_id: str) -> Dict[str, Any]:
         return await self.http_client.request(
-            cast_to=DeploymentConfig,
+            cast_to=dict,
             options=FinalRequestOptions(
                 method="GET",
                 url=f"v1/deployments/{deployment_id}/configuration",

@@ -15,6 +15,7 @@ ResponseT = TypeVar(
         ExtraForbidModel,
         bytes,
         str,
+        dict,
         httpx.Response,
         FileDownloadResponse,
         None,
