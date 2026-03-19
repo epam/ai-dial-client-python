@@ -104,7 +104,6 @@ You can use a Bearer Token for a token-based authentication of API calls. Client
 ```python
 from aidial_client import Dial, AsyncDial
 
-
 # Create an instance of the synchronous client
 sync_client = Dial(
     bearer_token="your_bearer_token_here", base_url="https://your-dial-instance.com"
