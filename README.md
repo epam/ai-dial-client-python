@@ -213,9 +213,9 @@ Some deployments expose a JSON Schema document describing their runtime configur
 
 ```python
 # Sync
-config = client.deployments.get_configuration("gpt-35-turbo")
+config = client.deployments.get_configuration_schema("gpt-35-turbo")
 # Async
-config = await async_client.deployments.get_configuration("gpt-35-turbo")
+config = await async_client.deployments.get_configuration_schema("gpt-35-turbo")
 ```
 
 The response is a plain `dict` whose shape is entirely deployment-specific:

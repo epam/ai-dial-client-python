@@ -23,7 +23,7 @@ class Deployments(Resource):
             ),
         )
 
-    def get_configuration(self, deployment_id: str) -> Dict[str, Any]:
+    def get_configuration_schema(self, deployment_id: str) -> Dict[str, Any]:
         return self.http_client.request(
             cast_to=dict,
             options=FinalRequestOptions(
@@ -51,7 +51,9 @@ class AsyncDeployments(AsyncResource):
             ),
         )
 
-    async def get_configuration(self, deployment_id: str) -> Dict[str, Any]:
+    async def get_configuration_schema(
+        self, deployment_id: str
+    ) -> Dict[str, Any]:
         return await self.http_client.request(
             cast_to=dict,
             options=FinalRequestOptions(

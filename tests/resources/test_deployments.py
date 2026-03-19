@@ -78,7 +78,7 @@ async def test_async_get_deployment_http_error():
 
 def test_get_deployment_config():
     client = get_client_mock(status_code=200, json_mock=CONFIG_MOCK)
-    result = client.deployments.get_configuration("gpt-4")
+    result = client.deployments.get_configuration_schema("gpt-4")
     assert isinstance(result, dict)
     assert result.get("type") == "object"
     assert "properties" in result
@@ -87,7 +87,7 @@ def test_get_deployment_config():
 @pytest.mark.asyncio
 async def test_async_get_deployment_config():
     client = get_async_client_mock(status_code=200, json_mock=CONFIG_MOCK)
-    result = await client.deployments.get_configuration("gpt-4")
+    result = await client.deployments.get_configuration_schema("gpt-4")
     assert isinstance(result, dict)
     assert result.get("type") == "object"
     assert "properties" in result
@@ -99,7 +99,7 @@ def test_get_deployment_config_http_error():
         json_mock={"error": {"message": "Unauthorized", "type": "auth_error"}},
     )
     with pytest.raises(DialException):
-        client.deployments.get_configuration("gpt-4")
+        client.deployments.get_configuration_schema("gpt-4")
 
 
 @pytest.mark.asyncio
@@ -109,4 +109,4 @@ async def test_async_get_deployment_config_http_error():
         json_mock={"error": {"message": "Unauthorized", "type": "auth_error"}},
     )
     with pytest.raises(DialException):
-        await client.deployments.get_configuration("gpt-4")
+        await client.deployments.get_configuration_schema("gpt-4")
