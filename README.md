@@ -17,7 +17,10 @@
   - [Authentication](#authentication)
       - [API Keys](#api-keys)
       - [Bearer Token](#bearer-token)
-  - [List Deployments](#list-deployments)
+  - [Deployments](#deployments)
+      - [List Deployments](#list-deployments)
+      - [Get Deployment by Id](#get-deployment-by-id)
+      - [Get Deployment Configuration](#get-deployment-configuration)
   - [Make Chat Completions Requests](#make-completions-requests)
       - [Without Streaming](#without-streaming)
       - [With Streaming](#with-streaming)
@@ -30,6 +33,12 @@
   - [Applications](#applications)
       - [List Applications](#list-applications)
       - [Get Application by Id](#get-application-by-id)
+  - [Models](#models)
+      - [Get Model by Name](#get-model-by-name)
+  - [Toolsets](#toolsets)
+      - [Get Toolset by Id](#get-toolset-by-id)
+  - [Resource Permissions](#resource-permissions)
+      - [Grant Permissions](#grant-permissions)
   - [Client Pool](#client-pool)
       - [Synchronous Client Pool](#synchronous-client-pool)
       - [Asynchronous Client Pool](#asynchronous-client-pool)
@@ -136,17 +145,92 @@ dial_client = Dial(
 )
 ```
 
-### List Deployments
+### Deployments
 
-If you want to get a list of available deployments, use `client.deployments.list()` or method:
+#### List Deployments
+
+To get a list of available deployments:
+
+```python
+# Sync
+deployments = client.deployments.list()
+# Async
+deployments = await async_client.deployments.list()
+```
 
 ```pycon
 >>> client.deployments.list()
 [
-    Deployment(id='gpt-35-turbo', model='gpt-35-turbo', owner='organization-owner', object='deployment', status='succeeded', created_at=1724760524, updated_at=1724760524, scale_settings=ScaleSettings(scale_type='standard'), features={'rate': False, 'tokenize': False, 'truncate_prompt': False, 'configuration': False, 'system_prompt': True, 'tools': False, 'seed': False, 'url_attachments': False, 'folder_attachments': False, 'allow_resume': True}),
-    Deployment(id='stable-diffusion-xl', model='stable-diffusion-xl', owner='organization-owner', object='deployment', status='succeeded', created_at=1724760524, updated_at=1724760524, scale_settings=ScaleSettings(scale_type='standard'), features={'rate': False, 'tokenize': False, 'truncate_prompt': False, 'configuration': False, 'system_prompt': True, 'tools': False, 'seed': False, 'url_attachments': False, 'folder_attachments': False, 'allow_resume': True}),
-    Deployment(id='gemini-pro-vision', model='gemini-pro-vision', owner='organization-owner', object='deployment', status='succeeded', created_at=1724760524, updated_at=1724760524, scale_settings=ScaleSettings(scale_type='standard'), features={'rate': False, 'tokenize': False, 'truncate_prompt': False, 'configuration': False, 'system_prompt': True, 'tools': False, 'seed': False, 'url_attachments': False, 'folder_attachments': False, 'allow_resume': True}),
+    Deployment(id='gpt-35-turbo', model='gpt-35-turbo', owner='organization-owner', object='deployment', status='succeeded', created_at=1724760524, updated_at=1724760524, scale_settings=ScaleSettings(scale_type='standard'), features=Features(rate=False, tokenize=False, truncate_prompt=False, configuration=False, system_prompt=True, tools=False, seed=False, url_attachments=False, folder_attachments=False, allow_resume=True)),
+    Deployment(id='stable-diffusion-xl', model='stable-diffusion-xl', owner='organization-owner', object='deployment', status='succeeded', created_at=1724760524, updated_at=1724760524, scale_settings=ScaleSettings(scale_type='standard'), features=Features(rate=False, tokenize=False, truncate_prompt=False, configuration=False, system_prompt=True, tools=False, seed=False, url_attachments=False, folder_attachments=False, allow_resume=True)),
+    ...,
 ]
+```
+
+#### Get Deployment by Id
+
+To fetch a single deployment by its identifier:
+
+```python
+# Sync
+deployment = client.deployments.get("gpt-35-turbo")
+# Async
+deployment = await async_client.deployments.get("gpt-35-turbo")
+```
+
+As a result, you will receive a `Deployment` object:
+
+```python
+Deployment(
+    id="gpt-35-turbo",
+    model="gpt-35-turbo",
+    object="deployment",
+    owner="organization-owner",
+    status="succeeded",
+    created_at=1724760524,
+    updated_at=1724760524,
+    scale_settings=ScaleSettings(scale_type="standard"),
+    features=Features(
+        rate=False,
+        tokenize=False,
+        truncate_prompt=False,
+        configuration=True,
+        system_prompt=True,
+        tools=True,
+        seed=False,
+        url_attachments=False,
+        folder_attachments=False,
+        allow_resume=True,
+    ),
+    defaults={},
+)
+```
+
+#### Get Deployment Configuration
+
+Some deployments expose a JSON Schema document describing their runtime configuration. Use `get_configuration()` to retrieve it:
+
+```python
+# Sync
+config = client.deployments.get_configuration_schema("gpt-35-turbo")
+# Async
+config = await async_client.deployments.get_configuration_schema("gpt-35-turbo")
+```
+
+The response is a plain `dict` whose shape is entirely deployment-specific:
+
+```python
+{
+    "type": "object",
+    "properties": {
+        "model_to_use": {
+            "type": "string",
+            "enum": ["gpt-4", "gpt-4o"],
+            "default": "gpt-4",
+        }
+    },
+    "additionalProperties": False,
+}
 ```
 
 ### Make Completions Requests
@@ -534,6 +618,111 @@ application = await async_client.application.get("app_id")
 ```
 
 As a result, you will receive a list of `Application` objects. Refer to the [previous example](#list-applications).
+
+### Models
+
+#### Get Model by Name
+
+To retrieve metadata, capabilities, and pricing for a specific model:
+
+```python
+# Sync
+model_info = client.model.get("gpt-4")
+# Async
+model_info = await async_client.model.get("gpt-4")
+```
+
+As a result, you will receive a `ModelInfo` object:
+
+```python
+ModelInfo(
+    id="gpt-4",
+    model="gpt-4",
+    object="model",
+    owner="organization-owner",
+    status="succeeded",
+    created_at=1724760524,
+    updated_at=1724760524,
+    lifecycle_status="generally-available",
+    display_name="GPT-4",
+    description="OpenAI GPT-4 model.",
+    capabilities=ModelCapabilities(
+        scale_types=["standard"],
+        completion=False,
+        chat_completion=True,
+        embeddings=False,
+        fine_tune=False,
+        inference=False,
+    ),
+    limits=ModelLimits(
+        max_prompt_tokens=8192,
+        max_completion_tokens=4096,
+        max_total_tokens=None,
+    ),
+    pricing=ModelPricing(
+        unit="token",
+        prompt="0.00003",
+        completion="0.00006",
+    ),
+)
+```
+
+### Toolsets
+
+#### Get Toolset by Id
+
+To retrieve information about a specific MCP toolset:
+
+```python
+# Sync
+toolset_info = client.toolset.get("my-toolset")
+# Async
+toolset_info = await async_client.toolset.get("my-toolset")
+```
+
+As a result, you will receive a `ToolsetInfo` object:
+
+```python
+ToolsetInfo(
+    id="my-toolset",
+    toolset="my-toolset",
+    display_name="My Toolset",
+    description="A collection of tools for data processing.",
+    transport="HTTP",
+    allowed_tools=["tool-a", "tool-b"],
+    owner="organization-owner",
+    status="succeeded",
+    created_at=1724760524,
+    updated_at=1724760524,
+)
+```
+
+### Resource Permissions
+
+#### Grant Permissions
+
+Use `resource_permissions.grant()` to grant access to one or more files in DIAL storage to a specific deployment (receiver). This is typically used when a deployment needs to read files on behalf of a user.
+
+```python
+# Sync
+client.resource_permissions.grant(
+    resources=["files/my-bucket/report.pdf"],
+    receiver="my-deployment",
+    permissions=["READ"],
+)
+# Async
+await async_client.resource_permissions.grant(
+    resources=["files/my-bucket/report.pdf"],
+    receiver="my-deployment",
+    permissions=["READ"],
+)
+```
+
+- `resources` — list of DIAL file URL strings to share.
+- `receiver` — the deployment ID that should receive access.
+- `permissions` — list of permission strings; defaults to `["READ"]`.
+
+The method returns `None` on success and raises `DialException` on HTTP error.
 
 ### Client Pool
 

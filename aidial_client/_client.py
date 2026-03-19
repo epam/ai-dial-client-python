@@ -109,6 +109,11 @@ class Dial(BaseDialClient[SyncHTTPClient, SyncAuthValue]):
         )
         self.deployments = resources.Deployments(http_client=self._http_client)
         self.application = resources.Application(http_client=self._http_client)
+        self.toolset = resources.Toolset(http_client=self._http_client)
+        self.model = resources.Model(http_client=self._http_client)
+        self.resource_permissions = resources.ResourcePermissions(
+            http_client=self._http_client
+        )
 
     def _create_http_client(self) -> SyncHTTPClient:
         return SyncHTTPClient(
@@ -187,6 +192,11 @@ class AsyncDial(BaseDialClient[AsyncHTTPClient, AsyncAuthValue]):
             http_client=self._http_client
         )
         self.application = resources.AsyncApplication(
+            http_client=self._http_client
+        )
+        self.toolset = resources.AsyncToolset(http_client=self._http_client)
+        self.model = resources.AsyncModel(http_client=self._http_client)
+        self.resource_permissions = resources.AsyncResourcePermissions(
             http_client=self._http_client
         )
 

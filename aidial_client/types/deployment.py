@@ -20,6 +20,11 @@ class Features(ExtraAllowModel):
     folder_attachments: Optional[bool] = None
     allow_resume: Optional[bool] = None
     parallel_tool_calls: Optional[bool] = None
+    accessible_by_per_request_key: Optional[bool] = None
+    content_parts: Optional[bool] = None
+    cache: Optional[bool] = None
+    auto_caching: Optional[bool] = None
+    assistant_attachments_in_request: Optional[bool] = None
 
 
 class DeploymentBase(ExtraAllowModel):
