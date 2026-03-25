@@ -1,12 +1,9 @@
 import json
-from unittest.mock import MagicMock, patch
 
 import httpx
-import pytest
 
-from aidial_client._exception import ParsingDataError
 from aidial_client._utils._response_processing import process_block_response
-from aidial_client.types.metadata import BaseMetadata, FileItem, FileMetadata
+from aidial_client.types.metadata import BaseMetadata, FileMetadata
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -107,4 +104,3 @@ class TestBaseMetadataOptionalName:
         result = process_block_response(FileMetadata, response)
         assert result.name is None
         assert result.bucket == "684f6Lz7ubje66aoCRsa5c"
-
