@@ -1,6 +1,6 @@
 [project]
 name = "aidial-client"
-version = "0.6.0rc"
+version = "0.7.0rc"
 description = "A Python client library for the AI DIAL API"
 readme = "README.md"
 license = "Apache-2.0"
