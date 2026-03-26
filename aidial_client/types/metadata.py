@@ -17,7 +17,7 @@ class BaseMetadata(ExtraAllowModel):
             alias_generator = to_camel
             allow_population_by_field_name = True
 
-    name: str
+    name: Optional[str] = None
     parent_path: Optional[str] = None
     bucket: str
     url: str
