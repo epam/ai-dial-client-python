@@ -20,7 +20,7 @@ class ResourcePermissions(Resource):
                 method="POST",
                 url=_GRANT_URL,
                 json_data={
-                    "resources": [
+                    "resourcePermissions": [
                         {"url": url, "permissions": permissions}
                         for url in resources
                     ],
@@ -43,7 +43,7 @@ class AsyncResourcePermissions(AsyncResource):
                 method="POST",
                 url=_GRANT_URL,
                 json_data={
-                    "resources": [
+                    "resourcePermissions": [
                         {"url": url, "permissions": permissions}
                         for url in resources
                     ],
