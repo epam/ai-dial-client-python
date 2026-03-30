@@ -75,7 +75,9 @@ def test_grant_request_body_single_resource():
     assert len(captured) == 1
     body = json.loads(captured[0].content)
     assert body == {
-        "resources": [{"url": "files/bucket/img.png", "permissions": ["READ"]}],
+        "resourcePermissions": [
+            {"url": "files/bucket/img.png", "permissions": ["READ"]}
+        ],
         "receiver": "my-app",
     }
 
@@ -91,7 +93,9 @@ async def test_async_grant_request_body_single_resource():
     assert len(captured) == 1
     body = json.loads(captured[0].content)
     assert body == {
-        "resources": [{"url": "files/bucket/img.png", "permissions": ["READ"]}],
+        "resourcePermissions": [
+            {"url": "files/bucket/img.png", "permissions": ["READ"]}
+        ],
         "receiver": "my-app",
     }
 
@@ -105,12 +109,12 @@ def test_grant_request_body_multiple_resources():
     )
     body = json.loads(captured[0].content)
     assert body["receiver"] == "deployment-x"
-    assert len(body["resources"]) == 2
-    assert body["resources"][0] == {
+    assert len(body["resourcePermissions"]) == 2
+    assert body["resourcePermissions"][0] == {
         "url": "files/bucket/a.png",
         "permissions": ["READ"],
     }
-    assert body["resources"][1] == {
+    assert body["resourcePermissions"][1] == {
         "url": "files/bucket/b.png",
         "permissions": ["READ"],
     }
@@ -124,7 +128,7 @@ def test_grant_request_body_write_permission():
         permissions=["WRITE"],
     )
     body = json.loads(captured[0].content)
-    assert body["resources"][0]["permissions"] == ["WRITE"]
+    assert body["resourcePermissions"][0]["permissions"] == ["WRITE"]
 
 
 def test_grant_request_url():
@@ -157,7 +161,7 @@ def test_grant_default_permissions_are_read():
         receiver="my-app",
     )
     body = json.loads(captured[0].content)
-    assert body["resources"][0]["permissions"] == ["READ"]
+    assert body["resourcePermissions"][0]["permissions"] == ["READ"]
 
 
 # ---------------------------------------------------------------------------
