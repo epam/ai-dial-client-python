@@ -22,6 +22,9 @@ clean:
 	$(POETRY) run clean
 	$(POETRY) env remove --all
 
+install_git_hooks: install
+	$(VENV_DIR)/bin/pre-commit install
+
 lint: install
 	$(POETRY) run nox -s lint
 
@@ -44,6 +47,7 @@ help:
 	@echo '===================='
 	@echo 'install                      - install virtual env and dependencies'
 	@echo 'clean                        - clean virtual env and build artifacts'
+	@echo 'install_git_hooks            - install the git hooks'
 	@echo '-- LINTING --'
 	@echo 'format                       - run code formatters'
 	@echo 'lint                         - run linters'

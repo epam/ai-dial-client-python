@@ -46,6 +46,7 @@
   - [Pre-requisites](#pre-requisites)
   - [Setup](#setup)
   - [Main commands](#main-commands)
+  - [Git hooks](#git-hooks)
 
 ## Usage
 
@@ -789,16 +790,28 @@ The following tools are required to work with the project:
     make install
     ```
 
+### Git hooks
+
+You may optionally install Git hooks that will automatically run the linting step on Git push. You only need to do it once for the given repository.
+
+```sh
+make install_git_hooks
+```
+
+> [!IMPORTANT]
+> This command doesn't work if you have already installed Git hooks locally or globally.
+
 ### Main commands
 
-| Command                 | Description                                   |
-|-------------------------|-----------------------------------------------|
-| `make install`          | Install virtual environment and dependencies  |
-| `make build`            | Build the package                             |
-| `make clean`            | Clean virtual environment and build artifacts |
-| `make lint`             | Run linters                                   |
-| `make format`           | Run code formatters                           |
-| `make test`             | Run tests (e.g., `make test PYTHON=3.12`)     |
-| `make integration_test` | Run integration tests                         |
-| `make coverage`         | Generate test coverage report                 |
-| `make help`             | Show available commands                       |
+| Command                   | Description                                   |
+|---------------------------|-----------------------------------------------|
+| `make install`            | Install virtual environment and dependencies  |
+| `make build`              | Build the package                             |
+| `make clean`              | Clean virtual environment and build artifacts |
+| `make install_git_hooks`  | Install the git hooks                         |
+| `make lint`               | Run linters                                   |
+| `make format`             | Run code formatters                           |
+| `make test`               | Run tests (e.g., `make test PYTHON=3.12`)     |
+| `make integration_test`   | Run integration tests                         |
+| `make coverage`           | Generate test coverage report                 |
+| `make help`               | Show available commands                       |
