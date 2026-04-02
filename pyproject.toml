@@ -42,6 +42,9 @@ autoflake = "^2.2.0"
 codespell = "^2.3.0"
 blacken-docs = "^1.18.0"
 
+[tool.poetry.group.dev.dependencies]
+pre-commit = "^4.5.1"
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 filterwarnings = ["error::pytest.PytestUnhandledCoroutineWarning"]
