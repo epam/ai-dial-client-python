@@ -3,7 +3,6 @@
     "allow": [
       "Bash(make format:*)",
       "Bash(make lint:*)",
-      "Bash(make mypy:*)",
       "Bash(make test:*)"
     ],
     "deny": [
