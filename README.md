@@ -30,6 +30,9 @@
       - [Downloading Files](#downloading-files)
       - [Deleting Files](#deleting-files)
       - [Accessing Metadata](#accessing-metadata)
+  - [Prompts](#prompts)
+      - [Get Prompt](#get-prompt)
+      - [Get Prompt Metadata](#get-prompt-metadata)
   - [Applications](#applications)
       - [List Applications](#list-applications)
       - [Get Application by Id](#get-application-by-id)
@@ -553,6 +556,57 @@ FileMetadata(
     updatedAt=1724836248936,
     etag="9749fad13d6e7092a6337c4af9d83764",
     createdAt=1724836229736,
+)
+```
+
+### Prompts
+
+#### Get Prompt
+
+Use `get()` to fetch a single prompt by its storage path:
+
+```python
+# Sync
+prompt = client.prompts.get("prompts/my-bucket/my-folder/my-prompt")
+# Async
+prompt = await async_client.prompts.get("prompts/my-bucket/my-folder/my-prompt")
+```
+
+As a result, you will receive a `Prompt` object:
+
+```python
+Prompt(
+    id="prompts/my-bucket/my-folder/my-prompt",
+    name="my-prompt",
+    folder_id="my-folder",
+    content="You are a helpful assistant.",
+)
+```
+
+#### Get Prompt Metadata
+
+Use `get_metadata()` to access metadata of a prompt:
+
+```python
+# Sync
+metadata = client.prompts.get_metadata("prompts/my-bucket/my-folder/my-prompt")
+# Async
+metadata = await async_client.prompts.get_metadata(
+    "prompts/my-bucket/my-folder/my-prompt"
+)
+```
+
+As a result, you will receive a `PromptMetadata` object:
+
+```python
+PromptMetadata(
+    name="my-prompt",
+    parent_path="my-folder",
+    bucket="my-bucket",
+    url="prompts/my-bucket/my-folder/my-prompt",
+    node_type="ITEM",
+    resource_type="PROMPT",
+    items=[],
 )
 ```
 

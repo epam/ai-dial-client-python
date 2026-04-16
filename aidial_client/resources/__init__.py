@@ -11,6 +11,7 @@ from .application import Application, AsyncApplication
 from .bucket import AsyncBucket, Bucket
 from .chat import AsyncChat, Chat
 from .files import AsyncFiles, Files
+from .prompts import AsyncPrompts, Prompts
 
 __all__ = [
     "Chat",
@@ -19,6 +20,8 @@ __all__ = [
     "AsyncBucket",
     "Files",
     "AsyncFiles",
+    "Prompts",
+    "AsyncPrompts",
     "AsyncDeployments",
     "Deployments",
     "AsyncMetadata",
