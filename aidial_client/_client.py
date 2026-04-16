@@ -107,6 +107,11 @@ class Dial(BaseDialClient[SyncHTTPClient, SyncAuthValue]):
             metadata=self.metadata,
             dial_api_url=self.api_url,
         )
+        self.prompts = resources.Prompts(
+            http_client=self._http_client,
+            metadata=self.metadata,
+            dial_api_url=self.api_url,
+        )
         self.deployments = resources.Deployments(http_client=self._http_client)
         self.application = resources.Application(http_client=self._http_client)
         self.toolset = resources.Toolset(http_client=self._http_client)
@@ -184,6 +189,11 @@ class AsyncDial(BaseDialClient[AsyncHTTPClient, AsyncAuthValue]):
         self.bucket = resources.AsyncBucket(http_client=self._http_client)
         self.metadata = resources.AsyncMetadata(http_client=self._http_client)
         self.files = resources.AsyncFiles(
+            http_client=self._http_client,
+            metadata=self.metadata,
+            dial_api_url=self.api_url,
+        )
+        self.prompts = resources.AsyncPrompts(
             http_client=self._http_client,
             metadata=self.metadata,
             dial_api_url=self.api_url,
