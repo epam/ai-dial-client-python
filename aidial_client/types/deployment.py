@@ -25,6 +25,7 @@ class Features(ExtraAllowModel):
     cache: Optional[bool] = None
     auto_caching: Optional[bool] = None
     assistant_attachments_in_request: Optional[bool] = None
+    mcp: Optional[bool] = None
 
 
 class DeploymentBase(ExtraAllowModel):
