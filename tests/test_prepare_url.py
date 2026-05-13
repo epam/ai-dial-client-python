@@ -23,8 +23,8 @@ def client(request):
         ),
         ("/v1/foo/", f"{BASE_URL}/v1/foo/"),
         ("v1/x/?foo=1", f"{BASE_URL}/v1/x/?foo=1"),
-        ('/', f"{BASE_URL}/"),
-        ('', f"{BASE_URL}/"),
+        ("/", f"{BASE_URL}/"),
+        ("", f"{BASE_URL}/"),
     ],
 )
 def test_prepare_url_preserves_trailing_slash(client, relative, expected_url):
