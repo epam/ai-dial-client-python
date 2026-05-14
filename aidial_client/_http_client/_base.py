@@ -51,7 +51,7 @@ class BaseHTTPClient(ABC, Generic[_HttpInternalClientT, AuthValueT]):
             merge_raw_path = (
                 self.base_url.raw_path + parsed_url.raw_path.lstrip(b"/")
             )
-            return self.base_url.copy_with(raw_path=merge_raw_path.rstrip(b"/"))
+            return self.base_url.copy_with(raw_path=merge_raw_path)
         return parsed_url
 
     def _build_request(
