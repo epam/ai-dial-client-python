@@ -109,6 +109,46 @@ class Files(Resource, DialStorageResourceMixin):
             on_http_error=_files_error_processor,
         )
 
+    def move_to(
+        self,
+        source: Union[str, PurePosixPath],
+        destination: Union[str, PurePosixPath],
+        overwrite: bool = False,
+    ) -> None:
+        return self.http_client.request(
+            cast_to=NoneType,
+            options=FinalRequestOptions(
+                method="POST",
+                url=urljoin(API_PREFIX, "ops/resource/move"),
+                json_data={
+                    "sourceUrl": self.get_api_path(str(source)),
+                    "destinationUrl": self.get_api_path(str(destination)),
+                    "overwrite": overwrite,
+                },
+            ),
+            on_http_error=_files_error_processor,
+        )
+
+    def copy_to(
+        self,
+        source: Union[str, PurePosixPath],
+        destination: Union[str, PurePosixPath],
+        overwrite: bool = False,
+    ) -> None:
+        return self.http_client.request(
+            cast_to=NoneType,
+            options=FinalRequestOptions(
+                method="POST",
+                url=urljoin(API_PREFIX, "ops/resource/copy"),
+                json_data={
+                    "sourceUrl": self.get_api_path(str(source)),
+                    "destinationUrl": self.get_api_path(str(destination)),
+                    "overwrite": overwrite,
+                },
+            ),
+            on_http_error=_files_error_processor,
+        )
+
     def get_metadata(self, url: Union[str, PurePosixPath]) -> FileMetadata:
         return self.metadata.get(
             resource="files",
@@ -184,6 +224,46 @@ class AsyncFiles(AsyncResource, DialStorageResourceMixin):
                         "If-Match": etag_if_match,
                     }
                 ),
+            ),
+            on_http_error=_files_error_processor,
+        )
+
+    async def move_to(
+        self,
+        source: Union[str, PurePosixPath],
+        destination: Union[str, PurePosixPath],
+        overwrite: bool = False,
+    ) -> None:
+        return await self.http_client.request(
+            cast_to=NoneType,
+            options=FinalRequestOptions(
+                method="POST",
+                url=urljoin(API_PREFIX, "ops/resource/move"),
+                json_data={
+                    "sourceUrl": self.get_api_path(str(source)),
+                    "destinationUrl": self.get_api_path(str(destination)),
+                    "overwrite": overwrite,
+                },
+            ),
+            on_http_error=_files_error_processor,
+        )
+
+    async def copy_to(
+        self,
+        source: Union[str, PurePosixPath],
+        destination: Union[str, PurePosixPath],
+        overwrite: bool = False,
+    ) -> None:
+        return await self.http_client.request(
+            cast_to=NoneType,
+            options=FinalRequestOptions(
+                method="POST",
+                url=urljoin(API_PREFIX, "ops/resource/copy"),
+                json_data={
+                    "sourceUrl": self.get_api_path(str(source)),
+                    "destinationUrl": self.get_api_path(str(destination)),
+                    "overwrite": overwrite,
+                },
             ),
             on_http_error=_files_error_processor,
         )

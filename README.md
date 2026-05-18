@@ -530,6 +530,36 @@ await async_client.files.delete(
 )
 ```
 
+#### Moving and Copying Files
+
+Use `move_to()` to relocate a file within DIAL storage and `copy_to()` to duplicate it. Both accept the same `source` / `destination` URLs (relative, absolute, or `PurePosixPath`) and an optional `overwrite` flag (default `False`):
+
+```python
+# Sync client
+sync_client.files.move_to(
+    source=sync_client.my_files_home() / "draft/my-file.txt",
+    destination=sync_client.my_files_home() / "final/my-file.txt",
+)
+sync_client.files.copy_to(
+    source=sync_client.my_files_home() / "final/my-file.txt",
+    destination=sync_client.my_files_home() / "backup/my-file.txt",
+    overwrite=True,
+)
+
+# Async client
+await async_client.files.move_to(
+    source=await async_client.my_files_home() / "draft/my-file.txt",
+    destination=await async_client.my_files_home() / "final/my-file.txt",
+)
+await async_client.files.copy_to(
+    source=await async_client.my_files_home() / "final/my-file.txt",
+    destination=await async_client.my_files_home() / "backup/my-file.txt",
+    overwrite=True,
+)
+```
+
+Both methods return `None` on success. `source` and `destination` must point to files in the same DIAL storage (passing a `prompts/...` URL raises `InvalidDialURLError`).
+
 #### Accessing Metadata
 
 Use `metadata()` to access metadata of a file:
