@@ -1,0 +1,17 @@
+name: Add to Project
+
+on:
+  issues:
+    types: [opened, reopened]
+
+permissions: {}
+
+jobs:
+  add-to-project:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add issue to QuickApps project
+        uses: actions/add-to-project@v2
+        with:
+          project-url: https://github.com/orgs/epam/projects/99
+          github-token: ${{ secrets.ACTIONS_BOT_TOKEN }}
