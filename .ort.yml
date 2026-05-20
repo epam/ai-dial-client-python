@@ -21,3 +21,6 @@ resolutions:
     - message: ".*PyPI::typing-extensions:4\\.15\\.0.*"
       reason: "CANT_FIX_EXCEPTION"
       comment: "Same License as CPython: https://github.com/python/typing_extensions/blob/4.15.0/LICENSE"
+    - message: ".*PyPI::idna.*"
+      reason: "CANT_FIX_EXCEPTION"
+      comment: "ORT cannot pick up license information"
