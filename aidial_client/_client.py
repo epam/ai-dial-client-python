@@ -169,10 +169,8 @@ class AsyncDial(BaseDialClient[AsyncHTTPClient, AsyncAuthValue]):
 
     def _init_resources(self) -> None:
         openai_client = openai.AsyncAzureOpenAI(
-            # set empty string, we will override
-            # it with our client values during a request
-            api_key="",
-            api_version="",
+            api_key="-",
+            api_version="-",
             base_url=urljoin(self._base_url, OPENAI_PREFIX),
             http_client=self._http_client.internal_http_client,
             timeout=self._http_client._timeout,
