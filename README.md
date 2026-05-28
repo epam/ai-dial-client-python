@@ -42,6 +42,8 @@
       - [Get Toolset by Id](#get-toolset-by-id)
   - [Resource Permissions](#resource-permissions)
       - [Grant Permissions](#grant-permissions)
+  - [Client Channel](#client-channel)
+      - [Send a JSON-RPC Request](#send-a-json-rpc-request)
   - [Client Pool](#client-pool)
       - [Synchronous Client Pool](#synchronous-client-pool)
       - [Asynchronous Client Pool](#asynchronous-client-pool)
@@ -853,6 +855,63 @@ await async_client.resource_permissions.grant(
 - `permissions` — list of permission strings; defaults to `["READ"]`.
 
 The method returns `None` on success and raises `DialException` on HTTP error.
+
+### Client Channel
+
+DIAL Core's client channel API (`/v1/ops/client-channel/*`) lets deployments send JSON-RPC requests to an interactive client (e.g. the chat UI) and receive their responses. The client must be subscribed to a channel; the channel id is propagated to the deployment via the `X-DIAL-CLIENT-CHANNEL-ID` forwarded header on the inbound request.
+
+#### Send a JSON-RPC Request
+
+Use `client_channel.interact()` to send a JSON-RPC request (or a batch) to the channel and wait for the response(s). The method returns a `List[JsonRpcResponse]` containing one entry per request. Server-emitted order is **not** guaranteed to match request order — correlate each response with its request via the `id` field, not by positional index. Every request must have a non-`None` `id`; JSON-RPC notifications are not supported here (the server does not respond to them, so `interact()` would block).
+
+```python
+from aidial_client import JsonRpcRequest
+
+# Sync — single request
+responses = client.client_channel.interact(
+    channel_id="<channel-id-from-X-DIAL-CLIENT-CHANNEL-ID>",
+    request=JsonRpcRequest(
+        method="toolset/signin",
+        params={"toolsetId": "toolsets/public/my-toolset"},
+        id="1",
+    ),
+    timeout=120.0,
+)
+
+# Async — batched requests
+responses = await async_client.client_channel.interact(
+    channel_id="<channel-id>",
+    request=[
+        JsonRpcRequest(
+            method="toolset/signin",
+            params={"toolsetId": "toolsets/public/toolset-a"},
+            id="1",
+        ),
+        JsonRpcRequest(
+            method="toolset/signin",
+            params={"toolsetId": "toolsets/public/toolset-b"},
+            id="2",
+        ),
+    ],
+)
+```
+
+Each element is a `JsonRpcResponse`:
+
+```python
+JsonRpcResponse(
+    jsonrpc="2.0",
+    result="success",  # or None, with `error` populated instead
+    error=None,  # JsonRpcError(code=..., message=..., data=...) on failure
+    id="1",
+)
+```
+
+- `channel_id` — required; the channel id received via the `X-DIAL-CLIENT-CHANNEL-ID` header on the inbound request.
+- `request` — a single `JsonRpcRequest` or a list of them. The wire body is an object or an array accordingly.
+- `timeout` — wall-clock timeout in seconds (or an `httpx.Timeout`); defaults to the client-wide timeout. Useful for interactive flows where the channel may take a while to respond.
+
+Raises `DialException` if the HTTP status is not 2xx (e.g. unauthorized, missing channel) or if the stream closes before a data event arrives. Raises `ParsingDataError` if the response payload is not a valid JSON-RPC response.
 
 ### Client Pool
 

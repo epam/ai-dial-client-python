@@ -9,6 +9,11 @@ from aidial_client._exception import (
     ParsingDataError,
     ResourceNotFoundError,
 )
+from aidial_client.types.client_channel import (
+    JsonRpcError,
+    JsonRpcRequest,
+    JsonRpcResponse,
+)
 from aidial_client.types.model import ModelInfo, ModelLimits, ModelPricing
 from aidial_client.types.toolset import ToolsetInfo
 
@@ -30,4 +35,7 @@ __all__ = [
     "ModelInfo",
     "ModelPricing",
     "ModelLimits",
+    "JsonRpcRequest",
+    "JsonRpcResponse",
+    "JsonRpcError",
 ]

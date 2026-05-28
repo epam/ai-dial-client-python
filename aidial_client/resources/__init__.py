@@ -1,3 +1,7 @@
+from aidial_client.resources.client_channel import (
+    AsyncClientChannel,
+    ClientChannel,
+)
 from aidial_client.resources.deployments import AsyncDeployments, Deployments
 from aidial_client.resources.metadata import AsyncMetadata, Metadata
 from aidial_client.resources.model import AsyncModel, Model
@@ -34,4 +38,6 @@ __all__ = [
     "AsyncModel",
     "ResourcePermissions",
     "AsyncResourcePermissions",
+    "ClientChannel",
+    "AsyncClientChannel",
 ]
