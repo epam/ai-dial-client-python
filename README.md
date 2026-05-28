@@ -591,6 +591,42 @@ FileMetadata(
 
 ### Prompts
 
+#### Save Prompt
+
+Use `save()` to create or update a prompt by its storage path:
+
+```python
+from aidial_client.types.prompt import Prompt
+
+prompt_url = "prompts/my-bucket/my-folder/my-prompt"
+prompt_payload = Prompt(
+    id=prompt_url,
+    name="my-prompt",
+    folder_id="my-folder",
+    content="You are a helpful assistant.",
+)
+
+# Sync
+saved_prompt = client.prompts.save(prompt_url, prompt=prompt_payload)
+# Async
+saved_prompt = await async_client.prompts.save(
+    prompt_url, prompt=prompt_payload
+)
+```
+
+As a result, you will receive a `PromptMetadata` object:
+
+```python
+PromptMetadata(
+    name="my-prompt",
+    parent_path="my-folder",
+    bucket="my-bucket",
+    url="prompts/my-bucket/my-folder/my-prompt",
+    node_type="ITEM",
+    resource_type="PROMPT",
+)
+```
+
 #### Get Prompt
 
 Use `get()` to fetch a single prompt by its storage path:
@@ -638,6 +674,17 @@ PromptMetadata(
     resource_type="PROMPT",
     items=[],
 )
+```
+
+#### Delete Prompt
+
+Use `delete()` to remove a prompt by its storage path:
+
+```python
+# Sync
+client.prompts.delete("prompts/my-bucket/my-folder/my-prompt")
+# Async
+await async_client.prompts.delete("prompts/my-bucket/my-folder/my-prompt")
 ```
 
 ### Applications
