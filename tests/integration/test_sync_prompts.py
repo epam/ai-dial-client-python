@@ -18,7 +18,9 @@ def _delete_if_exists(sync_client: Dial, url: str) -> None:
         pass
 
 
-def _create_prompt(url: str, content: str = "You are a helpful assistant.") -> Prompt:
+def _create_prompt(
+    url: str, content: str = "You are a helpful assistant."
+) -> Prompt:
     path_parts = url.split("/")
     name = path_parts[-1]
     folder_id = "/".join(path_parts[2:-1])
@@ -34,7 +36,9 @@ def _get_etag_or_skip(metadata: PromptMetadata) -> str:
 
 def test_save_get_delete(sync_client: Dial):
     prompt_name = f"test-prompt-{uuid.uuid4()}"
-    prompt_url = str(sync_client.my_prompts_home() / f"{PROMPT_FOLDER}/{prompt_name}")
+    prompt_url = str(
+        sync_client.my_prompts_home() / f"{PROMPT_FOLDER}/{prompt_name}"
+    )
     _delete_if_exists(sync_client, prompt_url)
 
     save_result = sync_client.prompts.save(
@@ -56,7 +60,9 @@ def test_save_get_delete(sync_client: Dial):
 
 def test_save_with_etag_if_match(sync_client: Dial):
     prompt_name = f"test-prompt-{uuid.uuid4()}"
-    prompt_url = str(sync_client.my_prompts_home() / f"{PROMPT_FOLDER}/{prompt_name}")
+    prompt_url = str(
+        sync_client.my_prompts_home() / f"{PROMPT_FOLDER}/{prompt_name}"
+    )
     _delete_if_exists(sync_client, prompt_url)
 
     first_save = sync_client.prompts.save(
@@ -81,7 +87,9 @@ def test_save_with_etag_if_match(sync_client: Dial):
 
 def test_save_with_etag_if_none_match(sync_client: Dial):
     prompt_name = f"test-prompt-{uuid.uuid4()}"
-    prompt_url = str(sync_client.my_prompts_home() / f"{PROMPT_FOLDER}/{prompt_name}")
+    prompt_url = str(
+        sync_client.my_prompts_home() / f"{PROMPT_FOLDER}/{prompt_name}"
+    )
     _delete_if_exists(sync_client, prompt_url)
 
     sync_client.prompts.save(
@@ -100,7 +108,9 @@ def test_save_with_etag_if_none_match(sync_client: Dial):
 
 def test_delete_with_etag(sync_client: Dial):
     prompt_name = f"test-prompt-{uuid.uuid4()}"
-    prompt_url = str(sync_client.my_prompts_home() / f"{PROMPT_FOLDER}/{prompt_name}")
+    prompt_url = str(
+        sync_client.my_prompts_home() / f"{PROMPT_FOLDER}/{prompt_name}"
+    )
     _delete_if_exists(sync_client, prompt_url)
 
     save_result = sync_client.prompts.save(

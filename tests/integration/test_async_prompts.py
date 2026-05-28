@@ -18,7 +18,9 @@ async def _delete_if_exists(async_client: AsyncDial, url: str) -> None:
         pass
 
 
-def _create_prompt(url: str, content: str = "You are a helpful assistant.") -> Prompt:
+def _create_prompt(
+    url: str, content: str = "You are a helpful assistant."
+) -> Prompt:
     path_parts = url.split("/")
     name = path_parts[-1]
     folder_id = "/".join(path_parts[2:-1])

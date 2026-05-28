@@ -609,9 +609,7 @@ prompt_payload = Prompt(
 # Sync
 saved_prompt = client.prompts.save(prompt_url, prompt=prompt_payload)
 # Async
-saved_prompt = await async_client.prompts.save(
-    prompt_url, prompt=prompt_payload
-)
+saved_prompt = await async_client.prompts.save(prompt_url, prompt=prompt_payload)
 ```
 
 As a result, you will receive a `PromptMetadata` object:
