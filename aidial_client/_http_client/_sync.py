@@ -159,3 +159,5 @@ class SyncHTTPClient(BaseHTTPClient[httpx.Client, SyncAuthValue]):
                 message="Request timed out",
                 status_code=HTTPStatus.REQUEST_TIMEOUT,
             ) from err
+        except httpx.HTTPError as err:
+            raise DialException(message=f"Request failed: {err}") from err

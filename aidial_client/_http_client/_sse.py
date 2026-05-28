@@ -1,5 +1,12 @@
 from typing import AsyncIterator, Iterator, List
 
+from aidial_client._log import logger
+
+_UNCOMMITTED_BUFFER_WARNING = (
+    "Uncommitted data chunks in SSE stream "
+    "(stream ended without a terminating blank line); discarding."
+)
+
 
 def _strip_field(line: str, prefix: str) -> str:
     """Strip a single leading U+0020 SPACE after the field colon, per the SSE spec."""
@@ -23,6 +30,8 @@ def iter_data_events(lines: Iterator[str]) -> Iterator[str]:
                 buffer = []
         elif line.startswith("data:"):
             buffer.append(_strip_field(line, "data:"))
+    if buffer:
+        logger.warning(_UNCOMMITTED_BUFFER_WARNING)
 
 
 async def aiter_data_events(lines: AsyncIterator[str]) -> AsyncIterator[str]:
@@ -34,3 +43,5 @@ async def aiter_data_events(lines: AsyncIterator[str]) -> AsyncIterator[str]:
                 buffer = []
         elif line.startswith("data:"):
             buffer.append(_strip_field(line, "data:"))
+    if buffer:
+        logger.warning(_UNCOMMITTED_BUFFER_WARNING)

@@ -168,3 +168,5 @@ class AsyncHTTPClient(BaseHTTPClient[httpx.AsyncClient, AsyncAuthValue]):
                 message="Request timed out",
                 status_code=HTTPStatus.REQUEST_TIMEOUT,
             ) from err
+        except httpx.HTTPError as err:
+            raise DialException(message=f"Request failed: {err}") from err

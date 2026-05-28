@@ -43,7 +43,7 @@
   - [Resource Permissions](#resource-permissions)
       - [Grant Permissions](#grant-permissions)
   - [Client Channel](#client-channel)
-      - [Send a JSON-RPC Request](#send-a-json-rpc-request)
+      - [Sign In to Toolsets](#sign-in-to-toolsets)
   - [Client Pool](#client-pool)
       - [Synchronous Client Pool](#synchronous-client-pool)
       - [Asynchronous Client Pool](#asynchronous-client-pool)
@@ -858,60 +858,52 @@ The method returns `None` on success and raises `DialException` on HTTP error.
 
 ### Client Channel
 
-DIAL Core's client channel API (`/v1/ops/client-channel/*`) lets deployments send JSON-RPC requests to an interactive client (e.g. the chat UI) and receive their responses. The client must be subscribed to a channel; the channel id is propagated to the deployment via the `X-DIAL-CLIENT-CHANNEL-ID` forwarded header on the inbound request.
+DIAL Core's [client channel API](https://dialx.ai/universal_chat_api.yaml) lets a deployment ask an interactive client (e.g. the chat UI) to take some action and report the result back. The channel id is propagated to the deployment via the `X-DIAL-CLIENT-CHANNEL-ID` forwarded header on the inbound request.
 
-#### Send a JSON-RPC Request
+#### Sign In to Toolsets
 
-Use `client_channel.interact()` to send a JSON-RPC request (or a batch) to the channel and wait for the response(s). The method returns a `List[JsonRpcResponse]` containing one entry per request. Server-emitted order is **not** guaranteed to match request order — correlate each response with its request via the `id` field, not by positional index. Every request must have a non-`None` `id`; JSON-RPC notifications are not supported here (the server does not respond to them, so `interact()` would block).
+Use `client_channel.signin_toolsets()` to request interactive sign-in for one or more toolsets on the active client channel. The method returns a `dict[str, SigninResult]` mapping each input toolset id to its outcome — responses are correlated by the client, so the caller never has to deal with the underlying JSON-RPC ids.
 
 ```python
-from aidial_client import JsonRpcRequest
+from aidial_client import SigninResult
 
-# Sync — single request
-responses = client.client_channel.interact(
+# Sync
+results = client.client_channel.signin_toolsets(
     channel_id="<channel-id-from-X-DIAL-CLIENT-CHANNEL-ID>",
-    request=JsonRpcRequest(
-        method="toolset/signin",
-        params={"toolsetId": "toolsets/public/my-toolset"},
-        id="1",
-    ),
+    toolset_ids=[
+        "toolsets/public/toolset-a",
+        "toolsets/public/toolset-b",
+    ],
     timeout=120.0,
 )
 
-# Async — batched requests
-responses = await async_client.client_channel.interact(
+# Async
+results = await async_client.client_channel.signin_toolsets(
     channel_id="<channel-id>",
-    request=[
-        JsonRpcRequest(
-            method="toolset/signin",
-            params={"toolsetId": "toolsets/public/toolset-a"},
-            id="1",
-        ),
-        JsonRpcRequest(
-            method="toolset/signin",
-            params={"toolsetId": "toolsets/public/toolset-b"},
-            id="2",
-        ),
-    ],
+    toolset_ids=["toolsets/public/my-toolset"],
 )
 ```
 
-Each element is a `JsonRpcResponse`:
+Each value is a `SigninResult` enum:
 
 ```python
-JsonRpcResponse(
-    jsonrpc="2.0",
-    result="success",  # or None, with `error` populated instead
-    error=None,  # JsonRpcError(code=..., message=..., data=...) on failure
-    id="1",
-)
+{
+    "toolsets/public/toolset-a": SigninResult.SUCCESS,
+    "toolsets/public/toolset-b": SigninResult.DENIED,
+}
 ```
 
-- `channel_id` — required; the channel id received via the `X-DIAL-CLIENT-CHANNEL-ID` header on the inbound request.
-- `request` — a single `JsonRpcRequest` or a list of them. The wire body is an object or an array accordingly.
-- `timeout` — wall-clock timeout in seconds (or an `httpx.Timeout`); defaults to the client-wide timeout. Useful for interactive flows where the channel may take a while to respond.
+- `SigninResult.SUCCESS` — the user signed in.
+- `SigninResult.DENIED` — the user declined.
+- `SigninResult.ERROR` — the server returned a JSON-RPC error, or the response was missing/unrecognized.
 
-Raises `DialException` if the HTTP status is not 2xx (e.g. unauthorized, missing channel) or if the stream closes before a data event arrives. Raises `ParsingDataError` if the response payload is not a valid JSON-RPC response.
+Arguments:
+
+- `channel_id` — required; the channel id received via the `X-DIAL-CLIENT-CHANNEL-ID` header on the inbound request.
+- `toolset_ids` — sequence of toolset ids to request sign-in for; an empty sequence returns `{}` without contacting the server.
+- `timeout` — optional `float` seconds or `httpx.Timeout`; defaults to the client-wide timeout. Useful for interactive flows where the user may take a while to respond.
+
+Raises `DialException` on HTTP errors (e.g. unauthorized, missing channel), transport failures (timeouts, network errors), or if the SSE stream closes without a response event.
 
 ### Client Pool
 
