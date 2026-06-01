@@ -1,30 +1,19 @@
-from urllib.parse import urljoin
-
 import nox
 
 nox.options.reuse_existing_virtualenvs = True
 
-SRC = "."
-README = urljoin(SRC, "README.md")
-
-
-def format_with_args(session: nox.Session, *args):
-    session.run("autoflake", *args)
-    session.run("isort", *args)
-    session.run("black", *args)
+SRC = ["aidial_client", "tests", "noxfile.py"]
 
 
 @nox.session
 def lint(session: nox.Session):
     """Runs linters and fixers"""
     try:
-        session.run("poetry", "install", external=True)
-        session.run("poetry", "check", "--lock", external=True)
-        session.run("pyright", SRC)
-        session.run("flake8", SRC)
-        session.run("codespell", SRC)
-        session.run("blacken-docs", README)
-        format_with_args(session, SRC, "--check")
+        session.run("poetry", "install", "--all-extras", external=True)
+        session.run("poetry", "check", "--lock", "--strict", external=True)
+        session.run("ruff", "check", *SRC)
+        session.run("ruff", "format", "--check", *SRC)
+        session.run("pyright", *SRC)
     except Exception:
         session.error(
             "linting has failed. Run 'make format' "
@@ -38,7 +27,7 @@ def coverage(session: nox.Session) -> None:
     session.run("poetry", "install", external=True)
     session.run(
         "pytest",
-        f"--cov={SRC}",
+        f"--cov={SRC[0]}",
         "--cov-report=xml",
         "--cov-report=term",
         "--ignore=tests/integration",
@@ -49,8 +38,9 @@ def coverage(session: nox.Session) -> None:
 @nox.session
 def format(session: nox.Session):
     """Runs linters and fixers"""
-    session.run("poetry", "install", external=True)
-    format_with_args(session, SRC)
+    session.run("poetry", "install", "--only", "lint", external=True)
+    session.run("ruff", "check", "--fix", *SRC)
+    session.run("ruff", "format", *SRC)
 
 
 @nox.session(python=["3.10", "3.11", "3.12", "3.13"])
