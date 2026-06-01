@@ -1,12 +1,15 @@
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Iterator, Mapping
+from contextlib import contextmanager, suppress
 from http import HTTPStatus
+from typing import Any
 
 import httpx
 
 from aidial_client._auth import SyncAuthValue, get_combined_auth_headers
 from aidial_client._exception import DialException
 from aidial_client._http_client._base import BaseHTTPClient
+from aidial_client._internal_types._defaults import NOT_GIVEN, NotGiven
 from aidial_client._internal_types._generic import ResponseT
 from aidial_client._internal_types._http_request import FinalRequestOptions
 from aidial_client._log import logger
@@ -107,3 +110,52 @@ class SyncHTTPClient(BaseHTTPClient[httpx.Client, SyncAuthValue]):
             raise raised_error from err
 
         return process_block_response(cast_to=cast_to, response=response)
+
+    @contextmanager
+    def stream_sse(
+        self,
+        *,
+        method: str,
+        url: str,
+        json_data: Any,
+        headers: Mapping[str, str] | None = None,
+        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+    ) -> Iterator[httpx.Response]:
+        """Open an SSE streaming response. Yields the open httpx.Response.
+
+        Auth headers are merged in. On non-2xx, reads the body and raises
+        a DialException; transport errors (timeouts, network failures) are
+        also wrapped so the caller always sees DialException. Retries are
+        not performed for streaming requests.
+
+        ``timeout`` defaults to the client-wide timeout; pass an explicit
+        ``None`` (or ``httpx.Timeout(None)``) for no timeout.
+        """
+        merged_headers = {**self.auth_headers(), **(headers or {})}
+        effective_timeout = (
+            self._timeout if isinstance(timeout, NotGiven) else timeout
+        )
+        try:
+            with self._internal_http_client.stream(
+                method=method,
+                url=self._prepare_url(url),
+                headers=merged_headers,
+                json=json_data,
+                timeout=effective_timeout,
+            ) as response:
+                try:
+                    response.raise_for_status()
+                except httpx.HTTPStatusError as err:
+                    with suppress(httpx.HTTPError):
+                        response.read()
+                    raise self._make_dial_error_from_response(
+                        err.response
+                    ) from err
+                yield response
+        except httpx.TimeoutException as err:
+            raise DialException(
+                message="Request timed out",
+                status_code=HTTPStatus.REQUEST_TIMEOUT,
+            ) from err
+        except httpx.HTTPError as err:
+            raise DialException(message=f"Request failed: {err}") from err
