@@ -103,7 +103,7 @@ class BaseHTTPClient(ABC, Generic[_HttpInternalClientT, AuthValueT]):
         sleep_seconds = min(
             INITIAL_RETRY_DELAY * pow(2.0, nb_retries), MAX_RETRY_DELAY
         )
-        timeout = sleep_seconds + uniform(-0.5, 0.5)
+        timeout = sleep_seconds + uniform(-0.5, 0.5)  # noqa: S311
         return max(0, timeout)
 
     def _make_dial_error_from_response(

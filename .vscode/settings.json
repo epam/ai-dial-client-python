@@ -1,6 +1,7 @@
 {
   "[toml]": {
     "editor.formatOnSave": true,
+    "editor.tabSize": 4,
   },
   "[json]": {
     "editor.formatOnSave": true,
@@ -23,4 +24,3 @@
   "files.trimFinalNewlines": true,
   "files.trimTrailingWhitespace": true,
 }
-

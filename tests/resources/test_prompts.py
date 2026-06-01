@@ -79,11 +79,6 @@ def _make_async_capturing_client(
     return client
 
 
-# ---------------------------------------------------------------------------
-# prompts.get()
-# ---------------------------------------------------------------------------
-
-
 def test_get_prompt():
     client = get_client_mock(status_code=200, json_mock=PROMPT_MOCK)
     result = client.prompts.get("prompts/test-bucket/my-folder/my-prompt")
@@ -170,11 +165,6 @@ async def test_async_get_prompt_http_error():
         await client.prompts.get("prompts/test-bucket/my-folder/my-prompt")
 
 
-# ---------------------------------------------------------------------------
-# prompts.get_metadata()
-# ---------------------------------------------------------------------------
-
-
 def test_get_prompt_metadata():
     client = get_client_mock(status_code=200, json_mock=PROMPT_METADATA_MOCK)
     result = client.prompts.get_metadata(
@@ -196,11 +186,6 @@ async def test_async_get_prompt_metadata():
     assert isinstance(result, PromptMetadata)
     assert result.node_type == "ITEM"
     assert result.bucket == "test-bucket"
-
-
-# ---------------------------------------------------------------------------
-# prompts.save()
-# ---------------------------------------------------------------------------
 
 
 def test_save_prompt():
@@ -347,11 +332,6 @@ async def test_async_save_prompt_rejects_non_prompt_url():
         await client.prompts.save(
             "files/test-bucket/my-folder/my-prompt", prompt
         )
-
-
-# ---------------------------------------------------------------------------
-# prompts.delete()
-# ---------------------------------------------------------------------------
 
 
 def test_delete_prompt():

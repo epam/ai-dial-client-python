@@ -5,9 +5,7 @@ description = "A Python client library for the AI DIAL API"
 readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.10,<3.14"
-authors = [
-    { name = "DIALX", email = "SpecialEPM-DIALDevTeam@epam.com" },
-]
+authors = [{ name = "DIALX", email = "SpecialEPM-DIALDevTeam@epam.com" }]
 dependencies = [
     "openai>=1.1.0,<3",
     "httpx>=0.25.0,<1",
@@ -47,12 +45,7 @@ testpaths = ["tests"]
 typeCheckingMode = "basic"
 reportUnusedVariable = "error"
 reportIncompatibleMethodOverride = "error"
-exclude = [
-    "**/node_modules",
-    "**/__pycache__",
-    "**/.*",
-    ".venv",
-]
+exclude = ["**/node_modules", "**/__pycache__", "**/.*", ".venv"]
 
 [tool.ruff]
 line-length = 80
@@ -75,19 +68,16 @@ select = [
 ]
 
 ignore = [
-    "E501",  # string literal is too long
     "S101",  # Use of `assert` detected
     "B904",  # Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None`
     "UP007", # Use `X | Y` for type annotations — breaks Pydantic v1 runtime parsing
-    "S311",  # Standard pseudo-random generators — used for jitter, not cryptography
 ]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = [
-    "B011",  # Do not `assert False`
-    "B006",  # Do not use mutable data structures for argument defaults
-    "ERA001", # Found commented-out code — section headers, not dead code
-    "S106",  # Possible hardcoded password — test credentials
+    "E501", # String literal is too long
+    "B011", # Do not `assert False`
+    "B006", # Do not use mutable data structures for argument defaults
 ]
 "*/__init__.py" = [
     "F401", # imported but unused
@@ -96,9 +86,9 @@ ignore = [
 [tool.coverage.run]
 source = ["."]
 omit = [
-  "tests/*",
-  "*/__init__.py",
-  "noxfile.py",
-  'aidial_client/_compatibility/pydantic_v1.py',
-  'htmlcov/*',
+    "tests/*",
+    "*/__init__.py",
+    "noxfile.py",
+    'aidial_client/_compatibility/pydantic_v1.py',
+    'htmlcov/*',
 ]

@@ -17,8 +17,8 @@ FileContent = Union[
     IO[bytes],
     bytes,
     str,
-    # Somehow, pydantic doesn't recognize result of open('...', 'rb') as IO[bytes]
-    # even though BufferedReader is a subclass of IO[bytes]
+    # Somehow, pydantic doesn't recognize result of open('...', 'rb')
+    # as IO[bytes] even though BufferedReader is a subclass of IO[bytes]
     BufferedReader,
 ]
 FileTypes = Union[
