@@ -4,7 +4,6 @@ from typing import (
     IO,
     Any,
     Literal,
-    Union,
     final,
 )
 
@@ -13,29 +12,29 @@ from httpx import Timeout
 from aidial_client._compatibility.pydantic_v1 import BaseModel
 from aidial_client._internal_types._defaults import NOT_GIVEN, NotGiven
 
-FileContent = Union[
-    IO[bytes],
-    bytes,
-    str,
+FileContent = (
+    IO[bytes]
+    | bytes
+    | str
     # Somehow, pydantic doesn't recognize result of open('...', 'rb')
     # as IO[bytes] even though BufferedReader is a subclass of IO[bytes]
-    BufferedReader,
-]
-FileTypes = Union[
+    | BufferedReader
+)
+FileTypes = (
     # file (or bytes)
-    FileContent,
+    FileContent
     # (filename, file (or bytes))
-    tuple[str | None, FileContent],
+    | tuple[str | None, FileContent]
     # (filename, file (or bytes), content_type)
-    tuple[str | None, FileContent, str | None],
+    | tuple[str | None, FileContent, str | None]
     # (filename, file (or bytes), content_type, headers)
-    tuple[str | None, FileContent, str | None, Mapping[str, str]],
-]
+    | tuple[str | None, FileContent, str | None, Mapping[str, str]]
+)
 
 Params = Mapping[str, Any]
 Headers = Mapping[str, Any]
 Data = Mapping[str, Any]
-RequestFiles = Union[Mapping[str, FileTypes], Sequence[tuple[str, FileTypes]]]
+RequestFiles = Mapping[str, FileTypes] | Sequence[tuple[str, FileTypes]]
 
 
 @final

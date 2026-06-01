@@ -1,9 +1,9 @@
 from collections.abc import Awaitable, Callable
 from inspect import isawaitable
-from typing import TypeVar, Union
+from typing import TypeVar
 
-SyncAuthValue = Union[str, Callable[[], str]]
-AsyncAuthValue = Union[SyncAuthValue, Callable[[], Awaitable[str]]]
+SyncAuthValue = str | Callable[[], str]
+AsyncAuthValue = SyncAuthValue | Callable[[], Awaitable[str]]
 
 AuthValueT = TypeVar(
     "AuthValueT",

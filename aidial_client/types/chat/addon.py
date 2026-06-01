@@ -1,5 +1,3 @@
-from typing import Union
-
 from typing_extensions import TypedDict
 
 
@@ -14,4 +12,4 @@ class SystemAddon(TypedDict):
     name: str
 
 
-Addon = Union[ExternalAddon, SystemAddon]
+Addon = ExternalAddon | SystemAddon

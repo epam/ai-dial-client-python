@@ -1,4 +1,4 @@
-from typing import Literal, Union
+from typing import Literal
 
 from typing_extensions import Required, TypedDict
 
@@ -60,10 +60,10 @@ class FunctionMessageParam(TypedDict, total=False):
     name: Required[str]
 
 
-Message = Union[
-    SystemMessageParam,
-    UserMessageParam,
-    AssistantMessageParam,
-    ToolMessageParam,
-    FunctionMessageParam,
-]
+Message = (
+    SystemMessageParam
+    | UserMessageParam
+    | AssistantMessageParam
+    | ToolMessageParam
+    | FunctionMessageParam
+)
