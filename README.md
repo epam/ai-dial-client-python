@@ -42,6 +42,8 @@
       - [Get Toolset by Id](#get-toolset-by-id)
   - [Resource Permissions](#resource-permissions)
       - [Grant Permissions](#grant-permissions)
+  - [Client Channel](#client-channel)
+      - [Sign In to Toolsets](#sign-in-to-toolsets)
   - [Client Pool](#client-pool)
       - [Synchronous Client Pool](#synchronous-client-pool)
       - [Asynchronous Client Pool](#asynchronous-client-pool)
@@ -853,6 +855,55 @@ await async_client.resource_permissions.grant(
 - `permissions` — list of permission strings; defaults to `["READ"]`.
 
 The method returns `None` on success and raises `DialException` on HTTP error.
+
+### Client Channel
+
+DIAL Core's [client channel API](https://dialx.ai/universal_chat_api.yaml) lets a deployment ask an interactive client (e.g. the chat UI) to take some action and report the result back. The channel id is propagated to the deployment via the `X-DIAL-CLIENT-CHANNEL-ID` forwarded header on the inbound request.
+
+#### Sign In to Toolsets
+
+Use `client_channel.signin_toolsets()` to request interactive sign-in for one or more toolsets on the active client channel. The method returns a `dict[str, SigninResult]` mapping each input toolset id to its outcome — responses are correlated by the client, so the caller never has to deal with the underlying JSON-RPC ids.
+
+```python
+from aidial_client import SigninResult
+
+# Sync
+results = client.client_channel.signin_toolsets(
+    channel_id="<channel-id-from-X-DIAL-CLIENT-CHANNEL-ID>",
+    toolset_ids=[
+        "toolsets/public/toolset-a",
+        "toolsets/public/toolset-b",
+    ],
+    timeout=120.0,
+)
+
+# Async
+results = await async_client.client_channel.signin_toolsets(
+    channel_id="<channel-id>",
+    toolset_ids=["toolsets/public/my-toolset"],
+)
+```
+
+Each value is a `SigninResult` enum:
+
+```python
+{
+    "toolsets/public/toolset-a": SigninResult.SUCCESS,
+    "toolsets/public/toolset-b": SigninResult.DENIED,
+}
+```
+
+- `SigninResult.SUCCESS` — the user signed in.
+- `SigninResult.DENIED` — the user declined.
+- `SigninResult.ERROR` — the server returned a JSON-RPC error, or the response was missing/unrecognized.
+
+Arguments:
+
+- `channel_id` — required; the channel id received via the `X-DIAL-CLIENT-CHANNEL-ID` header on the inbound request.
+- `toolset_ids` — sequence of toolset ids to request sign-in for; an empty sequence returns `{}` without contacting the server.
+- `timeout` — optional `float` seconds or `httpx.Timeout`; defaults to the client-wide timeout. Useful for interactive flows where the user may take a while to respond.
+
+Raises `DialException` on HTTP errors (e.g. unauthorized, missing channel), transport failures (timeouts, network errors), or if the SSE stream closes without a response event.
 
 ### Client Pool
 
