@@ -1,4 +1,3 @@
-from typing import Optional
 from urllib.parse import urljoin
 
 from aidial_client._constants import API_PREFIX
@@ -20,7 +19,7 @@ class Bucket(Resource):
         response = self.get_raw()
         return response.bucket
 
-    def get_appdata(self) -> Optional[AppData]:
+    def get_appdata(self) -> AppData | None:
         response = self.get_raw()
         if not response.appdata:
             return None
@@ -40,7 +39,7 @@ class AsyncBucket(AsyncResource):
         response = await self.get_raw()
         return response.bucket
 
-    async def get_appdata(self) -> Optional[AppData]:
+    async def get_appdata(self) -> AppData | None:
         response = await self.get_raw()
         if not response.appdata:
             return None

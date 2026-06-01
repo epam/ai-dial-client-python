@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from http import HTTPStatus
 from random import uniform
-from typing import Dict, Generic, Optional, TypeVar, Union
+from typing import Generic, TypeVar
 
 import httpx
 
@@ -13,23 +13,23 @@ from aidial_client._utils._type_guard import is_mapping
 from aidial_client.helpers._url import enforce_trailing_slash
 
 _HttpInternalClientT = TypeVar(
-    "_HttpInternalClientT", bound=Union[httpx.Client, httpx.AsyncClient]
+    "_HttpInternalClientT", bound=httpx.Client | httpx.AsyncClient
 )
 
 
 class BaseHTTPClient(ABC, Generic[_HttpInternalClientT, AuthValueT]):
     _internal_http_client: _HttpInternalClientT
-    _api_key: Optional[AuthValueT]
-    _bearer_token: Optional[AuthValueT]
+    _api_key: AuthValueT | None
+    _bearer_token: AuthValueT | None
 
     def __init__(
         self,
         base_url: str,
-        api_key: Optional[AuthValueT],
-        bearer_token: Optional[AuthValueT],
+        api_key: AuthValueT | None,
+        bearer_token: AuthValueT | None,
         max_retries: int,
-        timeout: Union[float, httpx.Timeout, None],
-        internal_http_client: Optional[_HttpInternalClientT] = None,
+        timeout: float | httpx.Timeout | None,
+        internal_http_client: _HttpInternalClientT | None = None,
     ):
         self.base_url = httpx.URL(enforce_trailing_slash(base_url))
         self._api_key = api_key
@@ -57,7 +57,7 @@ class BaseHTTPClient(ABC, Generic[_HttpInternalClientT, AuthValueT]):
     def _build_request(
         self,
         options: FinalRequestOptions,
-        auth_headers: Dict[str, str],
+        auth_headers: dict[str, str],
     ) -> httpx.Request:
         custom_headers = options.headers or {}
         return self._internal_http_client.build_request(
@@ -88,10 +88,7 @@ class BaseHTTPClient(ABC, Generic[_HttpInternalClientT, AuthValueT]):
         if response.status_code == HTTPStatus.CONFLICT:
             return True
 
-        if response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
-            return True
-
-        return False
+        return response.status_code == HTTPStatus.TOO_MANY_REQUESTS
 
     def _calculate_retry_sleep_seconds(
         self,

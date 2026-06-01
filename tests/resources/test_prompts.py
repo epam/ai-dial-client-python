@@ -1,5 +1,5 @@
 import json
-from typing import Any, Dict, List
+from typing import Any
 from unittest.mock import AsyncMock, Mock
 
 import httpx
@@ -41,7 +41,7 @@ PROMPT_METADATA_MOCK = {
 }
 
 
-def _make_capturing_client(captured: List[httpx.Request]) -> Dial:
+def _make_capturing_client(captured: list[httpx.Request]) -> Dial:
     client = Dial(api_key="dummy", base_url="http://dial.core")
 
     def send_mock(request: httpx.Request, **_: Any) -> httpx.Response:
@@ -57,12 +57,12 @@ def _make_capturing_client(captured: List[httpx.Request]) -> Dial:
     return client
 
 
-def _body(request: httpx.Request) -> Dict[str, Any]:
+def _body(request: httpx.Request) -> dict[str, Any]:
     return json.loads(request.content.decode())
 
 
 def _make_async_capturing_client(
-    captured: List[httpx.Request],
+    captured: list[httpx.Request],
 ) -> AsyncDial:
     client = AsyncDial(api_key="dummy", base_url="http://dial.core")
 
@@ -233,7 +233,7 @@ async def test_async_save_prompt():
 
 
 def test_save_prompt_sends_json_and_etag_headers():
-    captured: List[httpx.Request] = []
+    captured: list[httpx.Request] = []
     client = _make_capturing_client(captured)
     prompt = Prompt(**PROMPT_MOCK)
 
@@ -261,7 +261,7 @@ def test_save_prompt_sends_json_and_etag_headers():
 
 @pytest.mark.asyncio
 async def test_async_save_prompt_sends_json_and_etag_headers():
-    captured: List[httpx.Request] = []
+    captured: list[httpx.Request] = []
     client = _make_async_capturing_client(captured)
     prompt = Prompt(**PROMPT_MOCK)
 
@@ -372,7 +372,7 @@ async def test_async_delete_prompt():
 
 
 def test_delete_prompt_sends_etag_header():
-    captured: List[httpx.Request] = []
+    captured: list[httpx.Request] = []
     client = _make_capturing_client(captured)
 
     result = client.prompts.delete(
@@ -390,7 +390,7 @@ def test_delete_prompt_sends_etag_header():
 
 @pytest.mark.asyncio
 async def test_async_delete_prompt_sends_etag_header():
-    captured: List[httpx.Request] = []
+    captured: list[httpx.Request] = []
     client = _make_async_capturing_client(captured)
 
     result = await client.prompts.delete(

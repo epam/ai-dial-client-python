@@ -1,6 +1,6 @@
 import time
+from collections.abc import Callable
 from http import HTTPStatus
-from typing import Callable, Dict, Optional, Type
 
 import httpx
 
@@ -20,7 +20,7 @@ class SyncHTTPClient(BaseHTTPClient[httpx.Client, SyncAuthValue]):
     def _retry_request(
         self,
         options: FinalRequestOptions,
-        cast_to: Type[ResponseT],
+        cast_to: type[ResponseT],
         remaining_retries: int,
     ) -> ResponseT:
         remaining = remaining_retries - 1
@@ -36,7 +36,7 @@ class SyncHTTPClient(BaseHTTPClient[httpx.Client, SyncAuthValue]):
             remaining_retries=remaining,
         )
 
-    def auth_headers(self) -> Dict[str, str]:
+    def auth_headers(self) -> dict[str, str]:
         return get_combined_auth_headers(
             api_key=self._api_key, bearer_token=self._bearer_token
         )
@@ -44,12 +44,10 @@ class SyncHTTPClient(BaseHTTPClient[httpx.Client, SyncAuthValue]):
     def request(
         self,
         *,
-        cast_to: Type[ResponseT],
+        cast_to: type[ResponseT],
         options: FinalRequestOptions,
-        remaining_retries: Optional[int] = None,
-        on_http_error: Optional[
-            Callable[[httpx.HTTPStatusError], Optional[DialException]]
-        ] = None,
+        remaining_retries: int | None = None,
+        on_http_error: Callable[[httpx.HTTPStatusError], DialException | None] | None = None,
     ) -> ResponseT:
         retries = self._remaining_retries(remaining_retries, options)
         auth_headers = self.auth_headers()

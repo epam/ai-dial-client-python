@@ -1,12 +1,13 @@
+from collections.abc import Awaitable, Callable
 from inspect import isawaitable
-from typing import Awaitable, Callable, Dict, Optional, TypeVar, Union
+from typing import TypeVar, Union
 
 SyncAuthValue = Union[str, Callable[[], str]]
 AsyncAuthValue = Union[SyncAuthValue, Callable[[], Awaitable[str]]]
 
 AuthValueT = TypeVar(
     "AuthValueT",
-    bound=Union[SyncAuthValue, AsyncAuthValue],
+    bound=SyncAuthValue | AsyncAuthValue,
 )
 
 
@@ -41,10 +42,10 @@ async def aget_auth_value(auth_value: AsyncAuthValue) -> str:
 
 def get_combined_auth_headers(
     *,
-    api_key: Optional[SyncAuthValue] = None,
-    bearer_token: Optional[SyncAuthValue] = None,
-) -> Dict[str, str]:
-    headers: Dict[str, str] = {}
+    api_key: SyncAuthValue | None = None,
+    bearer_token: SyncAuthValue | None = None,
+) -> dict[str, str]:
+    headers: dict[str, str] = {}
 
     if api_key is not None:
         headers["api-key"] = get_auth_value(api_key)
@@ -58,11 +59,11 @@ def get_combined_auth_headers(
 
 async def aget_combined_auth_headers(
     *,
-    api_key: Optional[AsyncAuthValue] = None,
-    bearer_token: Optional[AsyncAuthValue] = None,
-) -> Dict[str, str]:
+    api_key: AsyncAuthValue | None = None,
+    bearer_token: AsyncAuthValue | None = None,
+) -> dict[str, str]:
     """Get combined authentication headers from both api_key and bearer_token (async)."""
-    headers: Dict[str, str] = {}
+    headers: dict[str, str] = {}
 
     if api_key is not None:
         processed_api_key = await aget_auth_value(api_key)
@@ -77,8 +78,8 @@ async def aget_combined_auth_headers(
 
 def validate_auth(
     *,
-    api_key: Optional[AsyncAuthValue] = None,
-    bearer_token: Optional[AsyncAuthValue] = None,
+    api_key: AsyncAuthValue | None = None,
+    bearer_token: AsyncAuthValue | None = None,
 ) -> None:
     """Validate that at least one authentication method is provided."""
     if not api_key and not bearer_token:

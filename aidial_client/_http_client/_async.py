@@ -1,6 +1,6 @@
 import asyncio
+from collections.abc import Callable
 from http import HTTPStatus
-from typing import Callable, Dict, Optional, Type
 
 import httpx
 
@@ -19,7 +19,7 @@ class AsyncHTTPClient(BaseHTTPClient[httpx.AsyncClient, AsyncAuthValue]):
             timeout=self._timeout,
         )
 
-    async def auth_headers(self) -> Dict[str, str]:
+    async def auth_headers(self) -> dict[str, str]:
         return await aget_combined_auth_headers(
             api_key=self._api_key, bearer_token=self._bearer_token
         )
@@ -28,7 +28,7 @@ class AsyncHTTPClient(BaseHTTPClient[httpx.AsyncClient, AsyncAuthValue]):
         self,
         *,
         options: FinalRequestOptions,
-        cast_to: Type[ResponseT],
+        cast_to: type[ResponseT],
         remaining_retries: int,
     ) -> ResponseT:
         remaining = remaining_retries - 1
@@ -46,11 +46,9 @@ class AsyncHTTPClient(BaseHTTPClient[httpx.AsyncClient, AsyncAuthValue]):
         self,
         *,
         options: FinalRequestOptions,
-        cast_to: Type[ResponseT],
-        remaining_retries: Optional[int] = None,
-        on_http_error: Optional[
-            Callable[[httpx.HTTPStatusError], Optional[DialException]]
-        ] = None,
+        cast_to: type[ResponseT],
+        remaining_retries: int | None = None,
+        on_http_error: Callable[[httpx.HTTPStatusError], DialException | None] | None = None,
     ) -> ResponseT:
         retries = self._remaining_retries(remaining_retries, options)
         auth_headers = await self.auth_headers()

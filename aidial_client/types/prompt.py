@@ -1,4 +1,3 @@
-from typing import Optional
 
 from aidial_client._compatibility.pydantic import PYDANTIC_V2
 from aidial_client._internal_types._model import ExtraAllowModel
@@ -22,4 +21,4 @@ class Prompt(ExtraAllowModel):
     id: str
     name: str
     folder_id: str
-    content: Optional[str] = None
+    content: str | None = None

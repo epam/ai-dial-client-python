@@ -1,4 +1,4 @@
-from typing import Dict, List, Literal, Optional, Union
+from typing import Literal, Union
 
 from typing_extensions import Required, TypedDict
 
@@ -20,31 +20,31 @@ class AttachmentParam(TypedDict, total=False):
 
 
 class CustomContentParam(TypedDict, total=False):
-    attachments: Optional[List[AttachmentParam]]
-    state: Optional[Dict]
+    attachments: list[AttachmentParam] | None
+    state: dict | None
 
 
 class SystemMessageParam(TypedDict, total=False):
     role: Required[Literal["system"]]
     content: Required[str]
-    custom_content: Optional[CustomContentParam]
-    name: Optional[str]
+    custom_content: CustomContentParam | None
+    name: str | None
 
 
 class UserMessageParam(TypedDict, total=False):
     role: Required[Literal["user"]]
     content: Required[str]
-    custom_content: Optional[CustomContentParam]
-    name: Optional[str]
+    custom_content: CustomContentParam | None
+    name: str | None
 
 
 class AssistantMessageParam(TypedDict, total=False):
     role: Required[Literal["assistant"]]
-    content: Optional[str]
-    custom_content: Optional[CustomContentParam]
-    function_call: Optional[FunctionCallParam]
-    tool_calls: List[ToolCallParam]
-    name: Optional[str]
+    content: str | None
+    custom_content: CustomContentParam | None
+    function_call: FunctionCallParam | None
+    tool_calls: list[ToolCallParam]
+    name: str | None
 
 
 class ToolMessageParam(TypedDict, total=False):

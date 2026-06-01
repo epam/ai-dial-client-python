@@ -1,4 +1,3 @@
-from typing import List
 
 from aidial_client._internal_types._generic import NoneType
 from aidial_client._internal_types._http_request import FinalRequestOptions
@@ -10,10 +9,12 @@ _GRANT_URL = "v1/ops/resource/per-request-permissions/grant"
 class ResourcePermissions(Resource):
     def grant(
         self,
-        resources: List[str],
+        resources: list[str],
         receiver: str,
-        permissions: List[str] = ["READ"],
+        permissions: list[str] | None = None,
     ) -> None:
+        if permissions is None:
+            permissions = ["READ"]
         self.http_client.request(
             cast_to=NoneType,
             options=FinalRequestOptions(
@@ -33,10 +34,12 @@ class ResourcePermissions(Resource):
 class AsyncResourcePermissions(AsyncResource):
     async def grant(
         self,
-        resources: List[str],
+        resources: list[str],
         receiver: str,
-        permissions: List[str] = ["READ"],
+        permissions: list[str] | None = None,
     ) -> None:
+        if permissions is None:
+            permissions = ["READ"]
         await self.http_client.request(
             cast_to=NoneType,
             options=FinalRequestOptions(

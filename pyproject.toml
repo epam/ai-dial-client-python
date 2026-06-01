@@ -75,15 +75,19 @@ select = [
 ]
 
 ignore = [
-    "E501", # string literal is too long
-    "S101", # Use of `assert` detected
-    "B904", # Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None`
+    "E501",  # string literal is too long
+    "S101",  # Use of `assert` detected
+    "B904",  # Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None`
+    "UP007", # Use `X | Y` for type annotations — breaks Pydantic v1 runtime parsing
+    "S311",  # Standard pseudo-random generators — used for jitter, not cryptography
 ]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = [
-    "B011", # Do not `assert False`
-    "B006", # Do not use mutable data structures for argument defaults
+    "B011",  # Do not `assert False`
+    "B006",  # Do not use mutable data structures for argument defaults
+    "ERA001", # Found commented-out code — section headers, not dead code
+    "S106",  # Possible hardcoded password — test credentials
 ]
 "*/__init__.py" = [
     "F401", # imported but unused

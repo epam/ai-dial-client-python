@@ -1,5 +1,5 @@
-from typing import Any, Dict, Union
+from typing import Any
 
 
-def remove_none(input: Dict[str, Union[Any, None]]) -> Dict[str, Any]:
+def remove_none(input: dict[str, Any | None]) -> dict[str, Any]:
     return {key: value for key, value in input.items() if value is not None}

@@ -1,15 +1,14 @@
-from typing import List, Optional
 
 from aidial_client._internal_types._model import ExtraAllowModel
 
 
 class ModelCapabilities(ExtraAllowModel):
-    scale_types: List[str] = []
-    completion: Optional[bool] = None
-    chat_completion: Optional[bool] = None
-    embeddings: Optional[bool] = None
-    fine_tune: Optional[bool] = None
-    inference: Optional[bool] = None
+    scale_types: list[str] = []
+    completion: bool | None = None
+    chat_completion: bool | None = None
+    embeddings: bool | None = None
+    fine_tune: bool | None = None
+    inference: bool | None = None
 
 
 class ModelLimits(ExtraAllowModel):
@@ -20,29 +19,29 @@ class ModelLimits(ExtraAllowModel):
     All fields are Optional here to accommodate both variants.
     """
 
-    max_total_tokens: Optional[int] = None
-    max_prompt_tokens: Optional[int] = None
-    max_completion_tokens: Optional[int] = None
+    max_total_tokens: int | None = None
+    max_prompt_tokens: int | None = None
+    max_completion_tokens: int | None = None
 
 
 class ModelPricing(ExtraAllowModel):
     unit: str
     prompt: str
-    completion: Optional[str] = None
+    completion: str | None = None
 
 
 class ModelInfo(ExtraAllowModel):
     id: str
     model: str
-    display_name: Optional[str] = None
-    description: Optional[str] = None
-    owner: Optional[str] = None
-    object: Optional[str] = None
-    status: Optional[str] = None
-    created_at: Optional[int] = None
-    updated_at: Optional[int] = None
-    lifecycle_status: Optional[str] = None
-    tokenizer_model: Optional[str] = None
-    capabilities: Optional[ModelCapabilities] = None
-    limits: Optional[ModelLimits] = None
-    pricing: Optional[ModelPricing] = None
+    display_name: str | None = None
+    description: str | None = None
+    owner: str | None = None
+    object: str | None = None
+    status: str | None = None
+    created_at: int | None = None
+    updated_at: int | None = None
+    lifecycle_status: str | None = None
+    tokenizer_model: str | None = None
+    capabilities: ModelCapabilities | None = None
+    limits: ModelLimits | None = None
+    pricing: ModelPricing | None = None

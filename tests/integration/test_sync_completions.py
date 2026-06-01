@@ -65,7 +65,7 @@ def test_default_api_version(
 def test_completions_with_streaming(sync_client: Dial):
     deployments = sync_client.deployments.list()
     assert len(deployments)
-    deployment = next((d for d in deployments if d.id.startswith("gpt-")))
+    deployment = next(d for d in deployments if d.id.startswith("gpt-"))
     assert deployment
     completion = sync_client.chat.completions.create(
         deployment_name=deployment.id,

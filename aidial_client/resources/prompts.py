@@ -1,5 +1,5 @@
 from pathlib import PurePosixPath
-from typing import Any, Dict, Literal, Optional, Union
+from typing import Any, Literal
 from urllib.parse import urljoin
 
 import httpx
@@ -23,7 +23,7 @@ from aidial_client.types.prompt import Prompt
 
 def _prompts_error_processor(
     http_status_error: httpx.HTTPStatusError,
-) -> Optional[DialException]:
+) -> DialException | None:
     if http_status_error.response.status_code == 412:
         return EtagMismatchError(
             message=http_status_error.response.text,
@@ -35,7 +35,7 @@ def _prompts_error_processor(
     return None
 
 
-def _prompt_to_json(prompt: Prompt) -> Dict[str, Any]:
+def _prompt_to_json(prompt: Prompt) -> dict[str, Any]:
     if PYDANTIC_V2:
         return prompt.model_dump(by_alias=True)  # type: ignore
     return prompt.dict(by_alias=True)
@@ -47,10 +47,10 @@ class Prompts(Resource, DialStorageResourceMixin):
 
     def save(
         self,
-        url: Union[str, PurePosixPath],
+        url: str | PurePosixPath,
         prompt: Prompt,
-        etag_if_match: Optional[str] = None,
-        etag_if_none_match: Optional[Literal["*"]] = None,
+        etag_if_match: str | None = None,
+        etag_if_none_match: Literal["*"] | None = None,
     ) -> PromptMetadata:
         return self.http_client.request(
             cast_to=PromptMetadata,
@@ -68,7 +68,7 @@ class Prompts(Resource, DialStorageResourceMixin):
             on_http_error=_prompts_error_processor,
         )
 
-    def get(self, url: Union[str, PurePosixPath]) -> Prompt:
+    def get(self, url: str | PurePosixPath) -> Prompt:
         """Fetch a single prompt by its storage path."""
         return self.http_client.request(
             cast_to=Prompt,
@@ -81,8 +81,8 @@ class Prompts(Resource, DialStorageResourceMixin):
 
     def delete(
         self,
-        url: Union[str, PurePosixPath],
-        etag_if_match: Optional[str] = None,
+        url: str | PurePosixPath,
+        etag_if_match: str | None = None,
     ) -> None:
         return self.http_client.request(
             cast_to=NoneType,
@@ -98,7 +98,7 @@ class Prompts(Resource, DialStorageResourceMixin):
             on_http_error=_prompts_error_processor,
         )
 
-    def get_metadata(self, url: Union[str, PurePosixPath]) -> PromptMetadata:
+    def get_metadata(self, url: str | PurePosixPath) -> PromptMetadata:
         return self.metadata.get(
             resource="prompts",
             relative_url=self.get_api_path(str(url)),
@@ -111,10 +111,10 @@ class AsyncPrompts(AsyncResource, DialStorageResourceMixin):
 
     async def save(
         self,
-        url: Union[str, PurePosixPath],
+        url: str | PurePosixPath,
         prompt: Prompt,
-        etag_if_match: Optional[str] = None,
-        etag_if_none_match: Optional[Literal["*"]] = None,
+        etag_if_match: str | None = None,
+        etag_if_none_match: Literal["*"] | None = None,
     ) -> PromptMetadata:
         return await self.http_client.request(
             cast_to=PromptMetadata,
@@ -132,7 +132,7 @@ class AsyncPrompts(AsyncResource, DialStorageResourceMixin):
             on_http_error=_prompts_error_processor,
         )
 
-    async def get(self, url: Union[str, PurePosixPath]) -> Prompt:
+    async def get(self, url: str | PurePosixPath) -> Prompt:
         """Fetch a single prompt by its storage path."""
         return await self.http_client.request(
             cast_to=Prompt,
@@ -145,8 +145,8 @@ class AsyncPrompts(AsyncResource, DialStorageResourceMixin):
 
     async def delete(
         self,
-        url: Union[str, PurePosixPath],
-        etag_if_match: Optional[str] = None,
+        url: str | PurePosixPath,
+        etag_if_match: str | None = None,
     ) -> None:
         return await self.http_client.request(
             cast_to=NoneType,
@@ -163,7 +163,7 @@ class AsyncPrompts(AsyncResource, DialStorageResourceMixin):
         )
 
     async def get_metadata(
-        self, url: Union[str, PurePosixPath]
+        self, url: str | PurePosixPath
     ) -> PromptMetadata:
         return await self.metadata.get(
             resource="prompts",

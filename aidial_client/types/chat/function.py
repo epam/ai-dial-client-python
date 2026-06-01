@@ -1,12 +1,11 @@
-from typing import Dict, Optional
 
 from typing_extensions import Required, TypedDict
 
 
 class FunctionParam(TypedDict, total=False):
     name: Required[str]
-    description: Optional[str]
-    parameters: Optional[Dict]
+    description: str | None
+    parameters: dict | None
 
 
 class FunctionCallParam(TypedDict):
