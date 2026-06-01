@@ -48,7 +48,8 @@ class AsyncHTTPClient(BaseHTTPClient[httpx.AsyncClient, AsyncAuthValue]):
         options: FinalRequestOptions,
         cast_to: type[ResponseT],
         remaining_retries: int | None = None,
-        on_http_error: Callable[[httpx.HTTPStatusError], DialException | None] | None = None,
+        on_http_error: Callable[[httpx.HTTPStatusError], DialException | None]
+        | None = None,
     ) -> ResponseT:
         retries = self._remaining_retries(remaining_retries, options)
         auth_headers = await self.auth_headers()

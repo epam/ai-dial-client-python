@@ -24,9 +24,7 @@ from aidial_client._internal_types._defaults import NOT_GIVEN, NotGiven
 from aidial_client.helpers._url import enforce_trailing_slash
 from aidial_client.types.bucket import AppData
 
-_HttpClientT = TypeVar(
-    "_HttpClientT", bound=AsyncHTTPClient | SyncHTTPClient
-)
+_HttpClientT = TypeVar("_HttpClientT", bound=AsyncHTTPClient | SyncHTTPClient)
 
 
 class BaseDialClient(Generic[_HttpClientT, AuthValueT], ABC):
@@ -84,7 +82,6 @@ class BaseDialClient(Generic[_HttpClientT, AuthValueT], ABC):
 
 
 class Dial(BaseDialClient[SyncHTTPClient, SyncAuthValue]):
-
     def _init_resources(self) -> None:
         openai_client = openai.AzureOpenAI(
             api_key="-",
@@ -166,7 +163,6 @@ class Dial(BaseDialClient[SyncHTTPClient, SyncAuthValue]):
 
 
 class AsyncDial(BaseDialClient[AsyncHTTPClient, AsyncAuthValue]):
-
     def _init_resources(self) -> None:
         openai_client = openai.AsyncAzureOpenAI(
             api_key="-",

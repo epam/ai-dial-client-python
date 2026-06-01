@@ -47,7 +47,8 @@ class SyncHTTPClient(BaseHTTPClient[httpx.Client, SyncAuthValue]):
         cast_to: type[ResponseT],
         options: FinalRequestOptions,
         remaining_retries: int | None = None,
-        on_http_error: Callable[[httpx.HTTPStatusError], DialException | None] | None = None,
+        on_http_error: Callable[[httpx.HTTPStatusError], DialException | None]
+        | None = None,
     ) -> ResponseT:
         retries = self._remaining_retries(remaining_retries, options)
         auth_headers = self.auth_headers()

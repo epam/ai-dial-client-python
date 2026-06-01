@@ -43,7 +43,6 @@ def test_deployment(sync_client: Dial) -> str:
 
 @pytest.fixture
 def absent_test_file(sync_client):
-
     def _save_delete_file(p):
         with contextlib.suppress(ResourceNotFoundError):
             sync_client.files.delete(p)

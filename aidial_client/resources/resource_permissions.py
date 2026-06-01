@@ -1,4 +1,3 @@
-
 from aidial_client._internal_types._generic import NoneType
 from aidial_client._internal_types._http_request import FinalRequestOptions
 from aidial_client.resources.base import AsyncResource, Resource

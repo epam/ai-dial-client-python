@@ -1,4 +1,3 @@
-
 from aidial_client._compatibility.pydantic import PYDANTIC_V2
 from aidial_client._internal_types._model import ExtraAllowModel
 from aidial_client._utils._alias import to_camel

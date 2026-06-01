@@ -49,7 +49,9 @@ class ChatCompletions(Resource):
         api_version: str | None = None,
         model: str | None = None,
         functions: list[FunctionParam] | None = None,
-        function_call: Literal["none", "auto"] | FunctionCallSpecParam | None = None,
+        function_call: Literal["none", "auto"]
+        | FunctionCallSpecParam
+        | None = None,
         tools: list[ToolParam] | None = None,
         tool_choice: Literal["none", "auto"] | ToolCallSpecParam | None = None,
         addons: Addon | None = None,
@@ -83,7 +85,9 @@ class ChatCompletions(Resource):
         api_version: str | None = None,
         model: str | None = None,
         functions: list[FunctionParam] | None = None,
-        function_call: Literal["none", "auto"] | FunctionCallSpecParam | None = None,
+        function_call: Literal["none", "auto"]
+        | FunctionCallSpecParam
+        | None = None,
         tools: list[ToolParam] | None = None,
         tool_choice: Literal["none", "auto"] | ToolCallSpecParam | None = None,
         addons: Addon | None = None,
@@ -116,7 +120,9 @@ class ChatCompletions(Resource):
         stream: bool = False,
         model: str | None = None,
         functions: list[FunctionParam] | None = None,
-        function_call: Literal["none", "auto"] | FunctionCallSpecParam | None = None,
+        function_call: Literal["none", "auto"]
+        | FunctionCallSpecParam
+        | None = None,
         tools: list[ToolParam] | None = None,
         tool_choice: Literal["none", "auto"] | ToolCallSpecParam | None = None,
         addons: Addon | None = None,
@@ -139,7 +145,6 @@ class ChatCompletions(Resource):
         extra_headers: Mapping[StrictStr, StrictStr] | None = None,
         extra_params: dict[str, Any] | None = None,
     ) -> ChatCompletionResponse | Iterable[ChatCompletionChunk]:
-
         model = model or deployment_name
         extra_body = extra_body or {}
         extra_headers = extra_headers or {}
@@ -214,7 +219,9 @@ class AsyncChatCompletions(AsyncResource):
         api_version: str | None = None,
         model: str | None = None,
         functions: list[FunctionParam] | None = None,
-        function_call: Literal["none", "auto"] | FunctionCallSpecParam | None = None,
+        function_call: Literal["none", "auto"]
+        | FunctionCallSpecParam
+        | None = None,
         tools: list[ToolParam] | None = None,
         tool_choice: Literal["none", "auto"] | ToolCallSpecParam | None = None,
         addons: Addon | None = None,
@@ -246,7 +253,9 @@ class AsyncChatCompletions(AsyncResource):
         api_version: str | None = None,
         model: str | None = None,
         functions: list[FunctionParam] | None = None,
-        function_call: Literal["none", "auto"] | FunctionCallSpecParam | None = None,
+        function_call: Literal["none", "auto"]
+        | FunctionCallSpecParam
+        | None = None,
         tools: list[ToolParam] | None = None,
         tool_choice: Literal["none", "auto"] | ToolCallSpecParam | None = None,
         addons: Addon | None = None,
@@ -279,7 +288,9 @@ class AsyncChatCompletions(AsyncResource):
         stream: bool = False,
         model: str | None = None,
         functions: list[FunctionParam] | None = None,
-        function_call: Literal["none", "auto"] | FunctionCallSpecParam | None = None,
+        function_call: Literal["none", "auto"]
+        | FunctionCallSpecParam
+        | None = None,
         tools: list[ToolParam] | None = None,
         tool_choice: Literal["none", "auto"] | ToolCallSpecParam | None = None,
         addons: Addon | None = None,
@@ -350,7 +361,8 @@ class AsyncChatCompletions(AsyncResource):
                 **input_params,
             )
             openai_response = cast(
-                OpenaiChatCompletion | OpenaiAsyncStream[OpenaiChatCompletionChunk],
+                OpenaiChatCompletion
+                | OpenaiAsyncStream[OpenaiChatCompletionChunk],
                 openai_response,
             )
         except openai.APIError as err:

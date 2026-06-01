@@ -152,7 +152,8 @@ def _validate_chunks(chunks: list[ChatCompletionChunk]):
     assert all(chunk.choices[0].delta.tool_calls for chunk in chunks[:-2])
     assert all(chunk.choices[0].delta.content is None for chunk in chunks)
     total_arguments = "".join(
-        chunk.choices[0].delta.tool_calls[0].function.arguments or "" for chunk in chunks[:-2]  # type: ignore
+        chunk.choices[0].delta.tool_calls[0].function.arguments or ""  # type: ignore[index,union-attr]
+        for chunk in chunks[:-2]
     )
     assert total_arguments == '{"request":"current weather in Paris"}'
 

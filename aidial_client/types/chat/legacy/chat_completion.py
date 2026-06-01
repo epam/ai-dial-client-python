@@ -138,9 +138,7 @@ class AzureChatCompletionRequest(ExtraForbidModel):
     model: StrictStr | None = None
     messages: list[Message]
     functions: list[Function] | None = None
-    function_call: Literal["auto", "none"] | FunctionChoice | None = (
-        None
-    )
+    function_call: Literal["auto", "none"] | FunctionChoice | None = None
     tools: list[Tool] | None = None
     tool_choice: Literal["auto", "none"] | ToolChoice | None = None
     stream: bool = False

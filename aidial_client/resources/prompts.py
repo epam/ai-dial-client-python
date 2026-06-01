@@ -162,9 +162,7 @@ class AsyncPrompts(AsyncResource, DialStorageResourceMixin):
             on_http_error=_prompts_error_processor,
         )
 
-    async def get_metadata(
-        self, url: str | PurePosixPath
-    ) -> PromptMetadata:
+    async def get_metadata(self, url: str | PurePosixPath) -> PromptMetadata:
         return await self.metadata.get(
             resource="prompts",
             relative_url=self.get_api_path(str(url)),

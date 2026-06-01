@@ -5,7 +5,6 @@ import httpx
 
 
 class FileDownloadResponse:
-
     def __init__(self, response: httpx.Response, filename: str):
         self._response = response
         self._filename = filename

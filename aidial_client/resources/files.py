@@ -167,7 +167,6 @@ class AsyncFiles(AsyncResource, DialStorageResourceMixin):
         etag_if_match: str | None = None,
         etag_if_none_match: Literal["*"] | None = None,
     ) -> FileMetadata:
-
         return await self.http_client.request(
             cast_to=FileMetadata,
             options=FinalRequestOptions(
@@ -268,9 +267,7 @@ class AsyncFiles(AsyncResource, DialStorageResourceMixin):
             on_http_error=_files_error_processor,
         )
 
-    async def get_metadata(
-        self, url: str | PurePosixPath
-    ) -> FileMetadata:
+    async def get_metadata(self, url: str | PurePosixPath) -> FileMetadata:
         return await self.metadata.get(
             resource="files",
             relative_url=self.get_api_path(str(url)),

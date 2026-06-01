@@ -1,4 +1,3 @@
-
 import httpx
 
 from aidial_client._auth import AsyncAuthValue, SyncAuthValue

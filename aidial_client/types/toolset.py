@@ -1,4 +1,3 @@
-
 from aidial_client._internal_types._model import ExtraAllowModel
 from aidial_client.types.deployment import Features
 

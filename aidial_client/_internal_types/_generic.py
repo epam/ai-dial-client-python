@@ -10,6 +10,13 @@ from aidial_client.types.file import FileDownloadResponse
 
 ResponseT = TypeVar(
     "ResponseT",
-    bound=ExtraAllowModel | ExtraForbidModel | bytes | str | dict | httpx.Response | FileDownloadResponse | None,
+    bound=ExtraAllowModel
+    | ExtraForbidModel
+    | bytes
+    | str
+    | dict
+    | httpx.Response
+    | FileDownloadResponse
+    | None,
 )
 NoneType = type(None)
