@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Union
+from typing import Optional, Union
 
 import aiofiles
 import httpx
@@ -43,3 +43,11 @@ class FileDownloadResponse:
     @property
     def filename(self) -> str:
         return self._filename
+
+    @property
+    def headers(self) -> httpx.Headers:
+        return self._response.headers
+
+    @property
+    def content_type(self) -> Optional[str]:
+        return self.headers.get("content-type")
