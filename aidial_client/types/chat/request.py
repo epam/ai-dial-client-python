@@ -2,7 +2,6 @@ from typing import Any, Literal
 
 from typing_extensions import TypedDict
 
-from aidial_client.types.chat.addon import Addon
 from aidial_client.types.chat.function import (
     FunctionCallSpecParam,
     FunctionParam,
@@ -37,6 +36,5 @@ class ChatCompletionRequest(TypedDict, total=False):
     tool_choice: Literal["none", "auto"] | ToolCallSpecParam | None
     functions: list[FunctionParam] | None
     function_call: Literal["none", "auto"] | FunctionCallSpecParam | None
-    addons: Addon | None
     max_prompt_tokens: Literal["infinity"] | int | None
     custom_fields: ChatCompletionRequestCustomFields | None
