@@ -1,4 +1,5 @@
-from typing import Any, AsyncIterator, Dict, Iterator, List, Optional
+from collections.abc import AsyncIterator, Iterator
+from typing import Any
 
 import httpx
 from httpx._content import AsyncIteratorByteStream, IteratorByteStream
@@ -8,11 +9,10 @@ from aidial_client._client import AsyncDial
 
 
 class MockStreamIterator(IteratorByteStream, AsyncIteratorByteStream):
-    def __init__(self, mock_chunks: List[bytes]):
+    def __init__(self, mock_chunks: list[bytes]):
         class Stream:
             def __iter__(self) -> Iterator[bytes]:
-                for chunk in mock_chunks:
-                    yield chunk
+                yield from mock_chunks
 
             async def __aiter__(self) -> AsyncIterator[bytes]:
                 for chunk in mock_chunks:
@@ -23,10 +23,10 @@ class MockStreamIterator(IteratorByteStream, AsyncIteratorByteStream):
 
 
 def get_client_mock(
-    status_code: Optional[int],
-    json_mock: Optional[Dict[str, Any]] = None,
-    stream_chunks_mock: Optional[List[bytes]] = None,
-    exception_mock: Optional[Exception] = None,
+    status_code: int | None,
+    json_mock: dict[str, Any] | None = None,
+    stream_chunks_mock: list[bytes] | None = None,
+    exception_mock: Exception | None = None,
 ) -> Dial:
     client_mock = Dial(
         api_key="dummy",
@@ -60,10 +60,10 @@ def get_client_mock(
 
 
 def get_async_client_mock(
-    status_code: Optional[int],
-    json_mock: Optional[Dict[str, Any]] = None,
-    stream_chunks_mock: Optional[List[bytes]] = None,
-    exception_mock: Optional[Exception] = None,
+    status_code: int | None,
+    json_mock: dict[str, Any] | None = None,
+    stream_chunks_mock: list[bytes] | None = None,
+    exception_mock: Exception | None = None,
 ) -> AsyncDial:
     client_mock = AsyncDial(
         api_key="dummy",

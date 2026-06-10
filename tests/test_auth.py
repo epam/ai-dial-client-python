@@ -158,7 +158,7 @@ def test_combined_auth():
     """Test that both api_key and bearer_token can be provided simultaneously."""
     client = Dial(
         api_key="my-api-key",
-        bearer_token="my-bearer-token",
+        bearer_token="my-bearer-token",  # noqa: S106
         base_url="http://dial.core",
     )
     headers = client.auth_headers()
@@ -173,7 +173,7 @@ async def test_combined_auth_async():
     """Test that both api_key and bearer_token can be provided simultaneously in an async client."""
     client = AsyncDial(
         api_key="my-api-key",
-        bearer_token="my-bearer-token",
+        bearer_token="my-bearer-token",  # noqa: S106
         base_url="http://dial.core",
     )
     headers = await client.auth_headers()
