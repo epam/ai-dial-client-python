@@ -37,6 +37,7 @@ class FileMetadata(BaseMetadata):
     resource_type: Literal["FILE"]
     content_length: Optional[int] = None
     content_type: Optional[str] = None
+    next_token: Optional[str] = None
     items: Optional[List[FileItem]] = None
     etag: Optional[str] = None
 
