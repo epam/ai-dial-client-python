@@ -38,6 +38,8 @@
       - [Get Application by Id](#get-application-by-id)
   - [Models](#models)
       - [Get Model by Name](#get-model-by-name)
+  - [User](#user)
+      - [Get Authenticated User Info](#get-authenticated-user-info)
   - [Toolsets](#toolsets)
       - [Get Toolset by Id](#get-toolset-by-id)
   - [Resource Permissions](#resource-permissions)
@@ -798,6 +800,22 @@ ModelInfo(
     ),
 )
 ```
+
+### User
+
+#### Get Authenticated User Info
+
+To retrieve information about the currently authenticated user:
+
+```python
+# Sync
+user_info = client.user.info()
+
+# Async
+user_info = await async_client.user.info()
+```
+
+The response shape may evolve depending on DIAL deployment settings, so this method returns a plain `dict[str, Any]`.
 
 ### Toolsets
 
