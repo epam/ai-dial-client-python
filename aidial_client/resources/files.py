@@ -1,5 +1,6 @@
 from pathlib import PurePosixPath
-from typing import Literal, Optional, Union
+from contextlib import asynccontextmanager
+from typing import AsyncIterator, Literal, Optional, Union
 from urllib.parse import urljoin
 
 import httpx
@@ -208,6 +209,31 @@ class AsyncFiles(AsyncResource, DialStorageResourceMixin):
         return FileDownloadResponse(
             response=response, filename=storage_resource.filename
         )
+
+    @asynccontextmanager
+    async def stream_download(
+        self,
+        url: Union[str, PurePosixPath],
+        etag_if_match: Optional[str] = None,
+    ) -> AsyncIterator[FileDownloadResponse]:
+        storage_resource = self.get_storage_resource(str(url))
+        if storage_resource.filename is None:
+            raise InvalidDialURLError("URL points to a directory, not a file")
+        async with self.http_client.stream(
+            options=FinalRequestOptions(
+                method="GET",
+                url=urljoin(API_PREFIX, storage_resource.api_path),
+                headers=remove_none(
+                    {
+                        "If-Match": etag_if_match,
+                    }
+                ),
+            ),
+            on_http_error=_files_error_processor,
+        ) as response:
+            yield FileDownloadResponse(
+                response=response, filename=storage_resource.filename
+            )
 
     async def delete(
         self,

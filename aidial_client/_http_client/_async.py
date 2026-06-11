@@ -121,6 +121,42 @@ class AsyncHTTPClient(BaseHTTPClient[httpx.AsyncClient, AsyncAuthValue]):
         return process_block_response(cast_to=cast_to, response=response)
 
     @asynccontextmanager
+    async def stream(
+        self,
+        *,
+        options: FinalRequestOptions,
+        on_http_error: Optional[
+            Callable[[httpx.HTTPStatusError], Optional[DialException]]
+        ] = None,
+    ) -> AsyncIterator[httpx.Response]:
+        auth_headers = await self.auth_headers()
+        request = self._build_request(options, auth_headers)
+        try:
+            response = await self._internal_http_client.send(
+                request, stream=True
+            )
+        except httpx.TimeoutException as err:
+            raise DialException(
+                message="Request timed out",
+                status_code=HTTPStatus.REQUEST_TIMEOUT,
+            ) from err
+        except httpx.HTTPError as err:
+            raise DialException(message=f"Request failed: {err}") from err
+
+        try:
+            try:
+                response.raise_for_status()
+            except httpx.HTTPStatusError as err:
+                custom_error = on_http_error(err) if on_http_error else None
+                raised_error = custom_error or self._make_dial_error_from_response(
+                    err.response
+                )
+                raise raised_error from err
+            yield response
+        finally:
+            await response.aclose()
+
+    @asynccontextmanager
     async def stream_sse(
         self,
         *,
