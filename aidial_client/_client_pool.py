@@ -1,4 +1,5 @@
-from typing import Optional, Union
+from types import TracebackType
+from typing import Optional, Type, Union
 
 import httpx
 
@@ -46,6 +47,20 @@ class DialClientPool:
             ),
         )
 
+    def close(self) -> None:
+        self._internal_http_client.close()
+
+    def __enter__(self) -> "DialClientPool":
+        return self
+
+    def __exit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_value: Optional[BaseException],
+        traceback: Optional[TracebackType],
+    ) -> None:
+        self.close()
+
 
 class AsyncDialClientPool:
     def __init__(
@@ -80,3 +95,17 @@ class AsyncDialClientPool:
                 internal_http_client=self._internal_http_client,
             ),
         )
+
+    async def aclose(self) -> None:
+        await self._internal_http_client.aclose()
+
+    async def __aenter__(self) -> "AsyncDialClientPool":
+        return self
+
+    async def __aexit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_value: Optional[BaseException],
+        traceback: Optional[TracebackType],
+    ) -> None:
+        await self.aclose()

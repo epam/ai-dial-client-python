@@ -17,6 +17,7 @@
   - [Authentication](#authentication)
       - [API Keys](#api-keys)
       - [Bearer Token](#bearer-token)
+  - [Lifecycle Management](#lifecycle-management)
   - [Deployments](#deployments)
       - [List Deployments](#list-deployments)
       - [Get Deployment by Id](#get-deployment-by-id)
@@ -119,6 +120,45 @@ sync_client = Dial(
 async_client = AsyncDial(
     bearer_token="your_bearer_token_here", base_url="https://your-dial-instance.com"
 )
+```
+
+### Lifecycle Management
+
+For deterministic shutdown of underlying HTTP clients, both client types and
+client pools expose lifecycle APIs.
+
+```python
+from aidial_client import AsyncDial, AsyncDialClientPool, Dial, DialClientPool
+
+# Sync client
+with Dial(api_key="your_api_key", base_url="https://your-dial-instance.com") as client:
+    ...
+
+client = Dial(api_key="your_api_key", base_url="https://your-dial-instance.com")
+client.close()
+
+# Async client
+async with AsyncDial(
+    api_key="your_api_key", base_url="https://your-dial-instance.com"
+) as async_client:
+    ...
+
+async_client = AsyncDial(
+    api_key="your_api_key", base_url="https://your-dial-instance.com"
+)
+await async_client.aclose()
+
+# Sync pool
+with DialClientPool() as pool:
+    pooled_client = pool.create_client(
+        base_url="https://your-dial-instance.com", api_key="your-api-key"
+    )
+
+# Async pool
+async with AsyncDialClientPool() as async_pool:
+    pooled_async_client = async_pool.create_client(
+        base_url="https://your-dial-instance.com", api_key="your-api-key"
+    )
 ```
 
 You can also pass `bearer_token` as a function without parameters, that returns a `string`:
@@ -928,7 +968,7 @@ second_client = client_pool.create_client(
 #### Asynchronous Client Pool
 
 ```python
-from dial_client import (
+from aidial_client import (
     AsyncDialClientPool,
 )
 
