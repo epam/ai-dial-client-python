@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import Any
 from unittest.mock import AsyncMock, Mock
 
 import httpx
@@ -32,7 +32,7 @@ METADATA_RESPONSE_MOCK = {
 }
 
 
-def _make_capturing_client(captured: List[httpx.Request]) -> Dial:
+def _make_capturing_client(captured: list[httpx.Request]) -> Dial:
     client = Dial(api_key="dummy", base_url="http://dial.core")
 
     def send_mock(request: httpx.Request, **_: Any) -> httpx.Response:
@@ -49,7 +49,7 @@ def _make_capturing_client(captured: List[httpx.Request]) -> Dial:
 
 
 def _make_async_capturing_client(
-    captured: List[httpx.Request],
+    captured: list[httpx.Request],
 ) -> AsyncDial:
     client = AsyncDial(api_key="dummy", base_url="http://dial.core")
 
@@ -87,7 +87,7 @@ def test_get_metadata():
 
 
 def test_get_metadata_sends_pagination_params():
-    captured: List[httpx.Request] = []
+    captured: list[httpx.Request] = []
     client = _make_capturing_client(captured)
 
     result = client.files.get_metadata(
@@ -130,7 +130,7 @@ async def test_get_metadata_async():
 
 @pytest.mark.asyncio
 async def test_get_metadata_async_sends_pagination_params():
-    captured: List[httpx.Request] = []
+    captured: list[httpx.Request] = []
     client = _make_async_capturing_client(captured)
 
     result = await client.files.get_metadata(
