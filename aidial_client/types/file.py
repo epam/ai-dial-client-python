@@ -40,3 +40,11 @@ class FileDownloadResponse:
     @property
     def filename(self) -> str:
         return self._filename
+
+    @property
+    def headers(self) -> httpx.Headers:
+        return self._response.headers
+
+    @property
+    def content_type(self) -> str | None:
+        return self.headers.get("content-type")
