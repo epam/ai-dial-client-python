@@ -508,6 +508,13 @@ all_content = result.get_content()
 all_content = await result.aget_content()
 ```
 
+or access response metadata:
+
+```python
+headers = result.headers
+content_type = result.content_type
+```
+
 or write it to the file:
 
 ```python

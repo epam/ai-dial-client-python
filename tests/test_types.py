@@ -1,7 +1,9 @@
+import httpx
 import pytest
 from pydantic import ValidationError
 
 from aidial_client.types.chat.response import Attachment
+from aidial_client.types.file import FileDownloadResponse
 from aidial_client.types.metadata import BaseMetadata
 
 
@@ -54,3 +56,27 @@ def test_metadata_population():
         assert getattr(metadata_by_name, field) == getattr(
             metadata_by_alias, field
         )
+
+
+def test_file_download_response_metadata():
+    response = httpx.Response(
+        200,
+        content=b"test content",
+        headers={"content-type": "text/plain", "x-test-header": "test"},
+    )
+
+    download_response = FileDownloadResponse(
+        response=response, filename="test.txt"
+    )
+
+    assert download_response.headers["x-test-header"] == "test"
+    assert download_response.content_type == "text/plain"
+
+
+def test_file_download_response_metadata_without_content_type():
+    response = httpx.Response(200, content=b"test content")
+    download_response = FileDownloadResponse(
+        response=response, filename="test.txt"
+    )
+
+    assert download_response.content_type is None
