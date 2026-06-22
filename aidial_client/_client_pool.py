@@ -1,3 +1,5 @@
+from types import TracebackType
+
 import httpx
 
 from aidial_client._auth import AsyncAuthValue, SyncAuthValue
@@ -44,6 +46,20 @@ class DialClientPool:
             ),
         )
 
+    def close(self) -> None:
+        self._internal_http_client.close()
+
+    def __enter__(self) -> "DialClientPool":
+        return self
+
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> None:
+        self.close()
+
 
 class AsyncDialClientPool:
     def __init__(
@@ -78,3 +94,17 @@ class AsyncDialClientPool:
                 internal_http_client=self._internal_http_client,
             ),
         )
+
+    async def aclose(self) -> None:
+        await self._internal_http_client.aclose()
+
+    async def __aenter__(self) -> "AsyncDialClientPool":
+        return self
+
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> None:
+        await self.aclose()
