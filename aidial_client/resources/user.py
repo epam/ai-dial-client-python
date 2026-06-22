@@ -1,11 +1,11 @@
-from typing import Any, Dict
+from typing import Any
 
 from aidial_client._internal_types._http_request import FinalRequestOptions
 from aidial_client.resources.base import AsyncResource, Resource
 
 
 class User(Resource):
-    def info(self) -> Dict[str, Any]:
+    def info(self) -> dict[str, Any]:
         return self.http_client.request(
             cast_to=dict,
             options=FinalRequestOptions(method="GET", url="v1/user/info"),
@@ -13,7 +13,7 @@ class User(Resource):
 
 
 class AsyncUser(AsyncResource):
-    async def info(self) -> Dict[str, Any]:
+    async def info(self) -> dict[str, Any]:
         return await self.http_client.request(
             cast_to=dict,
             options=FinalRequestOptions(method="GET", url="v1/user/info"),
