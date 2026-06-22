@@ -1,8 +1,7 @@
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Any, Literal
 
 from typing_extensions import TypedDict
 
-from aidial_client.types.chat.addon import Addon
 from aidial_client.types.chat.function import (
     FunctionCallSpecParam,
     FunctionParam,
@@ -12,33 +11,30 @@ from aidial_client.types.chat.tool import ToolCallSpecParam, ToolParam
 
 
 class ChatCompletionRequestCustomFields(TypedDict, total=False):
-    configuration: Optional[Dict[str, Any]]
+    configuration: dict[str, Any] | None
 
 
 class ChatCompletionRequest(TypedDict, total=False):
     model: str
-    temperature: Optional[float]
-    top_p: Optional[float]
-    stream: Optional[bool]
-    stop: Optional[Union[str, List[str]]]
-    max_tokens: Optional[int]
-    presence_penalty: Optional[float]
-    frequency_penalty: Optional[float]
-    logit_bias: Optional[Dict]
-    user: Optional[str]
-    messages: List[Message]
-    data_sources: List[Any]
-    n: Optional[int]
-    seed: Optional[int]
-    logprobs: Optional[bool]
-    top_logprobs: Optional[float]
-    response_format: Optional[ResponseFormat]
-    tools: Optional[List[ToolParam]]
-    tool_choice: Optional[Union[Literal["none", "auto"], ToolCallSpecParam]]
-    functions: Optional[List[FunctionParam]]
-    function_call: Optional[
-        Union[Literal["none", "auto"], FunctionCallSpecParam]
-    ]
-    addons: Optional[Addon]
-    max_prompt_tokens: Optional[Union[Literal["infinity"], int]]
-    custom_fields: Optional[ChatCompletionRequestCustomFields]
+    temperature: float | None
+    top_p: float | None
+    stream: bool | None
+    stop: str | list[str] | None
+    max_tokens: int | None
+    presence_penalty: float | None
+    frequency_penalty: float | None
+    logit_bias: dict | None
+    user: str | None
+    messages: list[Message]
+    data_sources: list[Any]
+    n: int | None
+    seed: int | None
+    logprobs: bool | None
+    top_logprobs: float | None
+    response_format: ResponseFormat | None
+    tools: list[ToolParam] | None
+    tool_choice: Literal["none", "auto"] | ToolCallSpecParam | None
+    functions: list[FunctionParam] | None
+    function_call: Literal["none", "auto"] | FunctionCallSpecParam | None
+    max_prompt_tokens: Literal["infinity"] | int | None
+    custom_fields: ChatCompletionRequestCustomFields | None

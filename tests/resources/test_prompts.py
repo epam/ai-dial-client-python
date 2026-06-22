@@ -1,5 +1,5 @@
 import json
-from typing import Any, Dict, List
+from typing import Any
 from unittest.mock import AsyncMock, Mock
 
 import httpx
@@ -41,7 +41,7 @@ PROMPT_METADATA_MOCK = {
 }
 
 
-def _make_capturing_client(captured: List[httpx.Request]) -> Dial:
+def _make_capturing_client(captured: list[httpx.Request]) -> Dial:
     client = Dial(api_key="dummy", base_url="http://dial.core")
 
     def send_mock(request: httpx.Request, **_: Any) -> httpx.Response:
@@ -57,12 +57,12 @@ def _make_capturing_client(captured: List[httpx.Request]) -> Dial:
     return client
 
 
-def _body(request: httpx.Request) -> Dict[str, Any]:
+def _body(request: httpx.Request) -> dict[str, Any]:
     return json.loads(request.content.decode())
 
 
 def _make_async_capturing_client(
-    captured: List[httpx.Request],
+    captured: list[httpx.Request],
 ) -> AsyncDial:
     client = AsyncDial(api_key="dummy", base_url="http://dial.core")
 
@@ -77,11 +77,6 @@ def _make_async_capturing_client(
     client._http_client._internal_http_client.send = send_mock
     client._get_my_bucket = AsyncMock(return_value="test-bucket")
     return client
-
-
-# ---------------------------------------------------------------------------
-# prompts.get()
-# ---------------------------------------------------------------------------
 
 
 def test_get_prompt():
@@ -170,11 +165,6 @@ async def test_async_get_prompt_http_error():
         await client.prompts.get("prompts/test-bucket/my-folder/my-prompt")
 
 
-# ---------------------------------------------------------------------------
-# prompts.get_metadata()
-# ---------------------------------------------------------------------------
-
-
 def test_get_prompt_metadata():
     client = get_client_mock(status_code=200, json_mock=PROMPT_METADATA_MOCK)
     result = client.prompts.get_metadata(
@@ -196,11 +186,6 @@ async def test_async_get_prompt_metadata():
     assert isinstance(result, PromptMetadata)
     assert result.node_type == "ITEM"
     assert result.bucket == "test-bucket"
-
-
-# ---------------------------------------------------------------------------
-# prompts.save()
-# ---------------------------------------------------------------------------
 
 
 def test_save_prompt():
@@ -233,7 +218,7 @@ async def test_async_save_prompt():
 
 
 def test_save_prompt_sends_json_and_etag_headers():
-    captured: List[httpx.Request] = []
+    captured: list[httpx.Request] = []
     client = _make_capturing_client(captured)
     prompt = Prompt(**PROMPT_MOCK)
 
@@ -261,7 +246,7 @@ def test_save_prompt_sends_json_and_etag_headers():
 
 @pytest.mark.asyncio
 async def test_async_save_prompt_sends_json_and_etag_headers():
-    captured: List[httpx.Request] = []
+    captured: list[httpx.Request] = []
     client = _make_async_capturing_client(captured)
     prompt = Prompt(**PROMPT_MOCK)
 
@@ -349,11 +334,6 @@ async def test_async_save_prompt_rejects_non_prompt_url():
         )
 
 
-# ---------------------------------------------------------------------------
-# prompts.delete()
-# ---------------------------------------------------------------------------
-
-
 def test_delete_prompt():
     client = get_client_mock(status_code=200, json_mock={})
 
@@ -372,7 +352,7 @@ async def test_async_delete_prompt():
 
 
 def test_delete_prompt_sends_etag_header():
-    captured: List[httpx.Request] = []
+    captured: list[httpx.Request] = []
     client = _make_capturing_client(captured)
 
     result = client.prompts.delete(
@@ -390,7 +370,7 @@ def test_delete_prompt_sends_etag_header():
 
 @pytest.mark.asyncio
 async def test_async_delete_prompt_sends_etag_header():
-    captured: List[httpx.Request] = []
+    captured: list[httpx.Request] = []
     client = _make_async_capturing_client(captured)
 
     result = await client.prompts.delete(
