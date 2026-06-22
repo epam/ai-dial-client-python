@@ -1,5 +1,6 @@
+from collections.abc import Mapping
 from enum import Enum
-from typing import Any, Dict, List, Literal, Mapping, Optional, Union
+from typing import Any, Literal
 
 from aidial_client._compatibility.pydantic_v1 import (
     ConstrainedFloat,
@@ -27,25 +28,25 @@ class Status(str, Enum):
 
 
 class Attachment(ExtraForbidModel):
-    type: Optional[StrictStr] = "text/markdown"
-    title: Optional[StrictStr] = None
-    data: Optional[StrictStr] = None
-    url: Optional[StrictStr] = None
-    reference_type: Optional[StrictStr] = None
-    reference_url: Optional[StrictStr] = None
+    type: StrictStr | None = "text/markdown"
+    title: StrictStr | None = None
+    data: StrictStr | None = None
+    url: StrictStr | None = None
+    reference_type: StrictStr | None = None
+    reference_url: StrictStr | None = None
 
 
 class Stage(ExtraForbidModel):
     name: StrictStr
     status: Status
-    content: Optional[StrictStr] = None
-    attachments: Optional[List[Attachment]] = None
+    content: StrictStr | None = None
+    attachments: list[Attachment] | None = None
 
 
 class CustomContent(ExtraForbidModel):
-    stages: Optional[List[Stage]] = None
-    attachments: Optional[List[Attachment]] = None
-    state: Optional[Any] = None
+    stages: list[Stage] | None = None
+    attachments: list[Attachment] | None = None
+    state: Any | None = None
 
 
 class FunctionCall(ExtraForbidModel):
@@ -55,7 +56,7 @@ class FunctionCall(ExtraForbidModel):
 
 class ToolCall(ExtraForbidModel):
     # OpenAI API doesn't strictly specify existence of the index field
-    index: Optional[int]
+    index: int | None
     id: StrictStr
     type: Literal["function"]
     function: FunctionCall
@@ -71,23 +72,18 @@ class Role(str, Enum):
 
 class Message(ExtraForbidModel):
     role: Role
-    content: Optional[StrictStr] = None
-    custom_content: Optional[CustomContent] = None
-    name: Optional[StrictStr] = None
-    tool_calls: Optional[List[ToolCall]] = None
-    tool_call_id: Optional[StrictStr] = None
-    function_call: Optional[FunctionCall] = None
-
-
-class Addon(ExtraForbidModel):
-    name: Optional[StrictStr] = None
-    url: Optional[StrictStr] = None
+    content: StrictStr | None = None
+    custom_content: CustomContent | None = None
+    name: StrictStr | None = None
+    tool_calls: list[ToolCall] | None = None
+    tool_call_id: StrictStr | None = None
+    function_call: FunctionCall | None = None
 
 
 class Function(ExtraForbidModel):
     name: StrictStr
-    description: Optional[StrictStr] = None
-    parameters: Optional[Dict] = None
+    description: StrictStr | None = None
+    parameters: dict | None = None
 
 
 class Temperature(ConstrainedFloat):
@@ -107,7 +103,7 @@ class N(ConstrainedInt):
 
 class Stop(ConstrainedList):
     max_items: int = 4
-    __args__ = tuple([StrictStr])
+    __args__ = (StrictStr,)
 
 
 class Penalty(ConstrainedFloat):
@@ -134,35 +130,32 @@ class ResponseFormat(ExtraForbidModel):
 
 
 class AzureChatCompletionRequest(ExtraForbidModel):
-    model: Optional[StrictStr] = None
-    messages: List[Message]
-    functions: Optional[List[Function]] = None
-    function_call: Optional[Union[Literal["auto", "none"], FunctionChoice]] = (
-        None
-    )
-    tools: Optional[List[Tool]] = None
-    tool_choice: Optional[Union[Literal["auto", "none"], ToolChoice]] = None
+    model: StrictStr | None = None
+    messages: list[Message]
+    functions: list[Function] | None = None
+    function_call: Literal["auto", "none"] | FunctionChoice | None = None
+    tools: list[Tool] | None = None
+    tool_choice: Literal["auto", "none"] | ToolChoice | None = None
     stream: bool = False
-    temperature: Optional[Temperature] = None
-    top_p: Optional[TopP] = None
-    n: Optional[N] = None
-    stop: Optional[Union[StrictStr, Stop]] = None
-    max_tokens: Optional[PositiveInt] = None
-    presence_penalty: Optional[Penalty] = None
-    frequency_penalty: Optional[Penalty] = None
-    logit_bias: Optional[Mapping[int, float]] = None
-    user: Optional[StrictStr] = None
-    seed: Optional[StrictInt] = None
-    logprobs: Optional[StrictBool] = None
-    top_logprobs: Optional[StrictInt] = None
-    response_format: Optional[ResponseFormat] = None
+    temperature: Temperature | None = None
+    top_p: TopP | None = None
+    n: N | None = None
+    stop: StrictStr | Stop | None = None
+    max_tokens: PositiveInt | None = None
+    presence_penalty: Penalty | None = None
+    frequency_penalty: Penalty | None = None
+    logit_bias: Mapping[int, float] | None = None
+    user: StrictStr | None = None
+    seed: StrictInt | None = None
+    logprobs: StrictBool | None = None
+    top_logprobs: StrictInt | None = None
+    response_format: ResponseFormat | None = None
 
 
 class ChatCompletionRequestCustomFields(ExtraForbidModel):
-    configuration: Optional[Dict[str, Any]] = None
+    configuration: dict[str, Any] | None = None
 
 
 class ChatCompletionRequest(AzureChatCompletionRequest):
-    addons: Optional[List[Addon]] = None
-    max_prompt_tokens: Optional[PositiveInt] = None
-    custom_fields: Optional[ChatCompletionRequestCustomFields] = None
+    max_prompt_tokens: PositiveInt | None = None
+    custom_fields: ChatCompletionRequestCustomFields | None = None

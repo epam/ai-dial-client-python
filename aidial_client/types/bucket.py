@@ -1,5 +1,4 @@
 import re
-from typing import Optional
 
 from aidial_client._internal_types._model import ExtraAllowModel
 
@@ -21,4 +20,4 @@ class AppData(ExtraAllowModel):
 
 class BucketResponse(ExtraAllowModel):
     bucket: str
-    appdata: Optional[str] = None
+    appdata: str | None = None

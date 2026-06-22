@@ -1,16 +1,8 @@
 import asyncio
-from contextlib import asynccontextmanager
+from collections.abc import AsyncIterator, Callable, Mapping
+from contextlib import asynccontextmanager, suppress
 from http import HTTPStatus
-from typing import (
-    Any,
-    AsyncIterator,
-    Callable,
-    Dict,
-    Mapping,
-    Optional,
-    Type,
-    Union,
-)
+from typing import Any
 
 import httpx
 
@@ -30,7 +22,7 @@ class AsyncHTTPClient(BaseHTTPClient[httpx.AsyncClient, AsyncAuthValue]):
             timeout=self._timeout,
         )
 
-    async def auth_headers(self) -> Dict[str, str]:
+    async def auth_headers(self) -> dict[str, str]:
         return await aget_combined_auth_headers(
             api_key=self._api_key, bearer_token=self._bearer_token
         )
@@ -39,7 +31,7 @@ class AsyncHTTPClient(BaseHTTPClient[httpx.AsyncClient, AsyncAuthValue]):
         self,
         *,
         options: FinalRequestOptions,
-        cast_to: Type[ResponseT],
+        cast_to: type[ResponseT],
         remaining_retries: int,
     ) -> ResponseT:
         remaining = remaining_retries - 1
@@ -57,11 +49,10 @@ class AsyncHTTPClient(BaseHTTPClient[httpx.AsyncClient, AsyncAuthValue]):
         self,
         *,
         options: FinalRequestOptions,
-        cast_to: Type[ResponseT],
-        remaining_retries: Optional[int] = None,
-        on_http_error: Optional[
-            Callable[[httpx.HTTPStatusError], Optional[DialException]]
-        ] = None,
+        cast_to: type[ResponseT],
+        remaining_retries: int | None = None,
+        on_http_error: Callable[[httpx.HTTPStatusError], DialException | None]
+        | None = None,
     ) -> ResponseT:
         retries = self._remaining_retries(remaining_retries, options)
         auth_headers = await self.auth_headers()
@@ -163,8 +154,8 @@ class AsyncHTTPClient(BaseHTTPClient[httpx.AsyncClient, AsyncAuthValue]):
         method: str,
         url: str,
         json_data: Any,
-        headers: Optional[Mapping[str, str]] = None,
-        timeout: Union[float, httpx.Timeout, None, NotGiven] = NOT_GIVEN,
+        headers: Mapping[str, str] | None = None,
+        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
     ) -> AsyncIterator[httpx.Response]:
         """Open an SSE streaming response. Yields the open httpx.Response.
 
@@ -191,10 +182,8 @@ class AsyncHTTPClient(BaseHTTPClient[httpx.AsyncClient, AsyncAuthValue]):
                 try:
                     response.raise_for_status()
                 except httpx.HTTPStatusError as err:
-                    try:
+                    with suppress(httpx.HTTPError):
                         await response.aread()
-                    except httpx.HTTPError:
-                        pass
                     raise self._make_dial_error_from_response(
                         err.response
                     ) from err

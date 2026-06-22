@@ -1,7 +1,7 @@
 import json
 import logging
 from http import HTTPStatus
-from typing import Any, List
+from typing import Any
 
 import httpx
 import pytest
@@ -21,7 +21,7 @@ from tests.client_mock import (
 )
 
 
-def _sse_chunks(*lines: str) -> List[bytes]:
+def _sse_chunks(*lines: str) -> list[bytes]:
     """Encode a sequence of SSE lines as one byte stream chunk."""
     return [("\n".join(lines) + "\n").encode()]
 
@@ -30,7 +30,7 @@ def _data(payload: Any) -> str:
     return f"data: {json.dumps(payload)}"
 
 
-def _single_event(payload: Any) -> List[bytes]:
+def _single_event(payload: Any) -> list[bytes]:
     return _sse_chunks(_data(payload), "")
 
 
@@ -428,12 +428,14 @@ def test_interact_truncated_stream_warns_and_no_phantom_event_sync(caplog):
     # warning must be emitted by the SSE parser.
     chunks = _sse_chunks('data: {"jsonrpc":"2.0","resu')
     client = get_client_mock(status_code=200, stream_chunks_mock=chunks)
-    with caplog.at_level(logging.WARNING, logger="aidial_client"):
-        with pytest.raises(DialException) as exc_info:
-            client.client_channel._interact(
-                channel_id="ch",
-                requests=[JsonRpcRequest(jsonrpc="2.0", method="m", id="1")],
-            )
+    with (
+        caplog.at_level(logging.WARNING, logger="aidial_client"),
+        pytest.raises(DialException) as exc_info,
+    ):
+        client.client_channel._interact(
+            channel_id="ch",
+            requests=[JsonRpcRequest(jsonrpc="2.0", method="m", id="1")],
+        )
     assert exc_info.value.status_code == HTTPStatus.GATEWAY_TIMEOUT
     assert any(
         "Uncommitted data chunks in SSE stream" in rec.message

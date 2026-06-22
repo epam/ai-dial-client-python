@@ -1,3 +1,4 @@
+import contextlib
 import uuid
 
 import pytest
@@ -12,10 +13,8 @@ PROMPT_FOLDER = "test-folder-artifacts"
 
 
 async def _delete_if_exists(async_client: AsyncDial, url: str) -> None:
-    try:
+    with contextlib.suppress(ResourceNotFoundError):
         await async_client.prompts.delete(url)
-    except ResourceNotFoundError:
-        pass
 
 
 def _create_prompt(
