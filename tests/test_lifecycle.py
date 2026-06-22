@@ -20,11 +20,13 @@ def test_dial_close():
 def test_dial_context_manager():
     client = Dial(api_key="dummy", base_url="http://dial.core")
 
-    with patch.object(
-        client._http_client.internal_http_client, "close"
-    ) as close_mock:
-        with client as managed_client:
-            assert managed_client is client
+    with (
+        patch.object(
+            client._http_client.internal_http_client, "close"
+        ) as close_mock,
+        client as managed_client,
+    ):
+        assert managed_client is client
 
     close_mock.assert_called_once()
 
@@ -66,9 +68,11 @@ def test_dial_client_pool_close():
 def test_dial_client_pool_context_manager():
     pool = DialClientPool()
 
-    with patch.object(pool._internal_http_client, "close") as close_mock:
-        with pool as managed_pool:
-            assert managed_pool is pool
+    with (
+        patch.object(pool._internal_http_client, "close") as close_mock,
+        pool as managed_pool,
+    ):
+        assert managed_pool is pool
 
     close_mock.assert_called_once()
 
