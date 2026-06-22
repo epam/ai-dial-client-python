@@ -1,5 +1,6 @@
+from collections.abc import Sequence
 from http import HTTPStatus
-from typing import Any, List, Optional, Sequence, Union
+from typing import Any
 
 import httpx
 
@@ -24,7 +25,7 @@ _INTERACT_URL = "v1/ops/client-channel/interact"
 _SIGNIN_METHOD = "toolset/signin"
 
 
-def _normalize_toolset_ids(toolset_ids: Sequence[str]) -> List[str]:
+def _normalize_toolset_ids(toolset_ids: Sequence[str]) -> list[str]:
     """Validate ``toolset_ids`` and return a stable list.
 
     Catches three caller mistakes that would otherwise produce silent garbage:
@@ -53,14 +54,13 @@ def _serialize_requests(requests: Sequence[JsonRpcRequest]) -> Any:
     return [r.dict(exclude_none=True) for r in requests]
 
 
-def _parse_responses(payload: str) -> List[JsonRpcResponse]:
+def _parse_responses(payload: str) -> list[JsonRpcResponse]:
     try:
         return JsonRpcResponses.parse_raw(payload).responses
     except (ValidationError, ValueError) as err:
         raise ParsingDataError(
             message=(
-                "Invalid JSON-RPC response in client-channel interact: "
-                f"{err}"
+                f"Invalid JSON-RPC response in client-channel interact: {err}"
             )
         ) from err
 
@@ -95,7 +95,7 @@ _RESULT_TO_OUTCOME = {
 }
 
 
-def _outcome_for(response: Optional[JsonRpcResponse]) -> SigninResult:
+def _outcome_for(response: JsonRpcResponse | None) -> SigninResult:
     if response is None or response.error is not None:
         return SigninResult.ERROR
     if not isinstance(response.result, str):
@@ -105,7 +105,7 @@ def _outcome_for(response: Optional[JsonRpcResponse]) -> SigninResult:
 
 def _build_signin_requests(
     toolset_ids: Sequence[str],
-) -> List[JsonRpcRequest]:
+) -> list[JsonRpcRequest]:
     return [
         JsonRpcRequest(
             method=_SIGNIN_METHOD,
@@ -133,7 +133,7 @@ class ClientChannel(Resource):
         *,
         channel_id: str,
         toolset_ids: Sequence[str],
-        timeout: Union[float, httpx.Timeout, None, NotGiven] = NOT_GIVEN,
+        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
     ) -> "dict[str, SigninResult]":
         """Request interactive sign-in for one or more toolsets on the given
         client channel and return the per-toolset outcome.
@@ -166,8 +166,8 @@ class ClientChannel(Resource):
         *,
         channel_id: str,
         requests: Sequence[JsonRpcRequest],
-        timeout: Union[float, httpx.Timeout, None, NotGiven] = NOT_GIVEN,
-    ) -> List[JsonRpcResponse]:
+        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+    ) -> list[JsonRpcResponse]:
         with self.http_client.stream_sse(
             method="POST",
             url=_INTERACT_URL,
@@ -186,7 +186,7 @@ class AsyncClientChannel(AsyncResource):
         *,
         channel_id: str,
         toolset_ids: Sequence[str],
-        timeout: Union[float, httpx.Timeout, None, NotGiven] = NOT_GIVEN,
+        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
     ) -> "dict[str, SigninResult]":
         ids = _normalize_toolset_ids(toolset_ids)
         if not ids:
@@ -204,8 +204,8 @@ class AsyncClientChannel(AsyncResource):
         *,
         channel_id: str,
         requests: Sequence[JsonRpcRequest],
-        timeout: Union[float, httpx.Timeout, None, NotGiven] = NOT_GIVEN,
-    ) -> List[JsonRpcResponse]:
+        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+    ) -> list[JsonRpcResponse]:
         async with self.http_client.stream_sse(
             method="POST",
             url=_INTERACT_URL,

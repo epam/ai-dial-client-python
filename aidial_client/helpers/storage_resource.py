@@ -1,5 +1,5 @@
 from pathlib import PurePosixPath
-from typing import Literal, Optional, Union, cast, get_args
+from typing import Literal, cast, get_args
 from urllib.parse import urljoin, urlparse
 
 from aidial_client._compatibility.pydantic_v1 import BaseModel
@@ -36,15 +36,15 @@ class DialStorageResource(BaseModel):
     Filename, like 'my-file.txt'
     None for a directory
     """
-    filename: Optional[str] = None
+    filename: str | None = None
 
 
 def safe_parse_storage_resource(
     *,
     url: str,
     dial_api_url: str,
-    expected_resource_type: Optional[StorageResourceType] = None,
-) -> Union[DialStorageResource, NotDialURLError, InvalidDialURLError]:
+    expected_resource_type: StorageResourceType | None = None,
+) -> DialStorageResource | NotDialURLError | InvalidDialURLError:
     """
     Parse the storage resource from the URL, that could be
     1. Absolute: "https://dial.core/v1/files/my-bucket/my-file.txt"
@@ -108,14 +108,14 @@ def parse_storage_resource(
     *,
     url: str,
     dial_api_url: str,
-    expected_resource_type: Optional[StorageResourceType] = None,
+    expected_resource_type: StorageResourceType | None = None,
 ) -> DialStorageResource:
     result = safe_parse_storage_resource(
         url=url,
         dial_api_url=dial_api_url,
         expected_resource_type=expected_resource_type,
     )
-    if isinstance(result, (NotDialURLError, InvalidDialURLError)):
+    if isinstance(result, NotDialURLError | InvalidDialURLError):
         raise result
     return result
 
