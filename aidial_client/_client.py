@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from pathlib import PurePosixPath
+from types import TracebackType
 from typing import Generic, TypeVar
 from urllib.parse import urljoin
 
@@ -165,6 +166,20 @@ class Dial(BaseDialClient[SyncHTTPClient, SyncAuthValue]):
     def auth_headers(self) -> dict[str, str]:
         return self._http_client.auth_headers()
 
+    def close(self) -> None:
+        self._http_client.internal_http_client.close()
+
+    def __enter__(self) -> "Dial":
+        return self
+
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> None:
+        self.close()
+
 
 class AsyncDial(BaseDialClient[AsyncHTTPClient, AsyncAuthValue]):
     def _init_resources(self) -> None:
@@ -255,3 +270,17 @@ class AsyncDial(BaseDialClient[AsyncHTTPClient, AsyncAuthValue]):
 
     async def auth_headers(self) -> dict[str, str]:
         return await self._http_client.auth_headers()
+
+    async def aclose(self) -> None:
+        await self._http_client.internal_http_client.aclose()
+
+    async def __aenter__(self) -> "AsyncDial":
+        return self
+
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> None:
+        await self.aclose()
