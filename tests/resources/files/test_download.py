@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, cast
+from typing import Any, cast
 from unittest.mock import AsyncMock
 
 import httpx
@@ -11,9 +11,9 @@ from tests.client_mock import MockStreamIterator
 
 @pytest.mark.asyncio
 async def test_stream_download_async_streams_and_closes_response():
-    captured_requests: List[httpx.Request] = []
-    captured_kwargs: List[Dict[str, Any]] = []
-    captured_responses: List[httpx.Response] = []
+    captured_requests: list[httpx.Request] = []
+    captured_kwargs: list[dict[str, Any]] = []
+    captured_responses: list[httpx.Response] = []
     client = AsyncDial(api_key="dummy", base_url="http://dial.core")
     client._get_my_bucket = cast(Any, AsyncMock(return_value="test-bucket"))
 
@@ -38,7 +38,9 @@ async def test_stream_download_async_streams_and_closes_response():
         assert response.filename == "file.txt"
         assert b"".join([chunk async for chunk in response]) == b"hello world"
 
-    assert captured_requests[0].url.path == "/v1/files/test-bucket/folder/file.txt"
+    assert (
+        captured_requests[0].url.path == "/v1/files/test-bucket/folder/file.txt"
+    )
     assert captured_kwargs == [{"stream": True}]
     assert captured_responses[0].is_closed is True
 

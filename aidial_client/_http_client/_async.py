@@ -116,9 +116,9 @@ class AsyncHTTPClient(BaseHTTPClient[httpx.AsyncClient, AsyncAuthValue]):
         self,
         *,
         options: FinalRequestOptions,
-        on_http_error: Optional[
-            Callable[[httpx.HTTPStatusError], Optional[DialException]]
-        ] = None,
+        on_http_error: (
+            Callable[[httpx.HTTPStatusError], DialException | None] | None
+        ) = None,
     ) -> AsyncIterator[httpx.Response]:
         auth_headers = await self.auth_headers()
         request = self._build_request(options, auth_headers)
@@ -139,8 +139,9 @@ class AsyncHTTPClient(BaseHTTPClient[httpx.AsyncClient, AsyncAuthValue]):
                 response.raise_for_status()
             except httpx.HTTPStatusError as err:
                 custom_error = on_http_error(err) if on_http_error else None
-                raised_error = custom_error or self._make_dial_error_from_response(
-                    err.response
+                raised_error = (
+                    custom_error
+                    or self._make_dial_error_from_response(err.response)
                 )
                 raise raised_error from err
             yield response
