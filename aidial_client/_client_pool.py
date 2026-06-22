@@ -1,5 +1,4 @@
 from types import TracebackType
-from typing import Optional, Type, Union
 
 import httpx
 
@@ -28,10 +27,10 @@ class DialClientPool:
         self,
         *,
         base_url: str,
-        api_key: Optional[SyncAuthValue] = None,
-        bearer_token: Optional[SyncAuthValue] = None,
+        api_key: SyncAuthValue | None = None,
+        bearer_token: SyncAuthValue | None = None,
         max_retries: int = DEFAULT_MAX_RETRIES,
-        timeout: Union[httpx.Timeout, float] = DEFAULT_TIMEOUT,
+        timeout: httpx.Timeout | float = DEFAULT_TIMEOUT,
     ) -> Dial:
         return Dial(
             base_url=base_url,
@@ -55,9 +54,9 @@ class DialClientPool:
 
     def __exit__(
         self,
-        exc_type: Optional[Type[BaseException]],
-        exc_value: Optional[BaseException],
-        traceback: Optional[TracebackType],
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
     ) -> None:
         self.close()
 
@@ -77,10 +76,10 @@ class AsyncDialClientPool:
         self,
         *,
         base_url: str,
-        api_key: Optional[AsyncAuthValue] = None,
-        bearer_token: Optional[AsyncAuthValue] = None,
+        api_key: AsyncAuthValue | None = None,
+        bearer_token: AsyncAuthValue | None = None,
         max_retries: int = DEFAULT_MAX_RETRIES,
-        timeout: Union[httpx.Timeout, float] = DEFAULT_TIMEOUT,
+        timeout: httpx.Timeout | float = DEFAULT_TIMEOUT,
     ) -> AsyncDial:
         return AsyncDial(
             base_url=base_url,
@@ -104,8 +103,8 @@ class AsyncDialClientPool:
 
     async def __aexit__(
         self,
-        exc_type: Optional[Type[BaseException]],
-        exc_value: Optional[BaseException],
-        traceback: Optional[TracebackType],
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
     ) -> None:
         await self.aclose()

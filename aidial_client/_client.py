@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from pathlib import PurePosixPath
 from types import TracebackType
-from typing import Dict, Generic, Optional, Type, TypeVar, Union
+from typing import Generic, TypeVar
 from urllib.parse import urljoin
 
 import openai
@@ -25,30 +25,28 @@ from aidial_client._internal_types._defaults import NOT_GIVEN, NotGiven
 from aidial_client.helpers._url import enforce_trailing_slash
 from aidial_client.types.bucket import AppData
 
-_HttpClientT = TypeVar(
-    "_HttpClientT", bound=Union[AsyncHTTPClient, SyncHTTPClient]
-)
+_HttpClientT = TypeVar("_HttpClientT", bound=AsyncHTTPClient | SyncHTTPClient)
 
 
 class BaseDialClient(Generic[_HttpClientT, AuthValueT], ABC):
-    _api_key: Optional[AuthValueT]
-    _bearer_token: Optional[AuthValueT]
+    _api_key: AuthValueT | None
+    _bearer_token: AuthValueT | None
     _base_url: str
     _http_client: _HttpClientT
-    _auth_headers: Dict[str, str]
-    _my_bucket: Optional[str]
-    _my_appdata: Union[AppData, None, NotGiven]
+    _auth_headers: dict[str, str]
+    _my_bucket: str | None
+    _my_appdata: AppData | None | NotGiven
 
     def __init__(
         self,
         *,
         base_url: str,
-        api_key: Optional[AuthValueT] = None,
-        bearer_token: Optional[AuthValueT] = None,
+        api_key: AuthValueT | None = None,
+        bearer_token: AuthValueT | None = None,
         max_retries: int = DEFAULT_MAX_RETRIES,
-        timeout: Union[float, Timeout, None] = DEFAULT_TIMEOUT,
-        api_version: Optional[str] = None,
-        http_client: Optional[_HttpClientT] = None,
+        timeout: float | Timeout | None = DEFAULT_TIMEOUT,
+        api_version: str | None = None,
+        http_client: _HttpClientT | None = None,
     ):
         validate_auth(api_key=api_key, bearer_token=bearer_token)
         self._api_key = api_key
@@ -80,12 +78,11 @@ class BaseDialClient(Generic[_HttpClientT, AuthValueT], ABC):
         return self._base_url
 
     @property
-    def api_version(self) -> Optional[str]:
+    def api_version(self) -> str | None:
         return self._api_version
 
 
 class Dial(BaseDialClient[SyncHTTPClient, SyncAuthValue]):
-
     def _init_resources(self) -> None:
         openai_client = openai.AzureOpenAI(
             api_key="-",
@@ -151,21 +148,21 @@ class Dial(BaseDialClient[SyncHTTPClient, SyncAuthValue]):
     def my_prompts_home(self) -> PurePosixPath:
         return "prompts" / PurePosixPath(self.my_bucket())
 
-    def _get_my_appdata(self) -> Optional[AppData]:
+    def _get_my_appdata(self) -> AppData | None:
         return self.bucket.get_appdata()
 
-    def my_appdata(self) -> Optional[AppData]:
+    def my_appdata(self) -> AppData | None:
         if isinstance(self._my_appdata, NotGiven):
             self._my_appdata = self._get_my_appdata()
         return self._my_appdata
 
-    def my_appdata_home(self) -> Optional[PurePosixPath]:
+    def my_appdata_home(self) -> PurePosixPath | None:
         appdata = self.my_appdata()
         if appdata:
             return PurePosixPath(appdata.raw)
         return None
 
-    def auth_headers(self) -> Dict[str, str]:
+    def auth_headers(self) -> dict[str, str]:
         return self._http_client.auth_headers()
 
     def close(self) -> None:
@@ -176,15 +173,14 @@ class Dial(BaseDialClient[SyncHTTPClient, SyncAuthValue]):
 
     def __exit__(
         self,
-        exc_type: Optional[Type[BaseException]],
-        exc_value: Optional[BaseException],
-        traceback: Optional[TracebackType],
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
     ) -> None:
         self.close()
 
 
 class AsyncDial(BaseDialClient[AsyncHTTPClient, AsyncAuthValue]):
-
     def _init_resources(self) -> None:
         openai_client = openai.AsyncAzureOpenAI(
             api_key="-",
@@ -256,21 +252,21 @@ class AsyncDial(BaseDialClient[AsyncHTTPClient, AsyncAuthValue]):
     async def my_prompts_home(self) -> PurePosixPath:
         return "prompts" / PurePosixPath(await self.my_bucket())
 
-    async def _get_my_appdata(self) -> Optional[AppData]:
+    async def _get_my_appdata(self) -> AppData | None:
         return await self.bucket.get_appdata()
 
-    async def my_appdata(self) -> Optional[AppData]:
+    async def my_appdata(self) -> AppData | None:
         if isinstance(self._my_appdata, NotGiven):
             self._my_appdata = await self._get_my_appdata()
         return self._my_appdata
 
-    async def my_appdata_home(self) -> Optional[PurePosixPath]:
+    async def my_appdata_home(self) -> PurePosixPath | None:
         appdata = await self.my_appdata()
         if appdata:
             return PurePosixPath(appdata.raw)
         return None
 
-    async def auth_headers(self) -> Dict[str, str]:
+    async def auth_headers(self) -> dict[str, str]:
         return await self._http_client.auth_headers()
 
     async def aclose(self) -> None:
@@ -281,8 +277,8 @@ class AsyncDial(BaseDialClient[AsyncHTTPClient, AsyncAuthValue]):
 
     async def __aexit__(
         self,
-        exc_type: Optional[Type[BaseException]],
-        exc_value: Optional[BaseException],
-        traceback: Optional[TracebackType],
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
     ) -> None:
         await self.aclose()

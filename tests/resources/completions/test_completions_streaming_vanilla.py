@@ -1,5 +1,5 @@
 import inspect
-from typing import Iterable, List
+from collections.abc import Iterable
 
 import pytest
 
@@ -7,7 +7,7 @@ from aidial_client.types.chat import ChatCompletionChunk
 from tests.client_mock import get_async_client_mock, get_client_mock
 from tests.utils.chunks import create_mock_chunk, create_sse_data_field
 
-STREAM_CHUNKS_MOCK: List[bytes] = [
+STREAM_CHUNKS_MOCK: list[bytes] = [
     create_sse_data_field(
         create_mock_chunk(delta={"content": "", "role": "assistant"})
     )
@@ -25,7 +25,7 @@ STREAM_CHUNKS_MOCK: List[bytes] = [
 ]
 
 
-def _validate_chunks(chunks: List[ChatCompletionChunk]):
+def _validate_chunks(chunks: list[ChatCompletionChunk]):
     assert all(len(chunk.choices) for chunk in chunks)
     assert all(chunk.choices[0].delta for chunk in chunks)
     # All except last chunk has some content
@@ -58,7 +58,7 @@ def test_sync_streaming():
         stream=True,
     )
     assert isinstance(response, Iterable)
-    chunks = [chunk for chunk in response]
+    chunks = list(response)
     assert all(isinstance(chunk, ChatCompletionChunk) for chunk in chunks)
     _validate_chunks(chunks)
 

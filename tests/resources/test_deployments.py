@@ -28,11 +28,6 @@ CONFIG_MOCK = {
 }
 
 
-# ---------------------------------------------------------------------------
-# deployments.get()
-# ---------------------------------------------------------------------------
-
-
 def test_get_deployment():
     client = get_client_mock(status_code=200, json_mock=DEPLOYMENT_MOCK)
     result = client.deployments.get("gpt-4")
@@ -69,11 +64,6 @@ async def test_async_get_deployment_http_error():
     )
     with pytest.raises(DialException):
         await client.deployments.get("gpt-4")
-
-
-# ---------------------------------------------------------------------------
-# deployments.get_config()
-# ---------------------------------------------------------------------------
 
 
 def test_get_deployment_config():
