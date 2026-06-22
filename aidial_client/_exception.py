@@ -1,5 +1,5 @@
+from collections.abc import Mapping
 from http import HTTPStatus
-from typing import Mapping, Optional
 
 
 class DialException(Exception):
@@ -7,10 +7,10 @@ class DialException(Exception):
         self,
         message: str,
         status_code: int = 500,
-        type: Optional[str] = "runtime_error",
-        param: Optional[str] = None,
-        code: Optional[str] = None,
-        display_message: Optional[str] = None,
+        type: str | None = "runtime_error",
+        param: str | None = None,
+        code: str | None = None,
+        display_message: str | None = None,
     ) -> None:
         self.message = message
         self.status_code = status_code

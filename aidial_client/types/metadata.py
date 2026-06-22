@@ -1,4 +1,4 @@
-from typing import List, Literal, Optional
+from typing import Literal
 
 from aidial_client._compatibility.pydantic import PYDANTIC_V2
 from aidial_client._internal_types._model import ExtraAllowModel
@@ -17,8 +17,8 @@ class BaseMetadata(ExtraAllowModel):
             alias_generator = to_camel
             allow_population_by_field_name = True
 
-    name: Optional[str] = None
-    parent_path: Optional[str] = None
+    name: str | None = None
+    parent_path: str | None = None
     bucket: str
     url: str
     node_type: Literal["FOLDER", "ITEM"]
@@ -28,18 +28,18 @@ class BaseMetadata(ExtraAllowModel):
 class FileItem(BaseMetadata):
     node_type: Literal["FOLDER", "ITEM"]
     resource_type: Literal["FILE"]
-    content_length: Optional[int] = None
-    content_type: Optional[str] = None
+    content_length: int | None = None
+    content_type: str | None = None
 
 
 class FileMetadata(BaseMetadata):
     node_type: Literal["FOLDER", "ITEM"]
     resource_type: Literal["FILE"]
-    content_length: Optional[int] = None
-    content_type: Optional[str] = None
-    next_token: Optional[str] = None
-    items: Optional[List[FileItem]] = None
-    etag: Optional[str] = None
+    content_length: int | None = None
+    content_type: str | None = None
+    next_token: str | None = None
+    items: list[FileItem] | None = None
+    etag: str | None = None
 
 
 class ConversationItem(BaseMetadata):
@@ -48,9 +48,9 @@ class ConversationItem(BaseMetadata):
 
 
 class ConversationMetadata(BaseMetadata):
-    content_length: Optional[int] = None
-    next_token: Optional[str] = None
-    items: Optional[List[ConversationItem]]
+    content_length: int | None = None
+    next_token: str | None = None
+    items: list[ConversationItem] | None
     resource_type: Literal["CONVERSATION"]
 
 
@@ -60,7 +60,7 @@ class PromptItem(BaseMetadata):
 
 
 class PromptMetadata(BaseMetadata):
-    content_length: Optional[int] = None
-    next_token: Optional[str] = None
-    items: Optional[List[PromptItem]]
+    content_length: int | None = None
+    next_token: str | None = None
+    items: list[PromptItem] | None
     resource_type: Literal["PROMPT"]

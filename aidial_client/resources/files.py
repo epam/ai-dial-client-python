@@ -1,5 +1,5 @@
 from pathlib import PurePosixPath
-from typing import Literal, Optional, Union
+from typing import Literal
 from urllib.parse import urljoin
 
 import httpx
@@ -26,7 +26,7 @@ from aidial_client.types.metadata import FileMetadata
 
 def _files_error_processor(
     http_status_error: httpx.HTTPStatusError,
-) -> Optional[DialException]:
+) -> DialException | None:
     if http_status_error.response.status_code == 412:
         return EtagMismatchError(
             message=http_status_error.response.text,
@@ -44,10 +44,10 @@ class Files(Resource, DialStorageResourceMixin):
 
     def upload(
         self,
-        url: Union[str, PurePosixPath],
+        url: str | PurePosixPath,
         file: FileTypes,
-        etag_if_match: Optional[str] = None,
-        etag_if_none_match: Optional[Literal["*"]] = None,
+        etag_if_match: str | None = None,
+        etag_if_none_match: Literal["*"] | None = None,
     ) -> FileMetadata:
         return self.http_client.request(
             cast_to=FileMetadata,
@@ -67,8 +67,8 @@ class Files(Resource, DialStorageResourceMixin):
 
     def download(
         self,
-        url: Union[str, PurePosixPath],
-        etag_if_match: Optional[str] = None,
+        url: str | PurePosixPath,
+        etag_if_match: str | None = None,
     ) -> FileDownloadResponse:
         storage_resource = self.get_storage_resource(str(url))
         if storage_resource.filename is None:
@@ -92,8 +92,8 @@ class Files(Resource, DialStorageResourceMixin):
 
     def delete(
         self,
-        url: Union[str, PurePosixPath],
-        etag_if_match: Optional[str] = None,
+        url: str | PurePosixPath,
+        etag_if_match: str | None = None,
     ) -> None:
         return self.http_client.request(
             cast_to=NoneType,
@@ -111,8 +111,8 @@ class Files(Resource, DialStorageResourceMixin):
 
     def move_to(
         self,
-        source: Union[str, PurePosixPath],
-        destination: Union[str, PurePosixPath],
+        source: str | PurePosixPath,
+        destination: str | PurePosixPath,
         overwrite: bool = False,
     ) -> None:
         return self.http_client.request(
@@ -131,8 +131,8 @@ class Files(Resource, DialStorageResourceMixin):
 
     def copy_to(
         self,
-        source: Union[str, PurePosixPath],
-        destination: Union[str, PurePosixPath],
+        source: str | PurePosixPath,
+        destination: str | PurePosixPath,
         overwrite: bool = False,
     ) -> None:
         return self.http_client.request(
@@ -151,10 +151,10 @@ class Files(Resource, DialStorageResourceMixin):
 
     def get_metadata(
         self,
-        url: Union[str, PurePosixPath],
+        url: str | PurePosixPath,
         *,
-        limit: Optional[int] = None,
-        token: Optional[str] = None,
+        limit: int | None = None,
+        token: str | None = None,
     ) -> FileMetadata:
         return self.metadata.get(
             resource="files",
@@ -170,12 +170,11 @@ class AsyncFiles(AsyncResource, DialStorageResourceMixin):
 
     async def upload(
         self,
-        url: Union[str, PurePosixPath],
+        url: str | PurePosixPath,
         file: FileTypes,
-        etag_if_match: Optional[str] = None,
-        etag_if_none_match: Optional[Literal["*"]] = None,
+        etag_if_match: str | None = None,
+        etag_if_none_match: Literal["*"] | None = None,
     ) -> FileMetadata:
-
         return await self.http_client.request(
             cast_to=FileMetadata,
             options=FinalRequestOptions(
@@ -194,8 +193,8 @@ class AsyncFiles(AsyncResource, DialStorageResourceMixin):
 
     async def download(
         self,
-        url: Union[str, PurePosixPath],
-        etag_if_match: Optional[str] = None,
+        url: str | PurePosixPath,
+        etag_if_match: str | None = None,
     ) -> FileDownloadResponse:
         storage_resource = self.get_storage_resource(str(url))
         if storage_resource.filename is None:
@@ -219,8 +218,8 @@ class AsyncFiles(AsyncResource, DialStorageResourceMixin):
 
     async def delete(
         self,
-        url: Union[str, PurePosixPath],
-        etag_if_match: Optional[str] = None,
+        url: str | PurePosixPath,
+        etag_if_match: str | None = None,
     ) -> None:
         return await self.http_client.request(
             cast_to=NoneType,
@@ -238,8 +237,8 @@ class AsyncFiles(AsyncResource, DialStorageResourceMixin):
 
     async def move_to(
         self,
-        source: Union[str, PurePosixPath],
-        destination: Union[str, PurePosixPath],
+        source: str | PurePosixPath,
+        destination: str | PurePosixPath,
         overwrite: bool = False,
     ) -> None:
         return await self.http_client.request(
@@ -258,8 +257,8 @@ class AsyncFiles(AsyncResource, DialStorageResourceMixin):
 
     async def copy_to(
         self,
-        source: Union[str, PurePosixPath],
-        destination: Union[str, PurePosixPath],
+        source: str | PurePosixPath,
+        destination: str | PurePosixPath,
         overwrite: bool = False,
     ) -> None:
         return await self.http_client.request(
@@ -278,10 +277,10 @@ class AsyncFiles(AsyncResource, DialStorageResourceMixin):
 
     async def get_metadata(
         self,
-        url: Union[str, PurePosixPath],
+        url: str | PurePosixPath,
         *,
-        limit: Optional[int] = None,
-        token: Optional[str] = None,
+        limit: int | None = None,
+        token: str | None = None,
     ) -> FileMetadata:
         return await self.metadata.get(
             resource="files",

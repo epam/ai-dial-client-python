@@ -1,4 +1,3 @@
-from typing import List
 from urllib.parse import urljoin
 
 from aidial_client._constants import APPLICATION_PREFIX
@@ -23,7 +22,7 @@ class Application(Resource):
             options=FinalRequestOptions(method="GET", url=APPLICATION_PREFIX),
         )
 
-    def list(self) -> List[ApplicationType]:
+    def list(self) -> list[ApplicationType]:
         return self._list_raw().data
 
 
@@ -43,5 +42,5 @@ class AsyncApplication(AsyncResource):
             options=FinalRequestOptions(method="GET", url=APPLICATION_PREFIX),
         )
 
-    async def list(self) -> List[ApplicationType]:
+    async def list(self) -> list[ApplicationType]:
         return (await self._list_raw()).data

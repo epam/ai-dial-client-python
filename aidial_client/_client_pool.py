@@ -1,5 +1,3 @@
-from typing import Optional, Union
-
 import httpx
 
 from aidial_client._auth import AsyncAuthValue, SyncAuthValue
@@ -27,10 +25,10 @@ class DialClientPool:
         self,
         *,
         base_url: str,
-        api_key: Optional[SyncAuthValue] = None,
-        bearer_token: Optional[SyncAuthValue] = None,
+        api_key: SyncAuthValue | None = None,
+        bearer_token: SyncAuthValue | None = None,
         max_retries: int = DEFAULT_MAX_RETRIES,
-        timeout: Union[httpx.Timeout, float] = DEFAULT_TIMEOUT,
+        timeout: httpx.Timeout | float = DEFAULT_TIMEOUT,
     ) -> Dial:
         return Dial(
             base_url=base_url,
@@ -62,10 +60,10 @@ class AsyncDialClientPool:
         self,
         *,
         base_url: str,
-        api_key: Optional[AsyncAuthValue] = None,
-        bearer_token: Optional[AsyncAuthValue] = None,
+        api_key: AsyncAuthValue | None = None,
+        bearer_token: AsyncAuthValue | None = None,
         max_retries: int = DEFAULT_MAX_RETRIES,
-        timeout: Union[httpx.Timeout, float] = DEFAULT_TIMEOUT,
+        timeout: httpx.Timeout | float = DEFAULT_TIMEOUT,
     ) -> AsyncDial:
         return AsyncDial(
             base_url=base_url,

@@ -2,7 +2,7 @@ VENV_DIR ?= .venv
 POETRY ?= poetry
 POETRY_PYTHON ?= python
 
-.PHONY: all init_env install clean lint format test spell_check
+.PHONY: all init_env install clean lint format test
 
 -include .env
 export
@@ -51,4 +51,3 @@ help:
 	@echo '-- LINTING --'
 	@echo 'format                       - run code formatters'
 	@echo 'lint                         - run linters'
-	@echo 'spell_check                  - run spell check'

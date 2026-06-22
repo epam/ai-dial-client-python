@@ -1,4 +1,4 @@
-from typing import Literal, Optional, Type, Union, overload
+from typing import Literal, overload
 from urllib.parse import urljoin
 
 from typing_extensions import assert_never
@@ -17,9 +17,7 @@ from aidial_client.types.metadata import (
 
 def _get_cast_to(
     resource: StorageResourceType,
-) -> Union[
-    Type[FileMetadata], Type[ConversationMetadata], Type[PromptMetadata]
-]:
+) -> type[FileMetadata] | type[ConversationMetadata] | type[PromptMetadata]:
     if resource == "files":
         return FileMetadata
     elif resource == "conversations":
@@ -37,8 +35,8 @@ class Metadata(Resource):
         resource: Literal["files"],
         relative_url: str,
         *,
-        limit: Optional[int] = None,
-        token: Optional[str] = None,
+        limit: int | None = None,
+        token: str | None = None,
     ) -> FileMetadata: ...
 
     @overload
@@ -47,8 +45,8 @@ class Metadata(Resource):
         resource: Literal["conversations"],
         relative_url: str,
         *,
-        limit: Optional[int] = None,
-        token: Optional[str] = None,
+        limit: int | None = None,
+        token: str | None = None,
     ) -> ConversationMetadata: ...
 
     @overload
@@ -57,8 +55,8 @@ class Metadata(Resource):
         resource: Literal["prompts"],
         relative_url: str,
         *,
-        limit: Optional[int] = None,
-        token: Optional[str] = None,
+        limit: int | None = None,
+        token: str | None = None,
     ) -> PromptMetadata: ...
 
     def get(
@@ -66,9 +64,9 @@ class Metadata(Resource):
         resource: StorageResourceType,
         relative_url: str,
         *,
-        limit: Optional[int] = None,
-        token: Optional[str] = None,
-    ) -> Union[FileMetadata, ConversationMetadata, PromptMetadata]:
+        limit: int | None = None,
+        token: str | None = None,
+    ) -> FileMetadata | ConversationMetadata | PromptMetadata:
         return self.http_client.request(
             cast_to=_get_cast_to(resource),
             options=FinalRequestOptions(
@@ -86,8 +84,8 @@ class AsyncMetadata(AsyncResource):
         resource: Literal["files"],
         relative_url: str,
         *,
-        limit: Optional[int] = None,
-        token: Optional[str] = None,
+        limit: int | None = None,
+        token: str | None = None,
     ) -> FileMetadata: ...
 
     @overload
@@ -96,8 +94,8 @@ class AsyncMetadata(AsyncResource):
         resource: Literal["conversations"],
         relative_url: str,
         *,
-        limit: Optional[int] = None,
-        token: Optional[str] = None,
+        limit: int | None = None,
+        token: str | None = None,
     ) -> ConversationMetadata: ...
 
     @overload
@@ -106,8 +104,8 @@ class AsyncMetadata(AsyncResource):
         resource: Literal["prompts"],
         relative_url: str,
         *,
-        limit: Optional[int] = None,
-        token: Optional[str] = None,
+        limit: int | None = None,
+        token: str | None = None,
     ) -> PromptMetadata: ...
 
     async def get(
@@ -115,9 +113,9 @@ class AsyncMetadata(AsyncResource):
         resource: StorageResourceType,
         relative_url: str,
         *,
-        limit: Optional[int] = None,
-        token: Optional[str] = None,
-    ) -> Union[FileMetadata, ConversationMetadata, PromptMetadata]:
+        limit: int | None = None,
+        token: str | None = None,
+    ) -> FileMetadata | ConversationMetadata | PromptMetadata:
         return await self.http_client.request(
             cast_to=_get_cast_to(resource),
             options=FinalRequestOptions(
