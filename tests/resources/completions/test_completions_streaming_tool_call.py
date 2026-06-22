@@ -1,5 +1,5 @@
 import inspect
-from typing import Iterable, List
+from collections.abc import Iterable
 
 import pytest
 
@@ -25,7 +25,7 @@ _TOOL_DEFINITION: ToolParam = {
     },
 }
 
-_DELTA_CHUNKS: List[dict] = [
+_DELTA_CHUNKS: list[dict] = [
     {
         "role": "assistant",
         "tool_calls": [
@@ -128,7 +128,7 @@ _DELTA_CHUNKS: List[dict] = [
     {"role": None, "tool_calls": None},
 ]
 
-_STREAM_CHUNKS_MOCK: List[bytes] = [
+_STREAM_CHUNKS_MOCK: list[bytes] = [
     *[
         create_sse_data_field(create_mock_chunk(delta=delta))
         for delta in _DELTA_CHUNKS
@@ -146,13 +146,14 @@ _STREAM_CHUNKS_MOCK: List[bytes] = [
 ]
 
 
-def _validate_chunks(chunks: List[ChatCompletionChunk]):
+def _validate_chunks(chunks: list[ChatCompletionChunk]):
     assert all(len(chunk.choices) for chunk in chunks)
     assert all(chunk.choices[0].delta for chunk in chunks)
     assert all(chunk.choices[0].delta.tool_calls for chunk in chunks[:-2])
     assert all(chunk.choices[0].delta.content is None for chunk in chunks)
     total_arguments = "".join(
-        chunk.choices[0].delta.tool_calls[0].function.arguments or "" for chunk in chunks[:-2]  # type: ignore
+        chunk.choices[0].delta.tool_calls[0].function.arguments or ""  # type: ignore[index,union-attr]
+        for chunk in chunks[:-2]
     )
     assert total_arguments == '{"request":"current weather in Paris"}'
 
@@ -178,7 +179,7 @@ def test_sync_streaming_tool_call():
         stream=True,
     )
     assert isinstance(response, Iterable)
-    chunks = [chunk for chunk in response]
+    chunks = list(response)
     assert all(isinstance(chunk, ChatCompletionChunk) for chunk in chunks)
     _validate_chunks(chunks)
 

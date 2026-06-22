@@ -31,7 +31,7 @@ def test_upload(sync_client: Dial):
     download_result = sync_client.files.download(
         url=sync_client.my_files_home() / file_path
     )
-    assert b"".join([chunk for chunk in download_result]) == file_content
+    assert b"".join(list(download_result)) == file_content
     assert download_result.get_content() == file_content
 
 

@@ -1,7 +1,8 @@
 import time
-from contextlib import contextmanager
+from collections.abc import Callable, Iterator, Mapping
+from contextlib import contextmanager, suppress
 from http import HTTPStatus
-from typing import Any, Callable, Dict, Iterator, Mapping, Optional, Type, Union
+from typing import Any
 
 import httpx
 
@@ -22,7 +23,7 @@ class SyncHTTPClient(BaseHTTPClient[httpx.Client, SyncAuthValue]):
     def _retry_request(
         self,
         options: FinalRequestOptions,
-        cast_to: Type[ResponseT],
+        cast_to: type[ResponseT],
         remaining_retries: int,
     ) -> ResponseT:
         remaining = remaining_retries - 1
@@ -38,7 +39,7 @@ class SyncHTTPClient(BaseHTTPClient[httpx.Client, SyncAuthValue]):
             remaining_retries=remaining,
         )
 
-    def auth_headers(self) -> Dict[str, str]:
+    def auth_headers(self) -> dict[str, str]:
         return get_combined_auth_headers(
             api_key=self._api_key, bearer_token=self._bearer_token
         )
@@ -46,12 +47,11 @@ class SyncHTTPClient(BaseHTTPClient[httpx.Client, SyncAuthValue]):
     def request(
         self,
         *,
-        cast_to: Type[ResponseT],
+        cast_to: type[ResponseT],
         options: FinalRequestOptions,
-        remaining_retries: Optional[int] = None,
-        on_http_error: Optional[
-            Callable[[httpx.HTTPStatusError], Optional[DialException]]
-        ] = None,
+        remaining_retries: int | None = None,
+        on_http_error: Callable[[httpx.HTTPStatusError], DialException | None]
+        | None = None,
     ) -> ResponseT:
         retries = self._remaining_retries(remaining_retries, options)
         auth_headers = self.auth_headers()
@@ -118,8 +118,8 @@ class SyncHTTPClient(BaseHTTPClient[httpx.Client, SyncAuthValue]):
         method: str,
         url: str,
         json_data: Any,
-        headers: Optional[Mapping[str, str]] = None,
-        timeout: Union[float, httpx.Timeout, None, NotGiven] = NOT_GIVEN,
+        headers: Mapping[str, str] | None = None,
+        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
     ) -> Iterator[httpx.Response]:
         """Open an SSE streaming response. Yields the open httpx.Response.
 
@@ -146,10 +146,8 @@ class SyncHTTPClient(BaseHTTPClient[httpx.Client, SyncAuthValue]):
                 try:
                     response.raise_for_status()
                 except httpx.HTTPStatusError as err:
-                    try:
+                    with suppress(httpx.HTTPError):
                         response.read()
-                    except httpx.HTTPError:
-                        pass
                     raise self._make_dial_error_from_response(
                         err.response
                     ) from err

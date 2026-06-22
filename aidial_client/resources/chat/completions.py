@@ -1,13 +1,7 @@
+from collections.abc import AsyncIterable, Iterable, Mapping
 from typing import (
     Any,
-    AsyncIterable,
-    Dict,
-    Iterable,
-    List,
     Literal,
-    Mapping,
-    Optional,
-    Union,
     cast,
     overload,
 )
@@ -29,7 +23,6 @@ from aidial_client._utils._openai import (
 )
 from aidial_client.resources.base import AsyncResource, Resource
 from aidial_client.types.chat import (
-    Addon,
     ChatCompletionChunk,
     ChatCompletionResponse,
     FunctionCallSpecParam,
@@ -42,7 +35,7 @@ from aidial_client.types.chat.request import ChatCompletionRequestCustomFields
 
 
 class ChatCompletions(Resource):
-    default_api_version: Optional[str] = None
+    default_api_version: str | None = None
     openai_client: openai.AzureOpenAI
 
     @overload
@@ -50,37 +43,34 @@ class ChatCompletions(Resource):
         self,
         *,
         deployment_name: str,
-        messages: List[Message],
+        messages: list[Message],
         stream: Literal[True],
-        api_version: Optional[str] = None,
-        model: Optional[str] = None,
-        functions: Union[List[FunctionParam], None] = None,
-        function_call: Union[
-            Union[Literal["none", "auto"], FunctionCallSpecParam], None
-        ] = None,
-        tools: Union[List[ToolParam], None] = None,
-        tool_choice: Union[
-            Union[Literal["none", "auto"], ToolCallSpecParam], None
-        ] = None,
-        addons: Union[Addon, None] = None,
-        temperature: Union[float, None] = None,
-        top_p: Union[float, None] = None,
-        n: Union[int, None] = None,
-        stop: Union[Union[str, List[str]], None] = None,
-        max_tokens: Union[int, None] = None,
-        max_prompt_tokens: Union[Union[Literal["infinity"], int], None] = None,
-        presence_penalty: Union[float, None] = None,
-        frequency_penalty: Union[float, None] = None,
-        logit_bias: Union[Dict, None] = None,
-        seed: Union[int, None] = None,
-        user: Union[str, None] = None,
-        custom_fields: Union[ChatCompletionRequestCustomFields, None] = None,
-        logprobs: Union[bool, None] = None,
-        top_logprobs: Union[int, None] = None,
+        api_version: str | None = None,
+        model: str | None = None,
+        functions: list[FunctionParam] | None = None,
+        function_call: Literal["none", "auto"]
+        | FunctionCallSpecParam
+        | None = None,
+        tools: list[ToolParam] | None = None,
+        tool_choice: Literal["none", "auto"] | ToolCallSpecParam | None = None,
+        temperature: float | None = None,
+        top_p: float | None = None,
+        n: int | None = None,
+        stop: str | list[str] | None = None,
+        max_tokens: int | None = None,
+        max_prompt_tokens: Literal["infinity"] | int | None = None,
+        presence_penalty: float | None = None,
+        frequency_penalty: float | None = None,
+        logit_bias: dict | None = None,
+        seed: int | None = None,
+        user: str | None = None,
+        custom_fields: ChatCompletionRequestCustomFields | None = None,
+        logprobs: bool | None = None,
+        top_logprobs: int | None = None,
         # Extra params
-        extra_body: Optional[Dict[str, Any]] = None,
-        extra_headers: Optional[Mapping[StrictStr, StrictStr]] = None,
-        extra_params: Optional[Dict[str, Any]] = None,
+        extra_body: dict[str, Any] | None = None,
+        extra_headers: Mapping[StrictStr, StrictStr] | None = None,
+        extra_params: dict[str, Any] | None = None,
     ) -> Iterable[ChatCompletionChunk]: ...
 
     @overload
@@ -88,76 +78,69 @@ class ChatCompletions(Resource):
         self,
         *,
         deployment_name: str,
-        messages: List[Message],
+        messages: list[Message],
         stream: Literal[False],
-        api_version: Optional[str] = None,
-        model: Optional[str] = None,
-        functions: Union[List[FunctionParam], None] = None,
-        function_call: Union[
-            Union[Literal["none", "auto"], FunctionCallSpecParam], None
-        ] = None,
-        tools: Union[List[ToolParam], None] = None,
-        tool_choice: Union[
-            Union[Literal["none", "auto"], ToolCallSpecParam], None
-        ] = None,
-        addons: Union[Addon, None] = None,
-        temperature: Union[float, None] = None,
-        top_p: Union[float, None] = None,
-        n: Union[int, None] = None,
-        stop: Union[Union[str, List[str]], None] = None,
-        max_tokens: Union[int, None] = None,
-        max_prompt_tokens: Union[Union[Literal["infinity"], int], None] = None,
-        presence_penalty: Union[float, None] = None,
-        frequency_penalty: Union[float, None] = None,
-        logit_bias: Union[Dict, None] = None,
-        seed: Union[int, None] = None,
-        user: Union[str, None] = None,
-        custom_fields: Union[ChatCompletionRequestCustomFields, None] = None,
-        logprobs: Union[bool, None] = None,
-        top_logprobs: Union[int, None] = None,
+        api_version: str | None = None,
+        model: str | None = None,
+        functions: list[FunctionParam] | None = None,
+        function_call: Literal["none", "auto"]
+        | FunctionCallSpecParam
+        | None = None,
+        tools: list[ToolParam] | None = None,
+        tool_choice: Literal["none", "auto"] | ToolCallSpecParam | None = None,
+        temperature: float | None = None,
+        top_p: float | None = None,
+        n: int | None = None,
+        stop: str | list[str] | None = None,
+        max_tokens: int | None = None,
+        max_prompt_tokens: Literal["infinity"] | int | None = None,
+        presence_penalty: float | None = None,
+        frequency_penalty: float | None = None,
+        logit_bias: dict | None = None,
+        seed: int | None = None,
+        user: str | None = None,
+        custom_fields: ChatCompletionRequestCustomFields | None = None,
+        logprobs: bool | None = None,
+        top_logprobs: int | None = None,
         # Extra params
-        extra_body: Optional[Dict[str, Any]] = None,
-        extra_headers: Optional[Mapping[StrictStr, StrictStr]] = None,
-        extra_params: Optional[Dict[str, Any]] = None,
+        extra_body: dict[str, Any] | None = None,
+        extra_headers: Mapping[StrictStr, StrictStr] | None = None,
+        extra_params: dict[str, Any] | None = None,
     ) -> ChatCompletionResponse: ...
 
     def create(
         self,
         *,
         deployment_name: str,
-        messages: List[Message],
-        api_version: Optional[str] = None,
+        messages: list[Message],
+        api_version: str | None = None,
         stream: bool = False,
-        model: Optional[str] = None,
-        functions: Union[List[FunctionParam], None] = None,
-        function_call: Union[
-            Union[Literal["none", "auto"], FunctionCallSpecParam], None
-        ] = None,
-        tools: Union[List[ToolParam], None] = None,
-        tool_choice: Union[
-            Union[Literal["none", "auto"], ToolCallSpecParam], None
-        ] = None,
-        addons: Union[Addon, None] = None,
-        temperature: Union[float, None] = None,
-        top_p: Union[float, None] = None,
-        n: Union[int, None] = None,
-        stop: Union[Union[str, List[str]], None] = None,
-        max_tokens: Union[int, None] = None,
-        max_prompt_tokens: Union[Union[Literal["infinity"], int], None] = None,
-        presence_penalty: Union[float, None] = None,
-        frequency_penalty: Union[float, None] = None,
-        logit_bias: Union[Dict, None] = None,
-        seed: Union[int, None] = None,
-        user: Union[str, None] = None,
-        custom_fields: Union[ChatCompletionRequestCustomFields, None] = None,
-        logprobs: Union[bool, None] = None,
-        top_logprobs: Union[int, None] = None,
+        model: str | None = None,
+        functions: list[FunctionParam] | None = None,
+        function_call: Literal["none", "auto"]
+        | FunctionCallSpecParam
+        | None = None,
+        tools: list[ToolParam] | None = None,
+        tool_choice: Literal["none", "auto"] | ToolCallSpecParam | None = None,
+        temperature: float | None = None,
+        top_p: float | None = None,
+        n: int | None = None,
+        stop: str | list[str] | None = None,
+        max_tokens: int | None = None,
+        max_prompt_tokens: Literal["infinity"] | int | None = None,
+        presence_penalty: float | None = None,
+        frequency_penalty: float | None = None,
+        logit_bias: dict | None = None,
+        seed: int | None = None,
+        user: str | None = None,
+        custom_fields: ChatCompletionRequestCustomFields | None = None,
+        logprobs: bool | None = None,
+        top_logprobs: int | None = None,
         # Extra params
-        extra_body: Optional[Dict[str, Any]] = None,
-        extra_headers: Optional[Mapping[StrictStr, StrictStr]] = None,
-        extra_params: Optional[Dict[str, Any]] = None,
-    ) -> Union[ChatCompletionResponse, Iterable[ChatCompletionChunk]]:
-
+        extra_body: dict[str, Any] | None = None,
+        extra_headers: Mapping[StrictStr, StrictStr] | None = None,
+        extra_params: dict[str, Any] | None = None,
+    ) -> ChatCompletionResponse | Iterable[ChatCompletionChunk]:
         model = model or deployment_name
         extra_body = extra_body or {}
         extra_headers = extra_headers or {}
@@ -182,7 +165,6 @@ class ChatCompletions(Resource):
                 "tools": tools,
                 "top_p": top_p,
                 "user": user,
-                "addons": addons,
                 "max_prompt_tokens": max_prompt_tokens,
                 "custom_fields": custom_fields,
                 "logprobs": logprobs,
@@ -206,10 +188,7 @@ class ChatCompletions(Resource):
                 **input_params,
             )
             openai_response = cast(
-                Union[
-                    OpenaiChatCompletion,
-                    OpenaiStream[OpenaiChatCompletionChunk],
-                ],
+                OpenaiChatCompletion | OpenaiStream[OpenaiChatCompletionChunk],
                 openai_response,
             )
         except openai.APIError as err:
@@ -222,7 +201,7 @@ class ChatCompletions(Resource):
 
 
 class AsyncChatCompletions(AsyncResource):
-    default_api_version: Optional[str] = None
+    default_api_version: str | None = None
     openai_client: openai.AsyncAzureOpenAI
 
     @overload
@@ -230,35 +209,32 @@ class AsyncChatCompletions(AsyncResource):
         self,
         *,
         deployment_name: str,
-        messages: List[Message],
+        messages: list[Message],
         stream: Literal[True],
-        api_version: Optional[str] = None,
-        model: Optional[str] = None,
-        functions: Union[List[FunctionParam], None] = None,
-        function_call: Union[
-            Union[Literal["none", "auto"], FunctionCallSpecParam], None
-        ] = None,
-        tools: Union[List[ToolParam], None] = None,
-        tool_choice: Union[
-            Union[Literal["none", "auto"], ToolCallSpecParam], None
-        ] = None,
-        addons: Union[Addon, None] = None,
-        temperature: Union[float, None] = None,
-        top_p: Union[float, None] = None,
-        n: Union[int, None] = None,
-        stop: Union[Union[str, List[str]], None] = None,
-        max_tokens: Union[int, None] = None,
-        max_prompt_tokens: Union[Union[Literal["infinity"], int], None] = None,
-        presence_penalty: Union[float, None] = None,
-        frequency_penalty: Union[float, None] = None,
-        logit_bias: Union[Dict, None] = None,
-        seed: Union[int, None] = None,
-        user: Union[str, None] = None,
-        custom_fields: Union[ChatCompletionRequestCustomFields, None] = None,
+        api_version: str | None = None,
+        model: str | None = None,
+        functions: list[FunctionParam] | None = None,
+        function_call: Literal["none", "auto"]
+        | FunctionCallSpecParam
+        | None = None,
+        tools: list[ToolParam] | None = None,
+        tool_choice: Literal["none", "auto"] | ToolCallSpecParam | None = None,
+        temperature: float | None = None,
+        top_p: float | None = None,
+        n: int | None = None,
+        stop: str | list[str] | None = None,
+        max_tokens: int | None = None,
+        max_prompt_tokens: Literal["infinity"] | int | None = None,
+        presence_penalty: float | None = None,
+        frequency_penalty: float | None = None,
+        logit_bias: dict | None = None,
+        seed: int | None = None,
+        user: str | None = None,
+        custom_fields: ChatCompletionRequestCustomFields | None = None,
         # Extra params
-        extra_body: Optional[Dict[str, Any]] = None,
-        extra_headers: Optional[Mapping[StrictStr, StrictStr]] = None,
-        extra_params: Optional[Dict[str, Any]] = None,
+        extra_body: dict[str, Any] | None = None,
+        extra_headers: Mapping[StrictStr, StrictStr] | None = None,
+        extra_params: dict[str, Any] | None = None,
     ) -> AsyncIterable[ChatCompletionChunk]: ...
 
     @overload
@@ -266,75 +242,69 @@ class AsyncChatCompletions(AsyncResource):
         self,
         *,
         deployment_name: str,
-        messages: List[Message],
+        messages: list[Message],
         stream: Literal[False],
-        api_version: Optional[str] = None,
-        model: Optional[str] = None,
-        functions: Union[List[FunctionParam], None] = None,
-        function_call: Union[
-            Union[Literal["none", "auto"], FunctionCallSpecParam], None
-        ] = None,
-        tools: Union[List[ToolParam], None] = None,
-        tool_choice: Union[
-            Union[Literal["none", "auto"], ToolCallSpecParam], None
-        ] = None,
-        addons: Union[Addon, None] = None,
-        temperature: Union[float, None] = None,
-        top_p: Union[float, None] = None,
-        n: Union[int, None] = None,
-        stop: Union[Union[str, List[str]], None] = None,
-        max_tokens: Union[int, None] = None,
-        max_prompt_tokens: Union[Union[Literal["infinity"], int], None] = None,
-        presence_penalty: Union[float, None] = None,
-        frequency_penalty: Union[float, None] = None,
-        logit_bias: Union[Dict, None] = None,
-        seed: Union[int, None] = None,
-        user: Union[str, None] = None,
-        custom_fields: Union[ChatCompletionRequestCustomFields, None] = None,
-        logprobs: Union[bool, None] = None,
-        top_logprobs: Union[int, None] = None,
+        api_version: str | None = None,
+        model: str | None = None,
+        functions: list[FunctionParam] | None = None,
+        function_call: Literal["none", "auto"]
+        | FunctionCallSpecParam
+        | None = None,
+        tools: list[ToolParam] | None = None,
+        tool_choice: Literal["none", "auto"] | ToolCallSpecParam | None = None,
+        temperature: float | None = None,
+        top_p: float | None = None,
+        n: int | None = None,
+        stop: str | list[str] | None = None,
+        max_tokens: int | None = None,
+        max_prompt_tokens: Literal["infinity"] | int | None = None,
+        presence_penalty: float | None = None,
+        frequency_penalty: float | None = None,
+        logit_bias: dict | None = None,
+        seed: int | None = None,
+        user: str | None = None,
+        custom_fields: ChatCompletionRequestCustomFields | None = None,
+        logprobs: bool | None = None,
+        top_logprobs: int | None = None,
         # Extra params
-        extra_body: Optional[Dict[str, Any]] = None,
-        extra_headers: Optional[Mapping[StrictStr, StrictStr]] = None,
-        extra_params: Optional[Dict[str, Any]] = None,
+        extra_body: dict[str, Any] | None = None,
+        extra_headers: Mapping[StrictStr, StrictStr] | None = None,
+        extra_params: dict[str, Any] | None = None,
     ) -> ChatCompletionResponse: ...
 
     async def create(
         self,
         *,
         deployment_name: str,
-        messages: List[Message],
-        api_version: Optional[str] = None,
+        messages: list[Message],
+        api_version: str | None = None,
         stream: bool = False,
-        model: Optional[str] = None,
-        functions: Union[List[FunctionParam], None] = None,
-        function_call: Union[
-            Union[Literal["none", "auto"], FunctionCallSpecParam], None
-        ] = None,
-        tools: Union[List[ToolParam], None] = None,
-        tool_choice: Union[
-            Union[Literal["none", "auto"], ToolCallSpecParam], None
-        ] = None,
-        addons: Union[Addon, None] = None,
-        temperature: Union[float, None] = None,
-        top_p: Union[float, None] = None,
-        n: Union[int, None] = None,
-        stop: Union[Union[str, List[str]], None] = None,
-        max_tokens: Union[int, None] = None,
-        max_prompt_tokens: Union[Union[Literal["infinity"], int], None] = None,
-        presence_penalty: Union[float, None] = None,
-        frequency_penalty: Union[float, None] = None,
-        logit_bias: Union[Dict, None] = None,
-        seed: Union[int, None] = None,
-        user: Union[str, None] = None,
-        custom_fields: Union[ChatCompletionRequestCustomFields, None] = None,
-        logprobs: Union[bool, None] = None,
-        top_logprobs: Union[int, None] = None,
+        model: str | None = None,
+        functions: list[FunctionParam] | None = None,
+        function_call: Literal["none", "auto"]
+        | FunctionCallSpecParam
+        | None = None,
+        tools: list[ToolParam] | None = None,
+        tool_choice: Literal["none", "auto"] | ToolCallSpecParam | None = None,
+        temperature: float | None = None,
+        top_p: float | None = None,
+        n: int | None = None,
+        stop: str | list[str] | None = None,
+        max_tokens: int | None = None,
+        max_prompt_tokens: Literal["infinity"] | int | None = None,
+        presence_penalty: float | None = None,
+        frequency_penalty: float | None = None,
+        logit_bias: dict | None = None,
+        seed: int | None = None,
+        user: str | None = None,
+        custom_fields: ChatCompletionRequestCustomFields | None = None,
+        logprobs: bool | None = None,
+        top_logprobs: int | None = None,
         # Extra params
-        extra_body: Optional[Dict[str, Any]] = None,
-        extra_headers: Optional[Mapping[StrictStr, StrictStr]] = None,
-        extra_params: Optional[Dict[str, Any]] = None,
-    ) -> Union[ChatCompletionResponse, AsyncIterable[ChatCompletionChunk]]:
+        extra_body: dict[str, Any] | None = None,
+        extra_headers: Mapping[StrictStr, StrictStr] | None = None,
+        extra_params: dict[str, Any] | None = None,
+    ) -> ChatCompletionResponse | AsyncIterable[ChatCompletionChunk]:
         model = model or deployment_name
         extra_body = extra_body or {}
         extra_headers = extra_headers or {}
@@ -359,7 +329,6 @@ class AsyncChatCompletions(AsyncResource):
                 "tools": tools,
                 "top_p": top_p,
                 "user": user,
-                "addons": addons,
                 "max_prompt_tokens": max_prompt_tokens,
                 "custom_fields": custom_fields,
                 "logprobs": logprobs,
@@ -383,10 +352,8 @@ class AsyncChatCompletions(AsyncResource):
                 **input_params,
             )
             openai_response = cast(
-                Union[
-                    OpenaiChatCompletion,
-                    OpenaiAsyncStream[OpenaiChatCompletionChunk],
-                ],
+                OpenaiChatCompletion
+                | OpenaiAsyncStream[OpenaiChatCompletionChunk],
                 openai_response,
             )
         except openai.APIError as err:

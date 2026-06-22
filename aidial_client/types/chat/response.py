@@ -1,4 +1,4 @@
-from typing import Dict, List, Literal, Optional
+from typing import Literal
 
 from aidial_client._compatibility.pydantic import PYDANTIC_V2
 from aidial_client._compatibility.pydantic_v1 import root_validator
@@ -9,12 +9,12 @@ if PYDANTIC_V2:
 
 
 class Attachment(ExtraAllowModel):
-    type: Optional[str] = None
-    title: Optional[str] = None
-    data: Optional[str] = None
-    url: Optional[str] = None
-    reference_type: Optional[str] = None
-    reference_url: Optional[str] = None
+    type: str | None = None
+    title: str | None = None
+    data: str | None = None
+    url: str | None = None
+    reference_type: str | None = None
+    reference_url: str | None = None
 
     if PYDANTIC_V2:
 
@@ -39,8 +39,8 @@ class Attachment(ExtraAllowModel):
 
 
 class CustomContent(ExtraAllowModel):
-    attachments: Optional[List[Attachment]] = None
-    state: Optional[Dict] = None
+    attachments: list[Attachment] | None = None
+    state: dict | None = None
 
 
 class CompletionUsage(ExtraAllowModel):
@@ -55,8 +55,8 @@ class FunctionCall(ExtraAllowModel):
 
 
 class FunctionCallDelta(ExtraAllowModel):
-    arguments: Optional[str] = None
-    name: Optional[str] = None
+    arguments: str | None = None
+    name: str | None = None
 
 
 class ChatCompletionMessageToolCall(ExtraAllowModel):
@@ -67,52 +67,52 @@ class ChatCompletionMessageToolCall(ExtraAllowModel):
 
 class ToolCallDelta(ExtraAllowModel):
     index: int
-    id: Optional[str] = None
-    function: Optional[FunctionCallDelta] = None
-    type: Optional[Literal["function"]] = None
+    id: str | None = None
+    function: FunctionCallDelta | None = None
+    type: Literal["function"] | None = None
 
 
 class ChatCompletionMessage(ExtraAllowModel):
     role: Literal["assistant"]
-    content: Optional[str] = None
-    custom_content: Optional[CustomContent] = None
-    function_call: Optional[FunctionCall] = None
-    tool_calls: Optional[List[ChatCompletionMessageToolCall]] = None
+    content: str | None = None
+    custom_content: CustomContent | None = None
+    function_call: FunctionCall | None = None
+    tool_calls: list[ChatCompletionMessageToolCall] | None = None
 
 
 class ChatCompletionMessageDelta(ExtraAllowModel):
-    role: Optional[Literal["assistant"]] = None
-    content: Optional[str] = None
-    custom_content: Optional[CustomContent] = None
-    function_call: Optional[FunctionCallDelta] = None
-    tool_calls: Optional[List[ToolCallDelta]] = None
+    role: Literal["assistant"] | None = None
+    content: str | None = None
+    custom_content: CustomContent | None = None
+    function_call: FunctionCallDelta | None = None
+    tool_calls: list[ToolCallDelta] | None = None
 
 
 class Choice(ExtraAllowModel):
     index: int
     message: ChatCompletionMessage
-    finish_reason: Optional[str]
+    finish_reason: str | None
 
 
 class ChoiceDelta(ExtraAllowModel):
     index: int
     delta: ChatCompletionMessageDelta
-    finish_reason: Optional[str] = None
+    finish_reason: str | None = None
 
 
 class ChatCompletionResponse(ExtraAllowModel):
     id: str
     object: Literal["chat.completion"]
-    choices: List[Choice]
+    choices: list[Choice]
     created: int
-    model: Optional[str] = None
-    usage: Optional[CompletionUsage] = None
+    model: str | None = None
+    usage: CompletionUsage | None = None
 
 
 class ChatCompletionChunk(ExtraAllowModel):
     id: str
     object: Literal["chat.completion.chunk"]
-    choices: List[ChoiceDelta]
+    choices: list[ChoiceDelta]
     created: int
-    model: Optional[str] = None
-    usage: Optional[CompletionUsage] = None
+    model: str | None = None
+    usage: CompletionUsage | None = None

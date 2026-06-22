@@ -1,4 +1,4 @@
-from typing import Dict, List, Literal, Optional
+from typing import Literal
 
 from aidial_client._internal_types._model import ExtraAllowModel
 from aidial_client.types.deployment import DeploymentBase
@@ -7,11 +7,11 @@ from aidial_client.types.deployment import DeploymentBase
 class Application(DeploymentBase):
     object: Literal["application"]
     application: str
-    application_type_schema_id: Optional[str] = None
-    application_properties: Optional[Dict] = None
-    invalid: Optional[bool] = None
+    application_type_schema_id: str | None = None
+    application_properties: dict | None = None
+    invalid: bool | None = None
 
 
 class ApplicationsResponse(ExtraAllowModel):
-    data: List[Application]
+    data: list[Application]
     object: Literal["list"]

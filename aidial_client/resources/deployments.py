@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any
 
 from aidial_client._internal_types._http_request import FinalRequestOptions
 from aidial_client.resources.base import AsyncResource, Resource
@@ -12,7 +12,7 @@ class Deployments(Resource):
             options=FinalRequestOptions(method="GET", url="openai/deployments"),
         )
 
-    def list(self) -> List[Deployment]:
+    def list(self) -> list[Deployment]:
         return self._list_raw().data
 
     def get(self, deployment_id: str) -> Deployment:
@@ -23,7 +23,7 @@ class Deployments(Resource):
             ),
         )
 
-    def get_configuration_schema(self, deployment_id: str) -> Dict[str, Any]:
+    def get_configuration_schema(self, deployment_id: str) -> dict[str, Any]:
         return self.http_client.request(
             cast_to=dict,
             options=FinalRequestOptions(
@@ -40,7 +40,7 @@ class AsyncDeployments(AsyncResource):
             options=FinalRequestOptions(method="GET", url="openai/deployments"),
         )
 
-    async def list(self) -> List[Deployment]:
+    async def list(self) -> list[Deployment]:
         return (await self._list_raw()).data
 
     async def get(self, deployment_id: str) -> Deployment:
@@ -53,7 +53,7 @@ class AsyncDeployments(AsyncResource):
 
     async def get_configuration_schema(
         self, deployment_id: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         return await self.http_client.request(
             cast_to=dict,
             options=FinalRequestOptions(

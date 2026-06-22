@@ -1,5 +1,3 @@
-from typing import Optional
-
 from aidial_client._compatibility.pydantic import PYDANTIC_V2
 from aidial_client._internal_types._model import ExtraAllowModel
 from aidial_client._utils._alias import to_camel
@@ -22,4 +20,4 @@ class Prompt(ExtraAllowModel):
     id: str
     name: str
     folder_id: str
-    content: Optional[str] = None
+    content: str | None = None

@@ -1,13 +1,9 @@
+from collections.abc import Mapping, Sequence
 from io import BufferedReader
 from typing import (
     IO,
     Any,
     Literal,
-    Mapping,
-    Optional,
-    Sequence,
-    Tuple,
-    Union,
     final,
 )
 
@@ -16,29 +12,29 @@ from httpx import Timeout
 from aidial_client._compatibility.pydantic_v1 import BaseModel
 from aidial_client._internal_types._defaults import NOT_GIVEN, NotGiven
 
-FileContent = Union[
-    IO[bytes],
-    bytes,
-    str,
-    # Somehow, pydantic doesn't recognize result of open('...', 'rb') as IO[bytes]
-    # even though BufferedReader is a subclass of IO[bytes]
-    BufferedReader,
-]
-FileTypes = Union[
+FileContent = (
+    IO[bytes]
+    | bytes
+    | str
+    # Somehow, pydantic doesn't recognize result of open('...', 'rb')
+    # as IO[bytes] even though BufferedReader is a subclass of IO[bytes]
+    | BufferedReader
+)
+FileTypes = (
     # file (or bytes)
-    FileContent,
+    FileContent
     # (filename, file (or bytes))
-    Tuple[Optional[str], FileContent],
+    | tuple[str | None, FileContent]
     # (filename, file (or bytes), content_type)
-    Tuple[Optional[str], FileContent, Optional[str]],
+    | tuple[str | None, FileContent, str | None]
     # (filename, file (or bytes), content_type, headers)
-    Tuple[Optional[str], FileContent, Optional[str], Mapping[str, str]],
-]
+    | tuple[str | None, FileContent, str | None, Mapping[str, str]]
+)
 
 Params = Mapping[str, Any]
 Headers = Mapping[str, Any]
 Data = Mapping[str, Any]
-RequestFiles = Union[Mapping[str, FileTypes], Sequence[Tuple[str, FileTypes]]]
+RequestFiles = Mapping[str, FileTypes] | Sequence[tuple[str, FileTypes]]
 
 
 @final
@@ -48,12 +44,12 @@ class FinalRequestOptions(BaseModel):
 
     method: Literal["GET", "PUT", "POST", "DELETE"]
     url: str
-    params: Optional[Params] = None
-    headers: Optional[Headers] = None
-    max_retries: Union[int, NotGiven] = NOT_GIVEN
-    timeout: Union[float, Timeout, NotGiven, None] = NOT_GIVEN
-    files: Optional[RequestFiles] = None
-    json_data: Optional[Data] = None
+    params: Params | None = None
+    headers: Headers | None = None
+    max_retries: int | NotGiven = NOT_GIVEN
+    timeout: float | Timeout | NotGiven | None = NOT_GIVEN
+    files: RequestFiles | None = None
+    json_data: Data | None = None
 
     def get_max_retries(self, max_retries: int) -> int:
         if isinstance(self.max_retries, NotGiven):
@@ -61,8 +57,8 @@ class FinalRequestOptions(BaseModel):
         return self.max_retries
 
     def get_timeout(
-        self, timeout: Union[float, Timeout, None]
-    ) -> Union[float, Timeout, None]:
+        self, timeout: float | Timeout | None
+    ) -> float | Timeout | None:
         if isinstance(self.timeout, NotGiven):
             return timeout
         return self.timeout

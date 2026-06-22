@@ -1,5 +1,5 @@
 import json
-from typing import Any, Dict, List
+from typing import Any
 from unittest.mock import AsyncMock, Mock
 
 import httpx
@@ -10,7 +10,7 @@ from aidial_client._client import AsyncDial
 from aidial_client._exception import InvalidDialURLError
 
 
-def _make_capturing_client(captured: List[httpx.Request]) -> Dial:
+def _make_capturing_client(captured: list[httpx.Request]) -> Dial:
     client = Dial(api_key="dummy", base_url="http://dial.core")
 
     def send_mock(request: httpx.Request, **_: Any) -> httpx.Response:
@@ -25,7 +25,7 @@ def _make_capturing_client(captured: List[httpx.Request]) -> Dial:
 
 
 def _make_async_capturing_client(
-    captured: List[httpx.Request],
+    captured: list[httpx.Request],
 ) -> AsyncDial:
     client = AsyncDial(api_key="dummy", base_url="http://dial.core")
 
@@ -40,7 +40,7 @@ def _make_async_capturing_client(
     return client
 
 
-def _body(request: httpx.Request) -> Dict[str, Any]:
+def _body(request: httpx.Request) -> dict[str, Any]:
     return json.loads(request.content.decode())
 
 
@@ -54,7 +54,7 @@ parametrize_method = pytest.mark.parametrize("method", ["move_to", "copy_to"])
 def test_move_copy_returns_none_and_sends_expected_body(
     method: str, endpoint: str
 ):
-    captured: List[httpx.Request] = []
+    captured: list[httpx.Request] = []
     client = _make_capturing_client(captured)
 
     result = getattr(client.files, method)(
@@ -76,7 +76,7 @@ def test_move_copy_returns_none_and_sends_expected_body(
 
 @parametrize_method
 def test_overwrite_round_trips(method: str):
-    captured: List[httpx.Request] = []
+    captured: list[httpx.Request] = []
     client = _make_capturing_client(captured)
 
     getattr(client.files, method)(
@@ -90,7 +90,7 @@ def test_overwrite_round_trips(method: str):
 
 @parametrize_method
 def test_accepts_pureposixpath_and_absolute_urls(method: str):
-    captured: List[httpx.Request] = []
+    captured: list[httpx.Request] = []
     client = _make_capturing_client(captured)
 
     getattr(client.files, method)(
@@ -109,7 +109,7 @@ def test_accepts_pureposixpath_and_absolute_urls(method: str):
     ["source", "destination"],
 )
 def test_rejects_non_files_urls(method: str, bad_arg: str):
-    captured: List[httpx.Request] = []
+    captured: list[httpx.Request] = []
     client = _make_capturing_client(captured)
 
     kwargs = {
@@ -129,7 +129,7 @@ def test_rejects_non_files_urls(method: str, bad_arg: str):
 async def test_move_copy_async_returns_none_and_sends_expected_body(
     method: str, endpoint: str
 ):
-    captured: List[httpx.Request] = []
+    captured: list[httpx.Request] = []
     client = _make_async_capturing_client(captured)
 
     result = await getattr(client.files, method)(
@@ -153,7 +153,7 @@ async def test_move_copy_async_returns_none_and_sends_expected_body(
 @parametrize_method
 @pytest.mark.asyncio
 async def test_async_rejects_non_files_urls(method: str):
-    captured: List[httpx.Request] = []
+    captured: list[httpx.Request] = []
     client = _make_async_capturing_client(captured)
 
     with pytest.raises(InvalidDialURLError, match="Invalid resource type"):

@@ -1,4 +1,4 @@
-from typing import Literal, Type, Union, overload
+from typing import Literal, overload
 from urllib.parse import urljoin
 
 from typing_extensions import assert_never
@@ -16,9 +16,7 @@ from aidial_client.types.metadata import (
 
 def _get_cast_to(
     resource: StorageResourceType,
-) -> Union[
-    Type[FileMetadata], Type[ConversationMetadata], Type[PromptMetadata]
-]:
+) -> type[FileMetadata] | type[ConversationMetadata] | type[PromptMetadata]:
     if resource == "files":
         return FileMetadata
     elif resource == "conversations":
@@ -49,7 +47,7 @@ class Metadata(Resource):
         self,
         resource: StorageResourceType,
         relative_url: str,
-    ) -> Union[FileMetadata, ConversationMetadata, PromptMetadata]:
+    ) -> FileMetadata | ConversationMetadata | PromptMetadata:
         return self.http_client.request(
             cast_to=_get_cast_to(resource),
             options=FinalRequestOptions(
@@ -79,7 +77,7 @@ class AsyncMetadata(AsyncResource):
         self,
         resource: StorageResourceType,
         relative_url: str,
-    ) -> Union[FileMetadata, ConversationMetadata, PromptMetadata]:
+    ) -> FileMetadata | ConversationMetadata | PromptMetadata:
         return await self.http_client.request(
             cast_to=_get_cast_to(resource),
             options=FinalRequestOptions(
