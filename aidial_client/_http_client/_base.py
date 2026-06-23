@@ -120,9 +120,8 @@ class BaseHTTPClient(ABC, Generic[_HttpInternalClientT, AuthValueT]):
             # Try to get a custom error from response status_code/code/message
             custom_error = on_http_error(err) if on_http_error else None
             # or fallback to default processing
-            raised_error = (
-                custom_error
-                or self._make_dial_error_from_response(err.response)
+            raised_error = custom_error or self._make_dial_error_from_response(
+                err.response
             )
             raise raised_error from err
 
