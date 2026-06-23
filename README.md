@@ -862,7 +862,33 @@ user_info = client.user.info()
 user_info = await async_client.user.info()
 ```
 
-The response shape may evolve depending on DIAL deployment settings, so this method returns a plain `dict[str, Any]`.
+As a result, you will receive a `UserInfo` object. When authenticated with an
+API key:
+
+```python
+UserInfo(
+    roles=["default"],
+    project="PROJECT-NAME",
+    userClaims=None,
+)
+```
+
+When authenticated with an access token:
+
+```python
+UserInfo(
+    roles=["BA"],
+    project=None,
+    userClaims={
+        "email": ["user_email"],
+        "sub": ["user_sub"],
+    },
+)
+```
+
+`userClaims` is returned as an opaque `dict` because its contents depend on the
+identity provider. `UserInfo` also preserves any additional fields the DIAL
+deployment may return, so forward compatibility is retained.
 
 ### Toolsets
 

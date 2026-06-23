@@ -3,28 +3,54 @@ import pytest
 
 from aidial_client import AsyncDial, Dial
 from aidial_client._exception import DialException
+from aidial_client.types.user import UserInfo
 from tests.client_mock import get_async_client_mock, get_client_mock
 
 BASE_URL = "http://dial.core"
 
 USER_INFO_MOCK = {
-    "sub": "user-123",
-    "email": "user@example.com",
-    "name": "Test User",
+    "project": "PROJECT-NAME",
+    "roles": ["default"],
+}
+
+USER_INFO_TOKEN_MOCK = {
+    "roles": ["BA"],
+    "userClaims": {
+        "email": ["user@example.com"],
+        "sub": ["user-123"],
+    },
 }
 
 
 def test_get_user_info():
     client = get_client_mock(status_code=200, json_mock=USER_INFO_MOCK)
     result = client.user.info()
-    assert result == USER_INFO_MOCK
+    assert isinstance(result, UserInfo)
+    assert result.project == "PROJECT-NAME"
+    assert result.roles == ["default"]
+    assert result.userClaims is None
 
 
 @pytest.mark.asyncio
 async def test_async_get_user_info():
     client = get_async_client_mock(status_code=200, json_mock=USER_INFO_MOCK)
     result = await client.user.info()
-    assert result == USER_INFO_MOCK
+    assert isinstance(result, UserInfo)
+    assert result.project == "PROJECT-NAME"
+    assert result.roles == ["default"]
+    assert result.userClaims is None
+
+
+def test_get_user_info_with_token_claims():
+    client = get_client_mock(status_code=200, json_mock=USER_INFO_TOKEN_MOCK)
+    result = client.user.info()
+    assert isinstance(result, UserInfo)
+    assert result.project is None
+    assert result.roles == ["BA"]
+    assert result.userClaims == {
+        "email": ["user@example.com"],
+        "sub": ["user-123"],
+    }
 
 
 def test_get_user_info_request_method_and_url():

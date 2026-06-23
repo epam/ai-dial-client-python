@@ -12,6 +12,7 @@ from aidial_client._exception import (
 from aidial_client.types.client_channel import SigninResult
 from aidial_client.types.model import ModelInfo, ModelLimits, ModelPricing
 from aidial_client.types.toolset import ToolsetInfo
+from aidial_client.types.user import UserInfo
 
 __all__ = [
     "Dial",
@@ -32,4 +33,5 @@ __all__ = [
     "ModelPricing",
     "ModelLimits",
     "SigninResult",
+    "UserInfo",
 ]
