@@ -5,6 +5,8 @@ from urllib.parse import urljoin, urlparse
 from aidial_client._compatibility.pydantic_v1 import BaseModel
 from aidial_client._constants import API_PREFIX
 from aidial_client._exception import InvalidDialURLError, NotDialURLError
+from aidial_client._internal_types._http_request import FinalRequestOptions
+from aidial_client._utils._dict import remove_none
 from aidial_client.helpers._url import enforce_trailing_slash
 
 StorageResourceType = Literal["files", "conversations", "prompts"]
@@ -156,3 +158,25 @@ class DialStorageResourceMixin(BaseModel):
         Get the display name of the resource from the URL
         """
         return self.get_storage_resource(url).bucket_path
+
+    def _prepare_download_request(
+        self,
+        url: str | PurePosixPath,
+        etag_if_match: str | None,
+    ) -> tuple[FinalRequestOptions, str]:
+        storage_resource = self.get_storage_resource(str(url))
+
+        if storage_resource.filename is None:
+            raise InvalidDialURLError("URL points to a directory, not a file")
+
+        options = FinalRequestOptions(
+            method="GET",
+            url=urljoin(API_PREFIX, storage_resource.api_path),
+            headers=remove_none(
+                {
+                    "If-Match": etag_if_match,
+                }
+            ),
+        )
+
+        return options, storage_resource.filename
