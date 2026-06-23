@@ -77,8 +77,6 @@ ignore = [
     "E501", # String literal is too long
     "B011", # Do not `assert False`
     "B006", # Do not use mutable data structures for argument defaults
-    "S105", # Possible hardcoded password (false positive for tokens in tests)
-    "S106", # Possible hardcoded password (false positive for tokens in tests)
 ]
 "*/__init__.py" = [
     "F401", # imported but unused
