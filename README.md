@@ -534,6 +534,16 @@ result = await async_client.files.download(
 )
 ```
 
+For large async downloads, use `stream_download()` to process bytes as they arrive without buffering the full response in memory:
+
+```python
+async with async_client.files.stream_download(
+    url=await async_client.my_files_home() / "relative_folder/my-file.txt"
+) as result:
+    async for bytes_chunk in result:
+        ...
+```
+
 As a result, you will receive an object of type `FileDownloadResponse`, that you can iterate by byte chunks:
 
 ```python
