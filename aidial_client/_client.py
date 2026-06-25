@@ -120,6 +120,7 @@ class Dial(BaseDialClient[SyncHTTPClient, SyncAuthValue]):
         self.client_channel = resources.ClientChannel(
             http_client=self._http_client
         )
+        self.user = resources.User(http_client=self._http_client)
 
     def _create_http_client(self) -> SyncHTTPClient:
         return SyncHTTPClient(
@@ -224,6 +225,7 @@ class AsyncDial(BaseDialClient[AsyncHTTPClient, AsyncAuthValue]):
         self.client_channel = resources.AsyncClientChannel(
             http_client=self._http_client
         )
+        self.user = resources.AsyncUser(http_client=self._http_client)
 
     def _create_http_client(self) -> AsyncHTTPClient:
         return AsyncHTTPClient(

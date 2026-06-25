@@ -1,3 +1,5 @@
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from pathlib import PurePosixPath
 from typing import Literal
 from urllib.parse import urljoin
@@ -8,7 +10,6 @@ from aidial_client._constants import API_PREFIX
 from aidial_client._exception import (
     DialException,
     EtagMismatchError,
-    InvalidDialURLError,
     ResourceNotFoundError,
 )
 from aidial_client._internal_types._generic import NoneType
@@ -70,25 +71,13 @@ class Files(Resource, DialStorageResourceMixin):
         url: str | PurePosixPath,
         etag_if_match: str | None = None,
     ) -> FileDownloadResponse:
-        storage_resource = self.get_storage_resource(str(url))
-        if storage_resource.filename is None:
-            raise InvalidDialURLError("URL points to a directory, not a file")
+        options, filename = self._prepare_download_request(url, etag_if_match)
         response = self.http_client.request(
             cast_to=httpx.Response,
-            options=FinalRequestOptions(
-                method="GET",
-                url=urljoin(API_PREFIX, storage_resource.api_path),
-                headers=remove_none(
-                    {
-                        "If-Match": etag_if_match,
-                    }
-                ),
-            ),
+            options=options,
             on_http_error=_files_error_processor,
         )
-        return FileDownloadResponse(
-            response=response, filename=storage_resource.filename
-        )
+        return FileDownloadResponse(response=response, filename=filename)
 
     def delete(
         self,
@@ -196,25 +185,26 @@ class AsyncFiles(AsyncResource, DialStorageResourceMixin):
         url: str | PurePosixPath,
         etag_if_match: str | None = None,
     ) -> FileDownloadResponse:
-        storage_resource = self.get_storage_resource(str(url))
-        if storage_resource.filename is None:
-            raise InvalidDialURLError("URL points to a directory, not a file")
+        options, filename = self._prepare_download_request(url, etag_if_match)
         response = await self.http_client.request(
             cast_to=httpx.Response,
-            options=FinalRequestOptions(
-                method="GET",
-                url=urljoin(API_PREFIX, storage_resource.api_path),
-                headers=remove_none(
-                    {
-                        "If-Match": etag_if_match,
-                    }
-                ),
-            ),
+            options=options,
             on_http_error=_files_error_processor,
         )
-        return FileDownloadResponse(
-            response=response, filename=storage_resource.filename
-        )
+        return FileDownloadResponse(response=response, filename=filename)
+
+    @asynccontextmanager
+    async def stream_download(
+        self,
+        url: str | PurePosixPath,
+        etag_if_match: str | None = None,
+    ) -> AsyncIterator[FileDownloadResponse]:
+        options, filename = self._prepare_download_request(url, etag_if_match)
+        async with self.http_client.stream(
+            options=options,
+            on_http_error=_files_error_processor,
+        ) as response:
+            yield FileDownloadResponse(response=response, filename=filename)
 
     async def delete(
         self,

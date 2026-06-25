@@ -10,6 +10,7 @@ from aidial_client.resources.resource_permissions import (
     ResourcePermissions,
 )
 from aidial_client.resources.toolset import AsyncToolset, Toolset
+from aidial_client.resources.user import AsyncUser, User
 
 from .application import Application, AsyncApplication
 from .bucket import AsyncBucket, Bucket
@@ -40,4 +41,6 @@ __all__ = [
     "AsyncResourcePermissions",
     "ClientChannel",
     "AsyncClientChannel",
+    "User",
+    "AsyncUser",
 ]

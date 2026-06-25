@@ -1,5 +1,5 @@
 import asyncio
-from collections.abc import AsyncIterator, Callable, Mapping
+from collections.abc import AsyncIterator, Mapping
 from contextlib import asynccontextmanager, suppress
 from http import HTTPStatus
 from typing import Any
@@ -8,7 +8,7 @@ import httpx
 
 from aidial_client._auth import AsyncAuthValue, aget_combined_auth_headers
 from aidial_client._exception import DialException
-from aidial_client._http_client._base import BaseHTTPClient
+from aidial_client._http_client._base import BaseHTTPClient, ErrorHandler
 from aidial_client._internal_types._defaults import NOT_GIVEN, NotGiven
 from aidial_client._internal_types._generic import ResponseT
 from aidial_client._internal_types._http_request import FinalRequestOptions
@@ -51,8 +51,7 @@ class AsyncHTTPClient(BaseHTTPClient[httpx.AsyncClient, AsyncAuthValue]):
         options: FinalRequestOptions,
         cast_to: type[ResponseT],
         remaining_retries: int | None = None,
-        on_http_error: Callable[[httpx.HTTPStatusError], DialException | None]
-        | None = None,
+        on_http_error: ErrorHandler | None = None,
     ) -> ResponseT:
         retries = self._remaining_retries(remaining_retries, options)
         auth_headers = await self.auth_headers()
@@ -101,15 +100,36 @@ class AsyncHTTPClient(BaseHTTPClient[httpx.AsyncClient, AsyncAuthValue]):
                     cast_to=cast_to,
                     remaining_retries=retries,
                 )
-            # Try to get a custom error from response status_code/code/message
-            custom_error = on_http_error(err) if on_http_error else None
-            # or fallback to default processing
-            raised_error = custom_error or self._make_dial_error_from_response(
-                err.response
-            )
-            raise raised_error from err
+            self._raise_for_status(response, on_http_error)
 
         return process_block_response(cast_to=cast_to, response=response)
+
+    @asynccontextmanager
+    async def stream(
+        self,
+        *,
+        options: FinalRequestOptions,
+        on_http_error: ErrorHandler | None = None,
+    ) -> AsyncIterator[httpx.Response]:
+        auth_headers = await self.auth_headers()
+        request = self._build_request(options, auth_headers)
+        try:
+            response = await self._internal_http_client.send(
+                request, stream=True
+            )
+        except httpx.TimeoutException as err:
+            raise DialException(
+                message="Request timed out",
+                status_code=HTTPStatus.REQUEST_TIMEOUT,
+            ) from err
+        except httpx.HTTPError as err:
+            raise DialException(message=f"Request failed: {err}") from err
+
+        try:
+            self._raise_for_status(response, on_http_error)
+            yield response
+        finally:
+            await response.aclose()
 
     @asynccontextmanager
     async def stream_sse(
