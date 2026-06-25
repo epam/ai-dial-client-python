@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from collections.abc import Callable
 from http import HTTPStatus
 from random import uniform
 from typing import Generic, TypeVar
@@ -15,6 +16,8 @@ from aidial_client.helpers._url import enforce_trailing_slash
 _HttpInternalClientT = TypeVar(
     "_HttpInternalClientT", bound=httpx.Client | httpx.AsyncClient
 )
+
+ErrorHandler = Callable[[httpx.HTTPStatusError], DialException | None]
 
 
 class BaseHTTPClient(ABC, Generic[_HttpInternalClientT, AuthValueT]):
@@ -105,6 +108,22 @@ class BaseHTTPClient(ABC, Generic[_HttpInternalClientT, AuthValueT]):
         )
         timeout = sleep_seconds + uniform(-0.5, 0.5)  # noqa: S311
         return max(0, timeout)
+
+    def _raise_for_status(
+        self,
+        response: httpx.Response,
+        on_http_error: ErrorHandler | None,
+    ) -> None:
+        try:
+            response.raise_for_status()
+        except httpx.HTTPStatusError as err:
+            # Try to get a custom error from response status_code/code/message
+            custom_error = on_http_error(err) if on_http_error else None
+            # or fallback to default processing
+            raised_error = custom_error or self._make_dial_error_from_response(
+                err.response
+            )
+            raise raised_error from err
 
     def _make_dial_error_from_response(
         self,
