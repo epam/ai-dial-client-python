@@ -39,6 +39,8 @@
       - [Get Application by Id](#get-application-by-id)
   - [Models](#models)
       - [Get Model by Name](#get-model-by-name)
+  - [User](#user)
+      - [Get Authenticated User Info](#get-authenticated-user-info)
   - [Toolsets](#toolsets)
       - [Get Toolset by Id](#get-toolset-by-id)
   - [Resource Permissions](#resource-permissions)
@@ -855,6 +857,48 @@ ModelInfo(
     ),
 )
 ```
+
+### User
+
+#### Get Authenticated User Info
+
+To retrieve information about the currently authenticated user:
+
+```python
+# Sync
+user_info = client.user.info()
+
+# Async
+user_info = await async_client.user.info()
+```
+
+As a result, you will receive a `UserInfo` object. When authenticated with an
+API key:
+
+```python
+UserInfo(
+    roles=["default"],
+    project="PROJECT-NAME",
+    userClaims=None,
+)
+```
+
+When authenticated with an access token:
+
+```python
+UserInfo(
+    roles=["BA"],
+    project=None,
+    userClaims={
+        "email": ["user_email"],
+        "sub": ["user_sub"],
+    },
+)
+```
+
+`userClaims` is returned as an opaque `dict` because its contents depend on the
+identity provider. `UserInfo` also preserves any additional fields the DIAL
+deployment may return, so forward compatibility is retained.
 
 ### Toolsets
 
