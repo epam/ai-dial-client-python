@@ -623,12 +623,30 @@ Both methods return `None` on success. `source` and `destination` must point to 
 
 #### Accessing Metadata
 
-Use `metadata()` to access metadata of a file:
+Use `get_metadata()` to access metadata of a file or folder:
 
 ```python
-metadata = await async_client.files.metadata(
+# Sync client
+metadata = sync_client.files.get_metadata(
+    url=sync_client.my_files_home() / "relative_folder/my-file.txt"
+)
+
+# Async client
+metadata = await async_client.files.get_metadata(
     url=await async_client.my_files_home() / "relative_folder/my-file.txt"
 )
+```
+
+Folder metadata can be paginated with `limit` and `token`:
+
+```python
+metadata = await async_client.files.get_metadata(
+    url=await async_client.my_files_home() / "relative_folder/",
+    limit=100,
+    token=next_token,
+)
+next_token = metadata.next_token
+items = metadata.items
 ```
 
 Example of metadata:
@@ -643,6 +661,7 @@ FileMetadata(
     resource_type="FILE",
     content_length=12,
     content_type="application/octet-stream",
+    next_token=None,
     items=None,
     updatedAt=1724836248936,
     etag="9749fad13d6e7092a6337c4af9d83764",

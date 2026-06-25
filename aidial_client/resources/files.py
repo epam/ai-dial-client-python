@@ -138,10 +138,18 @@ class Files(Resource, DialStorageResourceMixin):
             on_http_error=_files_error_processor,
         )
 
-    def get_metadata(self, url: str | PurePosixPath) -> FileMetadata:
+    def get_metadata(
+        self,
+        url: str | PurePosixPath,
+        *,
+        limit: int | None = None,
+        token: str | None = None,
+    ) -> FileMetadata:
         return self.metadata.get(
             resource="files",
             relative_url=self.get_api_path(str(url)),
+            limit=limit,
+            token=token,
         )
 
 
@@ -257,8 +265,16 @@ class AsyncFiles(AsyncResource, DialStorageResourceMixin):
             on_http_error=_files_error_processor,
         )
 
-    async def get_metadata(self, url: str | PurePosixPath) -> FileMetadata:
+    async def get_metadata(
+        self,
+        url: str | PurePosixPath,
+        *,
+        limit: int | None = None,
+        token: str | None = None,
+    ) -> FileMetadata:
         return await self.metadata.get(
             resource="files",
             relative_url=self.get_api_path(str(url)),
+            limit=limit,
+            token=token,
         )
