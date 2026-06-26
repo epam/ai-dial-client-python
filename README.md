@@ -249,6 +249,9 @@ Deployment(
         url_attachments=False,
         folder_attachments=False,
         allow_resume=True,
+        chat_completion=True,
+        responses_api=False,
+        reasoning_efforts=["low", "medium", "high"],
     ),
     defaults={},
 )
@@ -806,6 +809,9 @@ As a result, you will receive a list of `Application` objects:
             url_attachments=False,
             folder_attachments=False,
             allow_resume=True,
+            chat_completion=True,
+            responses_api=False,
+            reasoning_efforts=[],
         ),
         input_attachment_types=["image/png", "text/txt", "image/jpeg"],
         defaults={},
@@ -876,6 +882,8 @@ ModelInfo(
     ),
 )
 ```
+
+For embedding models, `ModelInfo` also includes `embedding_dimensions` — the size of the output vector (e.g. `embedding_dimensions=1536`). It is omitted for non-embedding models.
 
 ### User
 

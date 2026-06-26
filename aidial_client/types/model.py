@@ -41,6 +41,7 @@ class ModelInfo(ExtraAllowModel):
     updated_at: int | None = None
     lifecycle_status: str | None = None
     tokenizer_model: str | None = None
+    embedding_dimensions: int | None = None
     capabilities: ModelCapabilities | None = None
     limits: ModelLimits | None = None
     pricing: ModelPricing | None = None
