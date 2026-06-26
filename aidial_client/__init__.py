@@ -6,6 +6,7 @@ from aidial_client._exception import (
     EtagMismatchError,
     InvalidDialURLError,
     InvalidRequestError,
+    NotDialURLError,
     ParsingDataError,
     ResourceNotFoundError,
 )
@@ -25,6 +26,7 @@ __all__ = [
     "DialException",
     "InvalidDialURLError",
     "InvalidRequestError",
+    "NotDialURLError",
     "ParsingDataError",
     "EtagMismatchError",
     "ResourceNotFoundError",
