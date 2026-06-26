@@ -26,6 +26,12 @@ class Features(ExtraAllowModel):
     auto_caching: bool | None = None
     assistant_attachments_in_request: bool | None = None
     mcp: bool | None = None
+    chat_completion: bool | None = None
+    responses_api: bool | None = None
+    max_tokens_supported: bool | None = None
+    max_completion_tokens_supported: bool | None = None
+    custom_temperature_supported: bool | None = None
+    reasoning_efforts: list[str] = []
 
 
 class DeploymentBase(ExtraAllowModel):
