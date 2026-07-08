@@ -5,7 +5,7 @@ import pytest
 
 from aidial_client import AsyncDial
 from aidial_client._exception import EtagMismatchError, ResourceNotFoundError
-from aidial_client.types.metadata import PromptMetadata
+from aidial_client.types.metadata import PromptItem
 from aidial_client.types.prompt import Prompt
 from tests.integration.fixtures import *  # type: ignore # noqa
 
@@ -26,7 +26,7 @@ def _create_prompt(
     return Prompt(id=url, name=name, folder_id=folder_id, content=content)
 
 
-def _get_etag_or_skip(metadata: PromptMetadata) -> str:
+def _get_etag_or_skip(metadata: PromptItem) -> str:
     etag = getattr(metadata, "etag", None)
     if not etag:
         pytest.skip("Prompt metadata does not include etag in this environment")
@@ -44,7 +44,7 @@ async def test_save_get_delete(async_client: AsyncDial):
     save_result = await async_client.prompts.save(
         url=prompt_url, prompt=_create_prompt(prompt_url)
     )
-    assert isinstance(save_result, PromptMetadata)
+    assert isinstance(save_result, PromptItem)
     assert save_result.node_type == "ITEM"
     assert save_result.bucket == await async_client.my_bucket()
     assert save_result.name == prompt_name

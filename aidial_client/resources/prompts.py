@@ -17,7 +17,7 @@ from aidial_client._utils._dict import remove_none
 from aidial_client.helpers.storage_resource import DialStorageResourceMixin
 from aidial_client.resources.base import AsyncResource, Resource
 from aidial_client.resources.metadata import AsyncMetadata, Metadata
-from aidial_client.types.metadata import PromptMetadata
+from aidial_client.types.metadata import PromptItem, PromptMetadata
 from aidial_client.types.prompt import Prompt
 
 
@@ -51,9 +51,9 @@ class Prompts(Resource, DialStorageResourceMixin):
         prompt: Prompt,
         etag_if_match: str | None = None,
         etag_if_none_match: Literal["*"] | None = None,
-    ) -> PromptMetadata:
+    ) -> PromptItem:
         return self.http_client.request(
-            cast_to=PromptMetadata,
+            cast_to=PromptItem,
             options=FinalRequestOptions(
                 method="PUT",
                 url=urljoin(API_PREFIX, self.get_api_path(str(url))),
@@ -115,9 +115,9 @@ class AsyncPrompts(AsyncResource, DialStorageResourceMixin):
         prompt: Prompt,
         etag_if_match: str | None = None,
         etag_if_none_match: Literal["*"] | None = None,
-    ) -> PromptMetadata:
+    ) -> PromptItem:
         return await self.http_client.request(
-            cast_to=PromptMetadata,
+            cast_to=PromptItem,
             options=FinalRequestOptions(
                 method="PUT",
                 url=urljoin(API_PREFIX, self.get_api_path(str(url))),
