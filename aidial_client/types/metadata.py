@@ -30,7 +30,10 @@ class FileItem(BaseMetadata):
     resource_type: Literal["FILE"]
     content_length: int | None = None
     content_type: str | None = None
+    created_at: int | None = None
     updated_at: int | None = None
+    etag: str | None = None
+    author: str | None = None
 
 
 class FileMetadata(BaseMetadata):
