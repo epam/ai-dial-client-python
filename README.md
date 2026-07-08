@@ -523,6 +523,25 @@ sync_client.files.upload(
 )
 ```
 
+`upload()` returns a `FileItem` describing the stored file:
+
+```python
+FileItem(
+    name="my-file.txt",
+    parent_path="some-relative-path",
+    bucket="my-bucket",
+    url="files/my-bucket/some-relative-path/my-file.txt",
+    node_type="ITEM",
+    resource_type="FILE",
+    content_length=12,
+    content_type="text/plain",
+    etag="9749fad13d6e7092a6337c4af9d83764",
+    created_at=1724836229736,
+    updated_at=1724836248936,
+    author="user@example.com",
+)
+```
+
 #### Downloading Files
 
 Use `download()` to download files from your storage bucket:
@@ -664,11 +683,12 @@ FileMetadata(
     resource_type="FILE",
     content_length=12,
     content_type="application/octet-stream",
+    etag="9749fad13d6e7092a6337c4af9d83764",
+    created_at=1724836229736,
+    updated_at=1724836248936,
+    author="user@example.com",
     next_token=None,
     items=None,
-    updatedAt=1724836248936,
-    etag="9749fad13d6e7092a6337c4af9d83764",
-    createdAt=1724836229736,
 )
 ```
 

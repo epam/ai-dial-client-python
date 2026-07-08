@@ -22,7 +22,7 @@ from aidial_client.helpers.storage_resource import DialStorageResourceMixin
 from aidial_client.resources.base import AsyncResource, Resource
 from aidial_client.resources.metadata import AsyncMetadata, Metadata
 from aidial_client.types.file import FileDownloadResponse
-from aidial_client.types.metadata import FileMetadata
+from aidial_client.types.metadata import FileItem, FileMetadata
 
 
 def _files_error_processor(
@@ -49,9 +49,9 @@ class Files(Resource, DialStorageResourceMixin):
         file: FileTypes,
         etag_if_match: str | None = None,
         etag_if_none_match: Literal["*"] | None = None,
-    ) -> FileMetadata:
+    ) -> FileItem:
         return self.http_client.request(
-            cast_to=FileMetadata,
+            cast_to=FileItem,
             options=FinalRequestOptions(
                 method="PUT",
                 url=urljoin(API_PREFIX, self.get_api_path(str(url))),
@@ -163,9 +163,9 @@ class AsyncFiles(AsyncResource, DialStorageResourceMixin):
         file: FileTypes,
         etag_if_match: str | None = None,
         etag_if_none_match: Literal["*"] | None = None,
-    ) -> FileMetadata:
+    ) -> FileItem:
         return await self.http_client.request(
-            cast_to=FileMetadata,
+            cast_to=FileItem,
             options=FinalRequestOptions(
                 method="PUT",
                 url=urljoin(API_PREFIX, self.get_api_path(str(url))),
