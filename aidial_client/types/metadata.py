@@ -25,15 +25,18 @@ class BaseMetadata(ExtraAllowModel):
     resource_type: Literal["FILE", "CONVERSATION", "PROMPT"]
 
 
-class FileItem(BaseMetadata):
-    node_type: Literal["FOLDER", "ITEM"]
-    resource_type: Literal["FILE"]
-    content_length: int | None = None
-    content_type: str | None = None
+class ResourceItemMetadata(BaseMetadata):
     created_at: int | None = None
     updated_at: int | None = None
     etag: str | None = None
     author: str | None = None
+
+
+class FileItem(ResourceItemMetadata):
+    node_type: Literal["FOLDER", "ITEM"]
+    resource_type: Literal["FILE"]
+    content_length: int | None = None
+    content_type: str | None = None
 
 
 class FileMetadata(BaseMetadata):
@@ -46,8 +49,7 @@ class FileMetadata(BaseMetadata):
     etag: str | None = None
 
 
-class ConversationItem(BaseMetadata):
-    updated_at: int
+class ConversationItem(ResourceItemMetadata):
     resource_type: Literal["CONVERSATION"]
 
 
@@ -58,8 +60,7 @@ class ConversationMetadata(BaseMetadata):
     resource_type: Literal["CONVERSATION"]
 
 
-class PromptItem(BaseMetadata):
-    updated_at: int
+class PromptItem(ResourceItemMetadata):
     resource_type: Literal["PROMPT"]
 
 

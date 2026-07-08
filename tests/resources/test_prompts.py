@@ -13,7 +13,7 @@ from aidial_client._exception import (
     InvalidDialURLError,
     ResourceNotFoundError,
 )
-from aidial_client.types.metadata import PromptMetadata
+from aidial_client.types.metadata import PromptItem, PromptMetadata
 from aidial_client.types.prompt import Prompt
 from tests.client_mock import get_async_client_mock, get_client_mock
 
@@ -38,6 +38,19 @@ PROMPT_METADATA_MOCK = {
     "nodeType": "ITEM",
     "resourceType": "PROMPT",
     "items": [],
+}
+
+PROMPT_ITEM_MOCK = {
+    "name": "my-prompt",
+    "parentPath": "my-folder",
+    "bucket": "test-bucket",
+    "url": "prompts/test-bucket/my-folder/my-prompt",
+    "nodeType": "ITEM",
+    "resourceType": "PROMPT",
+    "etag": "9749fad13d6e7092a6337c4af9d83764",
+    "createdAt": 1724836229736,
+    "updatedAt": 1724836248936,
+    "author": "user@example.com",
 }
 
 
@@ -189,32 +202,38 @@ async def test_async_get_prompt_metadata():
 
 
 def test_save_prompt():
-    client = get_client_mock(status_code=200, json_mock=PROMPT_METADATA_MOCK)
+    client = get_client_mock(status_code=200, json_mock=PROMPT_ITEM_MOCK)
     prompt = Prompt(**PROMPT_MOCK)
 
     result = client.prompts.save(
         "prompts/test-bucket/my-folder/my-prompt", prompt=prompt
     )
 
-    assert isinstance(result, PromptMetadata)
+    assert isinstance(result, PromptItem)
     assert result.node_type == "ITEM"
     assert result.bucket == "test-bucket"
+    assert result.etag == "9749fad13d6e7092a6337c4af9d83764"
+    assert result.created_at == 1724836229736
+    assert result.updated_at == 1724836248936
+    assert result.author == "user@example.com"
 
 
 @pytest.mark.asyncio
 async def test_async_save_prompt():
-    client = get_async_client_mock(
-        status_code=200, json_mock=PROMPT_METADATA_MOCK
-    )
+    client = get_async_client_mock(status_code=200, json_mock=PROMPT_ITEM_MOCK)
     prompt = Prompt(**PROMPT_MOCK)
 
     result = await client.prompts.save(
         "prompts/test-bucket/my-folder/my-prompt", prompt=prompt
     )
 
-    assert isinstance(result, PromptMetadata)
+    assert isinstance(result, PromptItem)
     assert result.node_type == "ITEM"
     assert result.bucket == "test-bucket"
+    assert result.etag == "9749fad13d6e7092a6337c4af9d83764"
+    assert result.created_at == 1724836229736
+    assert result.updated_at == 1724836248936
+    assert result.author == "user@example.com"
 
 
 def test_save_prompt_sends_json_and_etag_headers():
@@ -229,7 +248,7 @@ def test_save_prompt_sends_json_and_etag_headers():
         etag_if_none_match="*",
     )
 
-    assert isinstance(result, PromptMetadata)
+    assert isinstance(result, PromptItem)
     assert len(captured) == 1
     request = captured[0]
     assert request.method == "PUT"
@@ -257,7 +276,7 @@ async def test_async_save_prompt_sends_json_and_etag_headers():
         etag_if_none_match="*",
     )
 
-    assert isinstance(result, PromptMetadata)
+    assert isinstance(result, PromptItem)
     assert len(captured) == 1
     request = captured[0]
     assert request.method == "PUT"

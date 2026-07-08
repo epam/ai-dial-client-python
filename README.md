@@ -715,16 +715,20 @@ saved_prompt = client.prompts.save(prompt_url, prompt=prompt_payload)
 saved_prompt = await async_client.prompts.save(prompt_url, prompt=prompt_payload)
 ```
 
-As a result, you will receive a `PromptMetadata` object:
+As a result, you will receive a `PromptItem` object:
 
 ```python
-PromptMetadata(
+PromptItem(
     name="my-prompt",
     parent_path="my-folder",
     bucket="my-bucket",
     url="prompts/my-bucket/my-folder/my-prompt",
     node_type="ITEM",
     resource_type="PROMPT",
+    etag="9749fad13d6e7092a6337c4af9d83764",
+    created_at=1724836229736,
+    updated_at=1724836248936,
+    author="user@example.com",
 )
 ```
 
