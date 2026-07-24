@@ -1,4 +1,4 @@
-from typing import Dict, List, Literal, Optional
+from typing import Literal
 
 from aidial_client._internal_types._model import ExtraAllowModel
 
@@ -8,36 +8,48 @@ class ScaleSettings(ExtraAllowModel):
 
 
 class Features(ExtraAllowModel):
-    rate: Optional[bool] = None
-    tokenize: Optional[bool] = None
-    temperature: Optional[bool] = None
-    truncate_prompt: Optional[bool] = None
-    configuration: Optional[bool] = None
-    system_prompt: Optional[bool] = None
-    tools: Optional[bool] = None
-    seed: Optional[bool] = None
-    url_attachments: Optional[bool] = None
-    folder_attachments: Optional[bool] = None
-    allow_resume: Optional[bool] = None
-    parallel_tool_calls: Optional[bool] = None
+    rate: bool | None = None
+    tokenize: bool | None = None
+    temperature: bool | None = None
+    truncate_prompt: bool | None = None
+    configuration: bool | None = None
+    system_prompt: bool | None = None
+    tools: bool | None = None
+    seed: bool | None = None
+    url_attachments: bool | None = None
+    folder_attachments: bool | None = None
+    allow_resume: bool | None = None
+    parallel_tool_calls: bool | None = None
+    accessible_by_per_request_key: bool | None = None
+    content_parts: bool | None = None
+    cache: bool | None = None
+    auto_caching: bool | None = None
+    assistant_attachments_in_request: bool | None = None
+    mcp: bool | None = None
+    chat_completion: bool | None = None
+    responses_api: bool | None = None
+    max_tokens_supported: bool | None = None
+    max_completion_tokens_supported: bool | None = None
+    custom_temperature_supported: bool | None = None
+    reasoning_efforts: list[str] = []
 
 
 class DeploymentBase(ExtraAllowModel):
     id: str
     object: str
-    owner: Optional[str] = None
-    reference: Optional[str] = None
-    icon_url: Optional[str] = None
-    description: Optional[str] = None
-    display_name: Optional[str] = None
-    display_version: Optional[str] = None
-    status: Optional[str] = None
+    owner: str | None = None
+    reference: str | None = None
+    icon_url: str | None = None
+    description: str | None = None
+    display_name: str | None = None
+    display_version: str | None = None
+    status: str | None = None
     created_at: int
-    updated_at: Optional[int] = None
-    scale_settings: Optional[ScaleSettings] = None
-    defaults: Dict = {}
-    input_attachment_types: Optional[List[str]] = None
-    features: Optional[Features] = None
+    updated_at: int | None = None
+    scale_settings: ScaleSettings | None = None
+    defaults: dict = {}
+    input_attachment_types: list[str] | None = None
+    features: Features | None = None
 
 
 class Deployment(DeploymentBase):
@@ -46,5 +58,5 @@ class Deployment(DeploymentBase):
 
 
 class DeploymentsResponse(ExtraAllowModel):
-    data: List[Deployment]
+    data: list[Deployment]
     object: Literal["list"]

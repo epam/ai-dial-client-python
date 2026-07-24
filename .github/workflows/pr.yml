@@ -10,8 +10,9 @@ concurrency:
 
 jobs:
   run_tests:
-    uses: epam/ai-dial-ci/.github/workflows/python_package_pr.yml@2.7.3
+    uses: epam/ai-dial-ci/.github/workflows/python_package_pr.yml@4.7.2
     secrets: inherit
     with:
-      python-version: 3.9
-      code-checks-python-versions: '["3.9", "3.10", "3.11", "3.12"]'
+      python-version: "3.10"
+      poetry-version: "2.3.2"
+      code-checks-python-versions: '["3.10", "3.11", "3.12", "3.13"]'

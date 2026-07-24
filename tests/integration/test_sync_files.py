@@ -4,7 +4,7 @@ import pytest
 
 from aidial_client import Dial, DialException
 from aidial_client._exception import EtagMismatchError
-from aidial_client.types.metadata import FileMetadata
+from aidial_client.types.metadata import FileItem
 from tests.integration.fixtures import *  # type: ignore # noqa
 
 current_file_path = os.path.abspath(__file__)
@@ -21,7 +21,7 @@ def test_upload(sync_client: Dial):
         upload_result = sync_client.files.upload(
             url=sync_client.my_files_home() / file_path, file=file
         )
-    assert isinstance(upload_result, FileMetadata)
+    assert isinstance(upload_result, FileItem)
     assert upload_result.bucket == sync_client.my_bucket()
     assert upload_result.node_type == "ITEM"
     assert upload_result.name == file_name
@@ -31,7 +31,7 @@ def test_upload(sync_client: Dial):
     download_result = sync_client.files.download(
         url=sync_client.my_files_home() / file_path
     )
-    assert b"".join([chunk for chunk in download_result]) == file_content
+    assert b"".join(list(download_result)) == file_content
     assert download_result.get_content() == file_content
 
 

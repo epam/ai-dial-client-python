@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from pathlib import PurePosixPath
-from typing import Dict, Generic, Optional, TypeVar, Union
+from types import TracebackType
+from typing import Generic, TypeVar
 from urllib.parse import urljoin
 
 import openai
@@ -9,10 +10,9 @@ from httpx import Timeout
 import aidial_client.resources as resources
 from aidial_client._auth import (
     AsyncAuthValue,
-    AuthType,
     AuthValueT,
     SyncAuthValue,
-    process_auth,
+    validate_auth,
 )
 from aidial_client._constants import (
     API_PREFIX,
@@ -25,34 +25,32 @@ from aidial_client._internal_types._defaults import NOT_GIVEN, NotGiven
 from aidial_client.helpers._url import enforce_trailing_slash
 from aidial_client.types.bucket import AppData
 
-_HttpClientT = TypeVar(
-    "_HttpClientT", bound=Union[AsyncHTTPClient, SyncHTTPClient]
-)
+_HttpClientT = TypeVar("_HttpClientT", bound=AsyncHTTPClient | SyncHTTPClient)
 
 
 class BaseDialClient(Generic[_HttpClientT, AuthValueT], ABC):
-    _auth_type: AuthType
-    _auth_value: AuthValueT
+    _api_key: AuthValueT | None
+    _bearer_token: AuthValueT | None
     _base_url: str
     _http_client: _HttpClientT
-    _auth_headers: Dict[str, str]
-    _my_bucket: Optional[str]
-    _my_appdata: Union[AppData, None, NotGiven]
+    _auth_headers: dict[str, str]
+    _my_bucket: str | None
+    _my_appdata: AppData | None | NotGiven
 
     def __init__(
         self,
         *,
         base_url: str,
-        api_key: Optional[AuthValueT] = None,
-        bearer_token: Optional[AuthValueT] = None,
+        api_key: AuthValueT | None = None,
+        bearer_token: AuthValueT | None = None,
         max_retries: int = DEFAULT_MAX_RETRIES,
-        timeout: Union[float, Timeout, None] = DEFAULT_TIMEOUT,
-        api_version: Optional[str] = None,
-        http_client: Optional[_HttpClientT] = None,
+        timeout: float | Timeout | None = DEFAULT_TIMEOUT,
+        api_version: str | None = None,
+        http_client: _HttpClientT | None = None,
     ):
-        self._auth_type, self._auth_value = process_auth(
-            api_key=api_key, bearer_token=bearer_token
-        )
+        validate_auth(api_key=api_key, bearer_token=bearer_token)
+        self._api_key = api_key
+        self._bearer_token = bearer_token
         self._max_retries = max_retries
         self._timeout = timeout
         self._base_url = enforce_trailing_slash(base_url)
@@ -80,7 +78,7 @@ class BaseDialClient(Generic[_HttpClientT, AuthValueT], ABC):
         return self._base_url
 
     @property
-    def api_version(self) -> Optional[str]:
+    def api_version(self) -> str | None:
         return self._api_version
 
 
@@ -107,14 +105,28 @@ class Dial(BaseDialClient[SyncHTTPClient, SyncAuthValue]):
             metadata=self.metadata,
             dial_api_url=self.api_url,
         )
+        self.prompts = resources.Prompts(
+            http_client=self._http_client,
+            metadata=self.metadata,
+            dial_api_url=self.api_url,
+        )
         self.deployments = resources.Deployments(http_client=self._http_client)
         self.application = resources.Application(http_client=self._http_client)
+        self.toolset = resources.Toolset(http_client=self._http_client)
+        self.model = resources.Model(http_client=self._http_client)
+        self.resource_permissions = resources.ResourcePermissions(
+            http_client=self._http_client
+        )
+        self.client_channel = resources.ClientChannel(
+            http_client=self._http_client
+        )
+        self.user = resources.User(http_client=self._http_client)
 
     def _create_http_client(self) -> SyncHTTPClient:
         return SyncHTTPClient(
             self._base_url,
-            self._auth_value,
-            self._auth_type,
+            self._api_key,
+            self._bearer_token,
             self._max_retries,
             self._timeout,
         )
@@ -137,31 +149,43 @@ class Dial(BaseDialClient[SyncHTTPClient, SyncAuthValue]):
     def my_prompts_home(self) -> PurePosixPath:
         return "prompts" / PurePosixPath(self.my_bucket())
 
-    def _get_my_appdata(self) -> Optional[AppData]:
+    def _get_my_appdata(self) -> AppData | None:
         return self.bucket.get_appdata()
 
-    def my_appdata(self) -> Optional[AppData]:
+    def my_appdata(self) -> AppData | None:
         if isinstance(self._my_appdata, NotGiven):
             self._my_appdata = self._get_my_appdata()
         return self._my_appdata
 
-    def my_appdata_home(self) -> Optional[PurePosixPath]:
+    def my_appdata_home(self) -> PurePosixPath | None:
         appdata = self.my_appdata()
         if appdata:
             return PurePosixPath(appdata.raw)
         return None
 
-    def auth_headers(self) -> Dict[str, str]:
+    def auth_headers(self) -> dict[str, str]:
         return self._http_client.auth_headers()
+
+    def close(self) -> None:
+        self._http_client.internal_http_client.close()
+
+    def __enter__(self) -> "Dial":
+        return self
+
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> None:
+        self.close()
 
 
 class AsyncDial(BaseDialClient[AsyncHTTPClient, AsyncAuthValue]):
     def _init_resources(self) -> None:
         openai_client = openai.AsyncAzureOpenAI(
-            # set empty string, we will override
-            # it with our client values during request
-            api_key="",
-            api_version="",
+            api_key="-",
+            api_version="-",
             base_url=urljoin(self._base_url, OPENAI_PREFIX),
             http_client=self._http_client.internal_http_client,
             timeout=self._http_client._timeout,
@@ -182,18 +206,32 @@ class AsyncDial(BaseDialClient[AsyncHTTPClient, AsyncAuthValue]):
             metadata=self.metadata,
             dial_api_url=self.api_url,
         )
+        self.prompts = resources.AsyncPrompts(
+            http_client=self._http_client,
+            metadata=self.metadata,
+            dial_api_url=self.api_url,
+        )
         self.deployments = resources.AsyncDeployments(
             http_client=self._http_client
         )
         self.application = resources.AsyncApplication(
             http_client=self._http_client
         )
+        self.toolset = resources.AsyncToolset(http_client=self._http_client)
+        self.model = resources.AsyncModel(http_client=self._http_client)
+        self.resource_permissions = resources.AsyncResourcePermissions(
+            http_client=self._http_client
+        )
+        self.client_channel = resources.AsyncClientChannel(
+            http_client=self._http_client
+        )
+        self.user = resources.AsyncUser(http_client=self._http_client)
 
     def _create_http_client(self) -> AsyncHTTPClient:
         return AsyncHTTPClient(
             self._base_url,
-            self._auth_value,
-            self._auth_type,
+            self._api_key,
+            self._bearer_token,
             self._max_retries,
             self._timeout,
         )
@@ -216,19 +254,33 @@ class AsyncDial(BaseDialClient[AsyncHTTPClient, AsyncAuthValue]):
     async def my_prompts_home(self) -> PurePosixPath:
         return "prompts" / PurePosixPath(await self.my_bucket())
 
-    async def _get_my_appdata(self) -> Optional[AppData]:
+    async def _get_my_appdata(self) -> AppData | None:
         return await self.bucket.get_appdata()
 
-    async def my_appdata(self) -> Optional[AppData]:
+    async def my_appdata(self) -> AppData | None:
         if isinstance(self._my_appdata, NotGiven):
             self._my_appdata = await self._get_my_appdata()
         return self._my_appdata
 
-    async def my_appdata_home(self) -> Optional[PurePosixPath]:
+    async def my_appdata_home(self) -> PurePosixPath | None:
         appdata = await self.my_appdata()
         if appdata:
             return PurePosixPath(appdata.raw)
         return None
 
-    async def auth_headers(self) -> Dict[str, str]:
+    async def auth_headers(self) -> dict[str, str]:
         return await self._http_client.auth_headers()
+
+    async def aclose(self) -> None:
+        await self._http_client.internal_http_client.aclose()
+
+    async def __aenter__(self) -> "AsyncDial":
+        return self
+
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> None:
+        await self.aclose()

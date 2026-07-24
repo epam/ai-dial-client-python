@@ -74,7 +74,7 @@ async def test_completions_without_streaming(
 async def test_completions_with_streaming(async_client: AsyncDial):
     deployments = await async_client.deployments.list()
     assert len(deployments)
-    deployment = next((d for d in deployments if d.id.startswith("gpt-")))
+    deployment = next(d for d in deployments if d.id.startswith("gpt-"))
     assert deployment
     completion = await async_client.chat.completions.create(
         deployment_name=deployment.id,

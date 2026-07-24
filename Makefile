@@ -1,14 +1,19 @@
 VENV_DIR ?= .venv
-POETRY ?= $(VENV_DIR)/bin/poetry
-POETRY_VERSION ?= 1.8.5
+POETRY ?= poetry
+POETRY_PYTHON ?= python
 
-.PHONY: all init_env install clean lint format test spell_check
+# Any non-empty CI value (even 'false' or '0') means that CI is enabled
+CI ?=
+
+.PHONY: all init_env install clean lint format test
+
+-include .env
+export
 
 all: build
 
 init_env:
-	python -m venv $(VENV_DIR)
-	$(VENV_DIR)/bin/pip install poetry==$(POETRY_VERSION) --quiet
+	$(if $(CI),,$(POETRY) env use $(POETRY_PYTHON))
 
 install: init_env
 	$(POETRY) install
@@ -19,6 +24,9 @@ build: install
 clean:
 	$(POETRY) run clean
 	$(POETRY) env remove --all
+
+install_git_hooks: install
+	$(VENV_DIR)/bin/pre-commit install
 
 lint: install
 	$(POETRY) run nox -s lint
@@ -42,7 +50,7 @@ help:
 	@echo '===================='
 	@echo 'install                      - install virtual env and dependencies'
 	@echo 'clean                        - clean virtual env and build artifacts'
+	@echo 'install_git_hooks            - install the git hooks'
 	@echo '-- LINTING --'
 	@echo 'format                       - run code formatters'
 	@echo 'lint                         - run linters'
-	@echo 'spell_check                  - run spell check'

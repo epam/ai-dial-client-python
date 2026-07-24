@@ -1,11 +1,12 @@
 from abc import ABC, abstractmethod
+from collections.abc import Callable
 from http import HTTPStatus
 from random import uniform
-from typing import Dict, Generic, Optional, TypeVar, Union
+from typing import Generic, TypeVar
 
 import httpx
 
-from aidial_client._auth import AuthType, AuthValueT
+from aidial_client._auth import AuthValueT
 from aidial_client._constants import INITIAL_RETRY_DELAY, MAX_RETRY_DELAY
 from aidial_client._exception import DialException
 from aidial_client._internal_types._http_request import FinalRequestOptions
@@ -13,27 +14,29 @@ from aidial_client._utils._type_guard import is_mapping
 from aidial_client.helpers._url import enforce_trailing_slash
 
 _HttpInternalClientT = TypeVar(
-    "_HttpInternalClientT", bound=Union[httpx.Client, httpx.AsyncClient]
+    "_HttpInternalClientT", bound=httpx.Client | httpx.AsyncClient
 )
+
+ErrorHandler = Callable[[httpx.HTTPStatusError], DialException | None]
 
 
 class BaseHTTPClient(ABC, Generic[_HttpInternalClientT, AuthValueT]):
     _internal_http_client: _HttpInternalClientT
-    _auth_value: AuthValueT
-    _auth_type: AuthType
+    _api_key: AuthValueT | None
+    _bearer_token: AuthValueT | None
 
     def __init__(
         self,
         base_url: str,
-        auth_value: AuthValueT,
-        auth_type: AuthType,
+        api_key: AuthValueT | None,
+        bearer_token: AuthValueT | None,
         max_retries: int,
-        timeout: Union[float, httpx.Timeout, None],
-        internal_http_client: Optional[_HttpInternalClientT] = None,
+        timeout: float | httpx.Timeout | None,
+        internal_http_client: _HttpInternalClientT | None = None,
     ):
         self.base_url = httpx.URL(enforce_trailing_slash(base_url))
-        self._auth_value = auth_value
-        self._auth_type = auth_type
+        self._api_key = api_key
+        self._bearer_token = bearer_token
         self._max_retries = max_retries
         self._timeout = timeout
         self._internal_http_client = (
@@ -51,13 +54,13 @@ class BaseHTTPClient(ABC, Generic[_HttpInternalClientT, AuthValueT]):
             merge_raw_path = (
                 self.base_url.raw_path + parsed_url.raw_path.lstrip(b"/")
             )
-            return self.base_url.copy_with(raw_path=merge_raw_path.rstrip(b"/"))
+            return self.base_url.copy_with(raw_path=merge_raw_path)
         return parsed_url
 
     def _build_request(
         self,
         options: FinalRequestOptions,
-        auth_headers: Dict[str, str],
+        auth_headers: dict[str, str],
     ) -> httpx.Request:
         custom_headers = options.headers or {}
         return self._internal_http_client.build_request(
@@ -88,10 +91,7 @@ class BaseHTTPClient(ABC, Generic[_HttpInternalClientT, AuthValueT]):
         if response.status_code == HTTPStatus.CONFLICT:
             return True
 
-        if response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
-            return True
-
-        return False
+        return response.status_code == HTTPStatus.TOO_MANY_REQUESTS
 
     def _calculate_retry_sleep_seconds(
         self,
@@ -106,8 +106,24 @@ class BaseHTTPClient(ABC, Generic[_HttpInternalClientT, AuthValueT]):
         sleep_seconds = min(
             INITIAL_RETRY_DELAY * pow(2.0, nb_retries), MAX_RETRY_DELAY
         )
-        timeout = sleep_seconds + uniform(-0.5, 0.5)
+        timeout = sleep_seconds + uniform(-0.5, 0.5)  # noqa: S311
         return max(0, timeout)
+
+    def _raise_for_status(
+        self,
+        response: httpx.Response,
+        on_http_error: ErrorHandler | None,
+    ) -> None:
+        try:
+            response.raise_for_status()
+        except httpx.HTTPStatusError as err:
+            # Try to get a custom error from response status_code/code/message
+            custom_error = on_http_error(err) if on_http_error else None
+            # or fallback to default processing
+            raised_error = custom_error or self._make_dial_error_from_response(
+                err.response
+            )
+            raise raised_error from err
 
     def _make_dial_error_from_response(
         self,

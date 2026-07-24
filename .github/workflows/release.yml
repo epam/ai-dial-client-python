@@ -3,6 +3,7 @@ name: Release Workflow
 on:
   push:
     branches: [development, release-*]
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -10,8 +11,10 @@ concurrency:
 
 jobs:
   release:
-    uses: epam/ai-dial-ci/.github/workflows/python_package_release.yml@2.7.3
-    secrets: inherit
+    uses: epam/ai-dial-ci/.github/workflows/python_package_release.yml@4.7.2
     with:
-      python-version: 3.9
-      code-checks-python-versions: '["3.9", "3.10", "3.11", "3.12"]'
+      promote: true # HACK: skip RC phase, project does not require stabilization period before releasing stable versions
+      python-version: "3.10"
+      poetry-version: "2.3.2"
+      code-checks-python-versions: '["3.10", "3.11", "3.12", "3.13"]'
+    secrets: inherit

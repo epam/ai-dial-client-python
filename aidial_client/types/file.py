@@ -1,25 +1,22 @@
 from pathlib import Path
-from typing import Union
 
 import aiofiles
 import httpx
 
 
 class FileDownloadResponse:
-
     def __init__(self, response: httpx.Response, filename: str):
         self._response = response
         self._filename = filename
 
-    def write_to(self, file: Union[str, Path]) -> None:
+    def write_to(self, file: str | Path) -> None:
         """
         Write the content to a file
         """
         with open(file, "wb") as f:
-            for chunk in self._response.iter_bytes():
-                f.write(chunk)
+            f.writelines(self._response.iter_bytes())
 
-    async def awrite_to(self, file: Union[str, Path]) -> None:
+    async def awrite_to(self, file: str | Path) -> None:
         """
         Async write content to a file
         """
@@ -43,3 +40,11 @@ class FileDownloadResponse:
     @property
     def filename(self) -> str:
         return self._filename
+
+    @property
+    def headers(self) -> httpx.Headers:
+        return self._response.headers
+
+    @property
+    def content_type(self) -> str | None:
+        return self.headers.get("content-type")

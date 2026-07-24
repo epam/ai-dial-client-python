@@ -4,7 +4,7 @@ import pytest
 
 from aidial_client import AsyncDial, DialException
 from aidial_client._exception import EtagMismatchError
-from aidial_client.types.metadata import FileMetadata
+from aidial_client.types.metadata import FileItem
 from tests.integration.fixtures import *  # type: ignore # noqa
 
 current_file_path = os.path.abspath(__file__)
@@ -20,7 +20,7 @@ async def test_upload(async_client: AsyncDial):
         upload_result = await async_client.files.upload(
             url=await async_client.my_files_home() / file_path, file=file
         )
-    assert isinstance(upload_result, FileMetadata)
+    assert isinstance(upload_result, FileItem)
     assert upload_result.bucket == await async_client.my_bucket()
     assert upload_result.node_type == "ITEM"
     assert upload_result.name == file_name

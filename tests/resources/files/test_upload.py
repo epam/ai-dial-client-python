@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock, Mock
 import pytest
 
 from aidial_client._exception import InvalidDialURLError
-from aidial_client.types.metadata import FileMetadata
+from aidial_client.types.metadata import FileItem
 from tests.client_mock import get_async_client_mock, get_client_mock
 
 UPLOAD_RESPONSE_MOCK = {
@@ -16,6 +16,10 @@ UPLOAD_RESPONSE_MOCK = {
     "resourceType": "FILE",
     "contentLength": 128630,
     "contentType": "image/png",
+    "etag": "9749fad13d6e7092a6337c4af9d83764",
+    "createdAt": 1724836229736,
+    "updatedAt": 1724836248936,
+    "author": "user@example.com",
 }
 current_file_path = os.path.abspath(__file__)
 
@@ -35,10 +39,17 @@ def test_upload_file_object():
             file=file,
         )
         for r in [valid_response, valid_response_using_default_bucket]:
-            assert isinstance(r, FileMetadata)
+            assert isinstance(r, FileItem)
             assert r.bucket == "test-bucket"
             assert r.name == "file.png"
             assert r.parent_path == "folder1/folder2"
+            assert r.node_type == "ITEM"
+            assert r.content_length == 128630
+            assert r.content_type == "image/png"
+            assert r.etag == "9749fad13d6e7092a6337c4af9d83764"
+            assert r.created_at == 1724836229736
+            assert r.updated_at == 1724836248936
+            assert r.author == "user@example.com"
 
 
 @pytest.mark.asyncio
@@ -66,7 +77,14 @@ async def test_upload_file_object_async():
             file=file,
         )
         for r in [valid_response, valid_response_with_files_home]:
-            assert isinstance(r, FileMetadata)
+            assert isinstance(r, FileItem)
             assert r.bucket == "test-bucket"
             assert r.name == "file.png"
             assert r.parent_path == "folder1/folder2"
+            assert r.node_type == "ITEM"
+            assert r.content_length == 128630
+            assert r.content_type == "image/png"
+            assert r.etag == "9749fad13d6e7092a6337c4af9d83764"
+            assert r.created_at == 1724836229736
+            assert r.updated_at == 1724836248936
+            assert r.author == "user@example.com"

@@ -1,6 +1,6 @@
-from typing import Dict, Mapping, Optional
+from collections.abc import Mapping
 
-from aidial_client._auth import AuthType, get_auth_headers
+from aidial_client._auth import get_combined_auth_headers
 from aidial_client._compatibility.pydantic_v1 import (
     SecretStr,
     StrictStr,
@@ -14,10 +14,10 @@ from aidial_client.types.chat.legacy.chat_completion import (
 
 class RequestParams(ExtraForbidModel):
     api_key_secret: SecretStr
-    jwt_secret: Optional[SecretStr] = None
+    jwt_secret: SecretStr | None = None
 
     deployment_id: StrictStr
-    api_version: Optional[StrictStr] = None
+    api_version: StrictStr | None = None
     headers: Mapping[StrictStr, StrictStr]
 
     @root_validator(pre=True)
@@ -43,20 +43,18 @@ class RequestParams(ExtraForbidModel):
         return self.api_key_secret.get_secret_value()
 
     @property
-    def jwt(self) -> Optional[str]:
+    def jwt(self) -> str | None:
         return self.jwt_secret.get_secret_value() if self.jwt_secret else None
 
     @property
-    def auth_headers(self) -> Dict[str, str]:
+    def auth_headers(self) -> dict[str, str]:
         if self.jwt_secret is not None:
-            return get_auth_headers(
-                auth_type=AuthType.BEARER,
-                auth_value=self.jwt_secret.get_secret_value(),
+            return get_combined_auth_headers(
+                bearer_token=self.jwt_secret.get_secret_value(),
             )
         else:
-            return get_auth_headers(
-                auth_type=AuthType.API_KEY,
-                auth_value=self.api_key_secret.get_secret_value(),
+            return get_combined_auth_headers(
+                api_key=self.api_key_secret.get_secret_value(),
             )
 
 

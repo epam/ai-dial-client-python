@@ -1,3 +1,4 @@
+import contextlib
 import os
 import uuid
 
@@ -35,19 +36,16 @@ def async_client(dial_url, dial_api_key):
 def test_deployment(sync_client: Dial) -> str:
     deployments = sync_client.deployments.list()
     assert len(deployments)
-    deployment = next((d for d in deployments if d.id.startswith("gpt-4o")))
+    deployment = next(d for d in deployments if d.id.startswith("gpt-4o"))
     assert deployment
     return deployment.id
 
 
 @pytest.fixture
 def absent_test_file(sync_client):
-
     def _save_delete_file(p):
-        try:
+        with contextlib.suppress(ResourceNotFoundError):
             sync_client.files.delete(p)
-        except ResourceNotFoundError:
-            pass
 
     unique_name = f"test-file-{uuid.uuid4()}.txt"
     full_path = sync_client.my_files_home() / unique_name

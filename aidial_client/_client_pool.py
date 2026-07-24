@@ -1,8 +1,8 @@
-from typing import Optional, Union
+from types import TracebackType
 
 import httpx
 
-from aidial_client._auth import AsyncAuthValue, SyncAuthValue, process_auth
+from aidial_client._auth import AsyncAuthValue, SyncAuthValue
 from aidial_client._client import AsyncDial, Dial
 from aidial_client._constants import (
     DEFAULT_CONNECTION_LIMITS,
@@ -27,27 +27,38 @@ class DialClientPool:
         self,
         *,
         base_url: str,
-        api_key: Optional[SyncAuthValue] = None,
-        bearer_token: Optional[SyncAuthValue] = None,
+        api_key: SyncAuthValue | None = None,
+        bearer_token: SyncAuthValue | None = None,
         max_retries: int = DEFAULT_MAX_RETRIES,
-        timeout: Union[httpx.Timeout, float] = DEFAULT_TIMEOUT,
+        timeout: httpx.Timeout | float = DEFAULT_TIMEOUT,
     ) -> Dial:
-        auth_type, auth_value = process_auth(
-            api_key=api_key, bearer_token=bearer_token
-        )
         return Dial(
             base_url=base_url,
             api_key=api_key,
             bearer_token=bearer_token,
             http_client=SyncHTTPClient(
                 base_url=base_url,
-                auth_value=auth_value,
-                auth_type=auth_type,
+                api_key=api_key,
+                bearer_token=bearer_token,
                 max_retries=max_retries,
                 timeout=timeout,
                 internal_http_client=self._internal_http_client,
             ),
         )
+
+    def close(self) -> None:
+        self._internal_http_client.close()
+
+    def __enter__(self) -> "DialClientPool":
+        return self
+
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> None:
+        self.close()
 
 
 class AsyncDialClientPool:
@@ -65,24 +76,35 @@ class AsyncDialClientPool:
         self,
         *,
         base_url: str,
-        api_key: Optional[AsyncAuthValue] = None,
-        bearer_token: Optional[AsyncAuthValue] = None,
+        api_key: AsyncAuthValue | None = None,
+        bearer_token: AsyncAuthValue | None = None,
         max_retries: int = DEFAULT_MAX_RETRIES,
-        timeout: Union[httpx.Timeout, float] = DEFAULT_TIMEOUT,
+        timeout: httpx.Timeout | float = DEFAULT_TIMEOUT,
     ) -> AsyncDial:
-        auth_type, auth_value = process_auth(
-            api_key=api_key, bearer_token=bearer_token
-        )
         return AsyncDial(
             base_url=base_url,
             api_key=api_key,
             bearer_token=bearer_token,
             http_client=AsyncHTTPClient(
                 base_url=base_url,
-                auth_value=auth_value,
-                auth_type=auth_type,
+                api_key=api_key,
+                bearer_token=bearer_token,
                 max_retries=max_retries,
                 timeout=timeout,
                 internal_http_client=self._internal_http_client,
             ),
         )
+
+    async def aclose(self) -> None:
+        await self._internal_http_client.aclose()
+
+    async def __aenter__(self) -> "AsyncDialClientPool":
+        return self
+
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> None:
+        await self.aclose()

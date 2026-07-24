@@ -1,4 +1,4 @@
-from typing import TypeVar, Union
+from typing import TypeVar
 
 import httpx
 
@@ -10,14 +10,13 @@ from aidial_client.types.file import FileDownloadResponse
 
 ResponseT = TypeVar(
     "ResponseT",
-    bound=Union[
-        ExtraAllowModel,
-        ExtraForbidModel,
-        bytes,
-        str,
-        httpx.Response,
-        FileDownloadResponse,
-        None,
-    ],
+    bound=ExtraAllowModel
+    | ExtraForbidModel
+    | bytes
+    | str
+    | dict
+    | httpx.Response
+    | FileDownloadResponse
+    | None,
 )
 NoneType = type(None)
