@@ -1,6 +1,6 @@
 import json
 
-from tests.integration.configuration import INTEGRATION_TEST_DEPLOYMENT_NAME
+from tests.integration.configuration import DIAL_MODEL
 
 
 def create_mock_chunk(
@@ -20,7 +20,7 @@ def create_mock_chunk(
             }
         ],
         "created": 1723806872,
-        "model": INTEGRATION_TEST_DEPLOYMENT_NAME,
+        "model": DIAL_MODEL,
         "object": "chat.completion.chunk",
         "system_fingerprint": None,
         **({} if usage is None else {"usage": usage}),

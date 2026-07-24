@@ -2,7 +2,7 @@ import pytest
 
 from aidial_client import AsyncDial
 from aidial_client._exception import DialException
-from tests.integration.configuration import INTEGRATION_TEST_DEPLOYMENT_NAME
+from tests.integration.configuration import DIAL_MODEL
 from tests.integration.fixtures import *  # noqa
 
 
@@ -15,7 +15,7 @@ async def test_async_default_api_version(
 ):
     with pytest.raises(DialException):
         await async_client.chat.completions.create(
-            deployment_name=INTEGRATION_TEST_DEPLOYMENT_NAME,
+            deployment_name=DIAL_MODEL,
             stream=False,
             messages=[
                 {
