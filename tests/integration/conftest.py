@@ -40,15 +40,6 @@ def async_client(dial_url, dial_api_key):
 
 
 @pytest.fixture
-def test_deployment(sync_client: Dial) -> str:
-    deployments = sync_client.deployments.list()
-    assert len(deployments)
-    deployment = next(d for d in deployments if d.id.startswith("gpt-4o"))
-    assert deployment
-    return deployment.id
-
-
-@pytest.fixture
 def absent_test_file(sync_client):
     def _save_delete_file(p):
         with contextlib.suppress(ResourceNotFoundError):

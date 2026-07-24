@@ -4,9 +4,9 @@ from aidial_client import Dial
 from aidial_client._exception import DialException
 
 
-def test_completions_without_streaming(sync_client: Dial, test_deployment: str):
+def test_completions_without_streaming(sync_client: Dial, dial_model: str):
     completion = sync_client.chat.completions.create(
-        deployment_name=test_deployment,
+        deployment_name=dial_model,
         stream=False,
         messages=[
             {
@@ -61,13 +61,9 @@ def test_default_api_version(
     )
 
 
-def test_completions_with_streaming(sync_client: Dial):
-    deployments = sync_client.deployments.list()
-    assert len(deployments)
-    deployment = next(d for d in deployments if d.id.startswith("gpt-"))
-    assert deployment
+def test_completions_with_streaming(sync_client: Dial, dial_model: str):
     completion = sync_client.chat.completions.create(
-        deployment_name=deployment.id,
+        deployment_name=dial_model,
         stream=True,
         messages=[
             {
