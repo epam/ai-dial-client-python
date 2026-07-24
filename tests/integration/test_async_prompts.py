@@ -7,7 +7,6 @@ from aidial_client import AsyncDial
 from aidial_client._exception import EtagMismatchError, ResourceNotFoundError
 from aidial_client.types.metadata import PromptItem
 from aidial_client.types.prompt import Prompt
-from tests.integration.fixtures import *  # type: ignore # noqa
 
 PROMPT_FOLDER = "test-folder-artifacts"
 

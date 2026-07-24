@@ -11,15 +11,22 @@ from aidial_client._exception import ResourceNotFoundError
 @pytest.fixture
 def dial_url() -> str:
     url = os.getenv("DIAL_URL")
-    assert url
+    assert url, "DIAL_URL environment variable is not set"
     return url
 
 
 @pytest.fixture
 def dial_api_key() -> str:
     api_key = os.getenv("DIAL_API_KEY")
-    assert api_key
+    assert api_key, "DIAL_API_KEY environment variable is not set"
     return api_key
+
+
+@pytest.fixture
+def dial_model() -> str:
+    model = os.getenv("DIAL_MODEL")
+    assert model, "DIAL_MODEL environment variable is not set"
+    return model
 
 
 @pytest.fixture

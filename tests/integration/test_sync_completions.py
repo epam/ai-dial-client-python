@@ -2,8 +2,6 @@ import pytest
 
 from aidial_client import Dial
 from aidial_client._exception import DialException
-from tests.integration.configuration import DIAL_MODEL
-from tests.integration.fixtures import *  # type: ignore # noqa
 
 
 def test_completions_without_streaming(sync_client: Dial, test_deployment: str):
@@ -33,11 +31,11 @@ def test_completions_without_streaming(sync_client: Dial, test_deployment: str):
 
 
 def test_default_api_version(
-    sync_client: Dial, dial_url: str, dial_api_key: str
+    sync_client: Dial, dial_url: str, dial_api_key: str, dial_model: str
 ):
     with pytest.raises(DialException):
         sync_client.chat.completions.create(
-            deployment_name=DIAL_MODEL,
+            deployment_name=dial_model,
             stream=False,
             messages=[
                 {
@@ -52,7 +50,7 @@ def test_default_api_version(
         api_version="2024-02-15-preview",
     )
     client_with_default_api_version.chat.completions.create(
-        deployment_name=DIAL_MODEL,
+        deployment_name=dial_model,
         stream=False,
         messages=[
             {

@@ -5,7 +5,6 @@ import pytest
 from aidial_client import AsyncDial, DialException
 from aidial_client._exception import EtagMismatchError
 from aidial_client.types.metadata import FileItem
-from tests.integration.fixtures import *  # type: ignore # noqa
 
 current_file_path = os.path.abspath(__file__)
 file_name = "test-file-async"
