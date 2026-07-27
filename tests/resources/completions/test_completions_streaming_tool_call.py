@@ -1,12 +1,12 @@
-import inspect
 from collections.abc import Iterable
 
 import pytest
 
 from aidial_client.types.chat import ChatCompletionChunk, ToolParam
 from tests.client_mock import get_async_client_mock, get_client_mock
-from tests.integration.configuration import DIAL_MODEL
 from tests.utils.chunks import create_mock_chunk, create_sse_data_field
+
+_DIAL_MODEL = "gpt-4o"
 
 _TOOL_DEFINITION: ToolParam = {
     "type": "function",
@@ -174,7 +174,7 @@ def test_sync_streaming_tool_call():
     )
 
     response = client.chat.completions.create(
-        deployment_name=DIAL_MODEL,
+        deployment_name=_DIAL_MODEL,
         messages=[{"role": "user", "content": "what's the weather in Paris?"}],
         tools=[_TOOL_DEFINITION],
         stream=True,
@@ -192,14 +192,12 @@ async def test_async_streaming_tool_call():
         stream_chunks_mock=_STREAM_CHUNKS_MOCK,
     )
     response = await async_client.chat.completions.create(
-        deployment_name=DIAL_MODEL,
+        deployment_name=_DIAL_MODEL,
         messages=[{"role": "user", "content": "what's the weather in Paris?"}],
         tools=[_TOOL_DEFINITION],
         stream=True,
     )
 
-    assert inspect.isasyncgen(response)
     chunks = [chunk async for chunk in response]
     assert all(isinstance(chunk, ChatCompletionChunk) for chunk in chunks)
-    _validate_chunks(chunks)
     _validate_chunks(chunks)

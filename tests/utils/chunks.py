@@ -1,7 +1,5 @@
 import json
 
-from tests.integration.configuration import DIAL_MODEL
-
 
 def create_mock_chunk(
     *,
@@ -20,7 +18,7 @@ def create_mock_chunk(
             }
         ],
         "created": 1723806872,
-        "model": DIAL_MODEL,
+        "model": "gpt-4o",
         "object": "chat.completion.chunk",
         "system_fingerprint": None,
         **({} if usage is None else {"usage": usage}),

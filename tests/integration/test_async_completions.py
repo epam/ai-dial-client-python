@@ -105,9 +105,7 @@ async def test_completions_with_streaming(
 
 
 @pytest.mark.asyncio
-async def test_error_during_streaming(
-    async_client: AsyncDial, dial_model: str
-):
+async def test_error_during_streaming(async_client: AsyncDial, dial_model: str):
     completion = await async_client.chat.completions.create(
         deployment_name=dial_model,
         stream=True,
