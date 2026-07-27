@@ -22,7 +22,7 @@
     - [List Deployments](#list-deployments)
     - [Get Deployment by Id](#get-deployment-by-id)
     - [Get Deployment Configuration](#get-deployment-configuration)
-  - [Make Chat Completions Requests](#make-completions-requests)
+  - [Make Chat Completions Requests](#make-chat-completions-requests)
     - [Without Streaming](#without-streaming)
     - [With Streaming](#with-streaming)
   - [Working with Files](#working-with-files)
@@ -30,10 +30,13 @@
     - [Uploading Files](#uploading-files)
     - [Downloading Files](#downloading-files)
     - [Deleting Files](#deleting-files)
+    - [Moving and Copying Files](#moving-and-copying-files)
     - [Accessing Metadata](#accessing-metadata)
   - [Prompts](#prompts)
+    - [Save Prompt](#save-prompt)
     - [Get Prompt](#get-prompt)
     - [Get Prompt Metadata](#get-prompt-metadata)
+    - [Delete Prompt](#delete-prompt)
   - [Applications](#applications)
     - [List Applications](#list-applications)
     - [Get Application by Id](#get-application-by-id)
@@ -53,8 +56,9 @@
 - [Development](#development)
   - [Pre-requisites](#pre-requisites)
   - [Setup](#setup)
-  - [Main commands](#main-commands)
   - [Git hooks](#git-hooks)
+  - [Main commands](#main-commands)
+  - [Integration tests](#integration-tests)
 
 ## Usage
 
@@ -284,7 +288,7 @@ The response is a plain `dict` whose shape is entirely deployment-specific:
 }
 ```
 
-### Make Completions Requests
+### Make Chat Completions Requests
 
 #### Without Streaming
 
@@ -1148,3 +1152,13 @@ make install_git_hooks
 | `make integration_test`   | Run integration tests                         |
 | `make coverage`           | Generate test coverage report                 |
 | `make help`               | Show available commands                       |
+
+### Integration tests
+
+`make integration_test` runs against a real DIAL deployment and requires the following environment variables:
+
+| Variable       | Description                                        |
+|----------------|----------------------------------------------------|
+| `DIAL_URL`     | Base URL of the DIAL Core service                  |
+| `DIAL_API_KEY` | API key used to authenticate requests in DIAL Core |
+| `DIAL_MODEL`   | Name of a chat model deployment to run tests with  |
