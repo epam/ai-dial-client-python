@@ -189,7 +189,9 @@ class DialStorageResourceMixin(BaseModel):
         url: str | PurePosixPath,
         etag_if_match: str | None,
     ) -> tuple[FinalRequestOptions, str]:
-        storage_resource = self.get_storage_resource(str(url))
+        storage_resource = self.get_storage_resource(
+            percent_encode_resource_url(str(url))
+        )
 
         if storage_resource.filename is None:
             raise InvalidDialURLError("URL points to a directory, not a file")
@@ -204,4 +206,5 @@ class DialStorageResourceMixin(BaseModel):
             ),
         )
 
-        return options, storage_resource.filename
+        # api_path is percent-encoded; return a human-readable filename.
+        return options, unquote(storage_resource.filename)

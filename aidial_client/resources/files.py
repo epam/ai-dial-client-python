@@ -2,7 +2,7 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import PurePosixPath
 from typing import Literal
-from urllib.parse import unquote, urljoin
+from urllib.parse import urljoin
 
 import httpx
 
@@ -18,26 +18,11 @@ from aidial_client._internal_types._http_request import (
     FinalRequestOptions,
 )
 from aidial_client._utils._dict import remove_none
-from aidial_client.helpers.storage_resource import (
-    DialStorageResourceMixin,
-    percent_encode_resource_url,
-)
+from aidial_client.helpers.storage_resource import DialStorageResourceMixin
 from aidial_client.resources.base import AsyncResource, Resource
 from aidial_client.resources.metadata import AsyncMetadata, Metadata
 from aidial_client.types.file import FileDownloadResponse
 from aidial_client.types.metadata import FileItem, FileMetadata
-
-
-def _prepare_file_download(
-    resource: DialStorageResourceMixin,
-    url: str | PurePosixPath,
-    etag_if_match: str | None,
-) -> tuple[FinalRequestOptions, str]:
-    """Build a download request from an encoded path, decoded filename."""
-    options, filename = resource._prepare_download_request(
-        percent_encode_resource_url(str(url)), etag_if_match
-    )
-    return options, unquote(filename)
 
 
 def _move_copy_body(
@@ -99,7 +84,7 @@ class Files(Resource, DialStorageResourceMixin):
         url: str | PurePosixPath,
         etag_if_match: str | None = None,
     ) -> FileDownloadResponse:
-        options, filename = _prepare_file_download(self, url, etag_if_match)
+        options, filename = self._prepare_download_request(url, etag_if_match)
         response = self.http_client.request(
             cast_to=httpx.Response,
             options=options,
@@ -205,7 +190,7 @@ class AsyncFiles(AsyncResource, DialStorageResourceMixin):
         url: str | PurePosixPath,
         etag_if_match: str | None = None,
     ) -> FileDownloadResponse:
-        options, filename = _prepare_file_download(self, url, etag_if_match)
+        options, filename = self._prepare_download_request(url, etag_if_match)
         response = await self.http_client.request(
             cast_to=httpx.Response,
             options=options,
@@ -219,7 +204,7 @@ class AsyncFiles(AsyncResource, DialStorageResourceMixin):
         url: str | PurePosixPath,
         etag_if_match: str | None = None,
     ) -> AsyncIterator[FileDownloadResponse]:
-        options, filename = _prepare_file_download(self, url, etag_if_match)
+        options, filename = self._prepare_download_request(url, etag_if_match)
         async with self.http_client.stream(
             options=options,
             on_http_error=_files_error_processor,
