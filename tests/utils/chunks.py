@@ -18,7 +18,7 @@ def create_mock_chunk(
             }
         ],
         "created": 1723806872,
-        "model": "gpt-35-turbo",
+        "model": "gpt-4o",
         "object": "chat.completion.chunk",
         "system_fingerprint": None,
         **({} if usage is None else {"usage": usage}),

@@ -11,15 +11,22 @@ from aidial_client._exception import ResourceNotFoundError
 @pytest.fixture
 def dial_url() -> str:
     url = os.getenv("DIAL_URL")
-    assert url
+    assert url, "DIAL_URL environment variable is not set"
     return url
 
 
 @pytest.fixture
 def dial_api_key() -> str:
     api_key = os.getenv("DIAL_API_KEY")
-    assert api_key
+    assert api_key, "DIAL_API_KEY environment variable is not set"
     return api_key
+
+
+@pytest.fixture
+def dial_model() -> str:
+    model = os.getenv("DIAL_MODEL")
+    assert model, "DIAL_MODEL environment variable is not set"
+    return model
 
 
 @pytest.fixture
@@ -30,15 +37,6 @@ def sync_client(dial_url, dial_api_key):
 @pytest.fixture
 def async_client(dial_url, dial_api_key):
     return AsyncDial(base_url=dial_url, api_key=dial_api_key)
-
-
-@pytest.fixture
-def test_deployment(sync_client: Dial) -> str:
-    deployments = sync_client.deployments.list()
-    assert len(deployments)
-    deployment = next(d for d in deployments if d.id.startswith("gpt-"))
-    assert deployment
-    return deployment.id
 
 
 @pytest.fixture

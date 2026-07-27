@@ -2,12 +2,11 @@ import pytest
 
 from aidial_client import Dial
 from aidial_client._exception import DialException
-from tests.integration.fixtures import *  # type: ignore # noqa
 
 
-def test_completions_without_streaming(sync_client: Dial, test_deployment: str):
+def test_completions_without_streaming(sync_client: Dial, dial_model: str):
     completion = sync_client.chat.completions.create(
-        deployment_name=test_deployment,
+        deployment_name=dial_model,
         stream=False,
         messages=[
             {
@@ -31,12 +30,10 @@ def test_completions_without_streaming(sync_client: Dial, test_deployment: str):
     )
 
 
-def test_default_api_version(
-    sync_client: Dial, dial_url: str, dial_api_key: str
-):
+def test_missing_api_version_raises(sync_client: Dial, dial_model: str):
     with pytest.raises(DialException):
         sync_client.chat.completions.create(
-            deployment_name="gpt-35-turbo",
+            deployment_name=dial_model,
             stream=False,
             messages=[
                 {
@@ -45,13 +42,18 @@ def test_default_api_version(
                 }
             ],
         )
+
+
+def test_client_default_api_version(
+    dial_url: str, dial_api_key: str, dial_model: str
+):
     client_with_default_api_version = Dial(
         base_url=dial_url,
         api_key=dial_api_key,
         api_version="2024-02-15-preview",
     )
     client_with_default_api_version.chat.completions.create(
-        deployment_name="gpt-35-turbo",
+        deployment_name=dial_model,
         stream=False,
         messages=[
             {
@@ -62,13 +64,9 @@ def test_default_api_version(
     )
 
 
-def test_completions_with_streaming(sync_client: Dial):
-    deployments = sync_client.deployments.list()
-    assert len(deployments)
-    deployment = next(d for d in deployments if d.id.startswith("gpt-"))
-    assert deployment
+def test_completions_with_streaming(sync_client: Dial, dial_model: str):
     completion = sync_client.chat.completions.create(
-        deployment_name=deployment.id,
+        deployment_name=dial_model,
         stream=True,
         messages=[
             {

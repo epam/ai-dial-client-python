@@ -15,51 +15,55 @@
 
 - [Usage](#usage)
   - [Authentication](#authentication)
-      - [API Keys](#api-keys)
-      - [Bearer Token](#bearer-token)
+    - [API Keys](#api-keys)
+    - [Bearer Token](#bearer-token)
   - [Lifecycle Management](#lifecycle-management)
   - [Deployments](#deployments)
-      - [List Deployments](#list-deployments)
-      - [Get Deployment by Id](#get-deployment-by-id)
-      - [Get Deployment Configuration](#get-deployment-configuration)
-  - [Make Chat Completions Requests](#make-completions-requests)
-      - [Without Streaming](#without-streaming)
-      - [With Streaming](#with-streaming)
+    - [List Deployments](#list-deployments)
+    - [Get Deployment by Id](#get-deployment-by-id)
+    - [Get Deployment Configuration](#get-deployment-configuration)
+  - [Make Chat Completions Requests](#make-chat-completions-requests)
+    - [Without Streaming](#without-streaming)
+    - [With Streaming](#with-streaming)
   - [Working with Files](#working-with-files)
-      - [Working with URLs](#working-with-urls)
-      - [Uploading Files](#uploading-files)
-      - [Downloading Files](#downloading-files)
-      - [Deleting Files](#deleting-files)
-      - [Accessing Metadata](#accessing-metadata)
+    - [Working with URLs](#working-with-urls)
+    - [Uploading Files](#uploading-files)
+    - [Downloading Files](#downloading-files)
+    - [Deleting Files](#deleting-files)
+    - [Moving and Copying Files](#moving-and-copying-files)
+    - [Accessing Metadata](#accessing-metadata)
   - [Prompts](#prompts)
-      - [Get Prompt](#get-prompt)
-      - [Get Prompt Metadata](#get-prompt-metadata)
+    - [Save Prompt](#save-prompt)
+    - [Get Prompt](#get-prompt)
+    - [Get Prompt Metadata](#get-prompt-metadata)
+    - [Delete Prompt](#delete-prompt)
   - [Applications](#applications)
-      - [List Applications](#list-applications)
-      - [Get Application by Id](#get-application-by-id)
+    - [List Applications](#list-applications)
+    - [Get Application by Id](#get-application-by-id)
   - [Models](#models)
-      - [Get Model by Name](#get-model-by-name)
+    - [Get Model by Name](#get-model-by-name)
   - [User](#user)
-      - [Get Authenticated User Info](#get-authenticated-user-info)
+    - [Get Authenticated User Info](#get-authenticated-user-info)
   - [Toolsets](#toolsets)
-      - [Get Toolset by Id](#get-toolset-by-id)
+    - [Get Toolset by Id](#get-toolset-by-id)
   - [Resource Permissions](#resource-permissions)
-      - [Grant Permissions](#grant-permissions)
+    - [Grant Permissions](#grant-permissions)
   - [Client Channel](#client-channel)
-      - [Sign In to Toolsets](#sign-in-to-toolsets)
+    - [Sign In to Toolsets](#sign-in-to-toolsets)
   - [Client Pool](#client-pool)
-      - [Synchronous Client Pool](#synchronous-client-pool)
-      - [Asynchronous Client Pool](#asynchronous-client-pool)
+    - [Synchronous Client Pool](#synchronous-client-pool)
+    - [Asynchronous Client Pool](#asynchronous-client-pool)
 - [Development](#development)
   - [Pre-requisites](#pre-requisites)
   - [Setup](#setup)
-  - [Main commands](#main-commands)
   - [Git hooks](#git-hooks)
+  - [Main commands](#main-commands)
+  - [Integration tests](#integration-tests)
 
 ## Usage
 
-This section outlines how to use the AI DIAL Python client to interact with the DIAL Core API. 
-It covers authentication methods, making chat completion requests, working with files, managing applications, 
+This section outlines how to use the AI DIAL Python client to interact with the DIAL Core API.
+It covers authentication methods, making chat completion requests, working with files, managing applications,
 and utilizing client pools for efficient connection management.
 
 ### Authentication
@@ -284,7 +288,7 @@ The response is a plain `dict` whose shape is entirely deployment-specific:
 }
 ```
 
-### Make Completions Requests
+### Make Chat Completions Requests
 
 #### Without Streaming
 
@@ -466,8 +470,8 @@ ChatCompletionChunk(
 
 Files are AI DIAL resources that operate with URL-like objects. Use `pathlib.PurePosixPath` or `str` to create to create new URL-like objects or to get a `string` representation of them.
 
-* Use `client.my_files_home()` to upload a file into your bucket in the AI DIAL storage.
-* Use `await async_client.my_files_home()` to get the URL of your bucket and then use it to upload files.
+- Use `client.my_files_home()` to upload a file into your bucket in the AI DIAL storage.
+- Use `await async_client.my_files_home()` to get the URL of your bucket and then use it to upload files.
 
 The following example demonstrates how you can use the path-like object returned by `my_files_home()` function:
 
@@ -601,7 +605,6 @@ await result.awrite_to("./some-local-file.txt")
 #### Deleting Files
 
 Use `delete()` to remove files from your storage bucket:
-
 
 ```python
 await sync_client.files.delete(
@@ -1095,7 +1098,6 @@ second_client = client_pool.create_client(
 )
 ```
 
-
 ## Development
 
 To set up the development environment and run the project, follow the instructions below.
@@ -1106,18 +1108,21 @@ The following tools are required to work with the project:
 
 1. `Make`
 2. `Python 3.10`
-3. `Poetry 2.*`. Installation guidance can be found [here](https://python-poetry.org/docs/#installation)
+3. `Poetry 2.*`. See the [Poetry installation guide](https://python-poetry.org/docs/#installation)
 
 ### Setup
 
 1. Create `.env` file in the root of the project. Copy `.env.template` file data to the `.env` and customize the values
    if needed. You can customize python and poetry locations.
 2. Create and activate virtual environment
+
     ```bash
     make init_env
     source .venv/bin/activate
     ```
+
 3. Install dependencies
+
     ```bash
     make install
     ```
@@ -1147,3 +1152,13 @@ make install_git_hooks
 | `make integration_test`   | Run integration tests                         |
 | `make coverage`           | Generate test coverage report                 |
 | `make help`               | Show available commands                       |
+
+### Integration tests
+
+`make integration_test` runs against a real DIAL deployment and requires the following environment variables:
+
+| Variable       | Description                                        |
+|----------------|----------------------------------------------------|
+| `DIAL_URL`     | Base URL of the DIAL Core service                  |
+| `DIAL_API_KEY` | API key used to authenticate requests in DIAL Core |
+| `DIAL_MODEL`   | Name of a chat model deployment to run tests with  |

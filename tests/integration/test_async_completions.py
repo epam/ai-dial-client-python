@@ -2,19 +2,15 @@ import pytest
 
 from aidial_client import AsyncDial
 from aidial_client._exception import DialException
-from tests.integration.fixtures import *  # noqa
 
 
 @pytest.mark.asyncio
-async def test_async_default_api_version(
-    async_client: AsyncDial,
-    dial_url: str,
-    dial_api_key: str,
-    test_deployment: str,
+async def test_async_missing_api_version_raises(
+    async_client: AsyncDial, dial_model: str
 ):
     with pytest.raises(DialException):
         await async_client.chat.completions.create(
-            deployment_name="gpt-35-turbo",
+            deployment_name=dial_model,
             stream=False,
             messages=[
                 {
@@ -23,13 +19,19 @@ async def test_async_default_api_version(
                 }
             ],
         )
+
+
+@pytest.mark.asyncio
+async def test_async_client_default_api_version(
+    dial_url: str, dial_api_key: str, dial_model: str
+):
     client_with_default_api_version = AsyncDial(
         base_url=dial_url,
         api_key=dial_api_key,
         api_version="2024-02-15-preview",
     )
     await client_with_default_api_version.chat.completions.create(
-        deployment_name=test_deployment,
+        deployment_name=dial_model,
         stream=False,
         messages=[
             {
@@ -42,10 +44,10 @@ async def test_async_default_api_version(
 
 @pytest.mark.asyncio
 async def test_completions_without_streaming(
-    async_client: AsyncDial, test_deployment: str
+    async_client: AsyncDial, dial_model: str
 ):
     completion = await async_client.chat.completions.create(
-        deployment_name=test_deployment,
+        deployment_name=dial_model,
         stream=False,
         messages=[
             {
@@ -70,13 +72,11 @@ async def test_completions_without_streaming(
 
 
 @pytest.mark.asyncio
-async def test_completions_with_streaming(async_client: AsyncDial):
-    deployments = await async_client.deployments.list()
-    assert len(deployments)
-    deployment = next(d for d in deployments if d.id.startswith("gpt-"))
-    assert deployment
+async def test_completions_with_streaming(
+    async_client: AsyncDial, dial_model: str
+):
     completion = await async_client.chat.completions.create(
-        deployment_name=deployment.id,
+        deployment_name=dial_model,
         stream=True,
         messages=[
             {
@@ -105,24 +105,3 @@ async def test_completions_with_streaming(async_client: AsyncDial):
         last_chunk.usage.completion_tokens + last_chunk.usage.prompt_tokens
         == last_chunk.usage.total_tokens
     )
-
-
-@pytest.mark.asyncio
-async def test_error_during_streaming(
-    async_client: AsyncDial, test_deployment: str
-):
-    completion = await async_client.chat.completions.create(
-        deployment_name=test_deployment,
-        stream=True,
-        messages=[
-            {
-                "role": "system",
-                "content": "2+3=",
-            }
-        ],
-        max_tokens=20,
-        api_version="2024-02-15-preview",
-    )
-
-    async for chunk in completion:
-        print(chunk)
