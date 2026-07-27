@@ -30,9 +30,7 @@ def test_completions_without_streaming(sync_client: Dial, dial_model: str):
     )
 
 
-def test_default_api_version(
-    sync_client: Dial, dial_url: str, dial_api_key: str, dial_model: str
-):
+def test_missing_api_version_raises(sync_client: Dial, dial_model: str):
     with pytest.raises(DialException):
         sync_client.chat.completions.create(
             deployment_name=dial_model,
@@ -44,6 +42,11 @@ def test_default_api_version(
                 }
             ],
         )
+
+
+def test_client_default_api_version(
+    dial_url: str, dial_api_key: str, dial_model: str
+):
     client_with_default_api_version = Dial(
         base_url=dial_url,
         api_key=dial_api_key,

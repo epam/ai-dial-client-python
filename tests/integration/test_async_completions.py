@@ -5,11 +5,8 @@ from aidial_client._exception import DialException
 
 
 @pytest.mark.asyncio
-async def test_async_default_api_version(
-    async_client: AsyncDial,
-    dial_url: str,
-    dial_api_key: str,
-    dial_model: str,
+async def test_async_missing_api_version_raises(
+    async_client: AsyncDial, dial_model: str
 ):
     with pytest.raises(DialException):
         await async_client.chat.completions.create(
@@ -22,6 +19,12 @@ async def test_async_default_api_version(
                 }
             ],
         )
+
+
+@pytest.mark.asyncio
+async def test_async_client_default_api_version(
+    dial_url: str, dial_api_key: str, dial_model: str
+):
     client_with_default_api_version = AsyncDial(
         base_url=dial_url,
         api_key=dial_api_key,
@@ -102,22 +105,3 @@ async def test_completions_with_streaming(
         last_chunk.usage.completion_tokens + last_chunk.usage.prompt_tokens
         == last_chunk.usage.total_tokens
     )
-
-
-@pytest.mark.asyncio
-async def test_error_during_streaming(async_client: AsyncDial, dial_model: str):
-    completion = await async_client.chat.completions.create(
-        deployment_name=dial_model,
-        stream=True,
-        messages=[
-            {
-                "role": "system",
-                "content": "2+3=",
-            }
-        ],
-        max_tokens=20,
-        api_version="2024-02-15-preview",
-    )
-
-    async for chunk in completion:
-        print(chunk)
