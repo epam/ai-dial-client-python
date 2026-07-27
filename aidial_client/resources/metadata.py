@@ -6,7 +6,10 @@ from typing_extensions import assert_never
 from aidial_client._constants import METADATA_PREFIX
 from aidial_client._internal_types._http_request import FinalRequestOptions
 from aidial_client._utils._dict import remove_none
-from aidial_client.helpers.storage_resource import StorageResourceType
+from aidial_client.helpers.storage_resource import (
+    StorageResourceType,
+    percent_encode_resource_url,
+)
 from aidial_client.resources.base import AsyncResource, Resource
 from aidial_client.types.metadata import (
     ConversationMetadata,
@@ -71,7 +74,10 @@ class Metadata(Resource):
             cast_to=_get_cast_to(resource),
             options=FinalRequestOptions(
                 method="GET",
-                url=urljoin(METADATA_PREFIX, relative_url),
+                url=urljoin(
+                    METADATA_PREFIX,
+                    percent_encode_resource_url(relative_url),
+                ),
                 params=remove_none({"limit": limit, "token": token}),
             ),
         )
@@ -120,7 +126,10 @@ class AsyncMetadata(AsyncResource):
             cast_to=_get_cast_to(resource),
             options=FinalRequestOptions(
                 method="GET",
-                url=urljoin(METADATA_PREFIX, relative_url),
+                url=urljoin(
+                    METADATA_PREFIX,
+                    percent_encode_resource_url(relative_url),
+                ),
                 params=remove_none({"limit": limit, "token": token}),
             ),
         )

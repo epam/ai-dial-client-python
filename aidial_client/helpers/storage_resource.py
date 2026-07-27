@@ -1,6 +1,6 @@
 from pathlib import PurePosixPath
 from typing import Literal, cast, get_args
-from urllib.parse import urljoin, urlparse
+from urllib.parse import quote, unquote, urljoin, urlparse, urlsplit
 
 from aidial_client._compatibility.pydantic_v1 import BaseModel
 from aidial_client._constants import API_PREFIX
@@ -10,6 +10,22 @@ from aidial_client._utils._dict import remove_none
 from aidial_client.helpers._url import enforce_trailing_slash
 
 StorageResourceType = Literal["files", "conversations", "prompts"]
+
+
+def percent_encode_resource_url(url: str) -> str:
+    """
+    Percent-encode each path segment so reserved characters (space, ``#``,
+    ``?``, ``[`` …) reach DIAL Core encoded instead of making it answer 500.
+    Segments are decoded first, so a decoded path (``my file.txt``) and an
+    already-encoded one (``my%20file.txt``, as returned by the API) converge
+    without double-encoding. Absolute URLs come from the API already encoded and
+    are returned untouched.
+    """
+    if urlsplit(url).netloc:
+        return url
+
+    segments = url.split("/")
+    return "/".join(quote(unquote(seg), safe="") for seg in segments)
 
 
 def _is_directory(s: str) -> bool:
@@ -152,6 +168,15 @@ class DialStorageResourceMixin(BaseModel):
         Convert URL, that could relative or absolute, to relative URL
         """
         return self.get_storage_resource(url).api_path
+
+    def get_encoded_api_path(self, url: str) -> str:
+        """
+        Relative api path with every segment percent-encoded for the wire.
+
+        Encodes before parsing so reserved characters (notably ``#`` and ``?``,
+        which ``urlparse`` would otherwise drop as fragment/query) survive.
+        """
+        return self.get_api_path(percent_encode_resource_url(url))
 
     def get_display_name(self, url: str) -> str:
         """

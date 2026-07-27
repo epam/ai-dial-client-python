@@ -1,5 +1,8 @@
 from aidial_client._internal_types._generic import NoneType
 from aidial_client._internal_types._http_request import FinalRequestOptions
+from aidial_client.helpers.storage_resource import (
+    percent_encode_resource_url,
+)
 from aidial_client.resources.base import AsyncResource, Resource
 
 _GRANT_URL = "v1/ops/resource/per-request-permissions/grant"
@@ -21,7 +24,10 @@ class ResourcePermissions(Resource):
                 url=_GRANT_URL,
                 json_data={
                     "resourcePermissions": [
-                        {"url": url, "permissions": permissions}
+                        {
+                            "url": percent_encode_resource_url(url),
+                            "permissions": permissions,
+                        }
                         for url in resources
                     ],
                     "receiver": receiver,
@@ -46,7 +52,10 @@ class AsyncResourcePermissions(AsyncResource):
                 url=_GRANT_URL,
                 json_data={
                     "resourcePermissions": [
-                        {"url": url, "permissions": permissions}
+                        {
+                            "url": percent_encode_resource_url(url),
+                            "permissions": permissions,
+                        }
                         for url in resources
                     ],
                     "receiver": receiver,

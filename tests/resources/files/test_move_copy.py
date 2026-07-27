@@ -103,6 +103,70 @@ def test_accepts_pureposixpath_and_absolute_urls(method: str):
     assert body["destinationUrl"] == "files/test-bucket/final/file.txt"
 
 
+# Every reserved character must reach DIAL Core percent-encoded, otherwise
+# `new URI(...)` on the server throws and it answers 500. `#` and `?` also must
+# survive (a naive urlparse would drop them as fragment/query).
+RESERVED_CASES = [
+    ("my file.txt", "my%20file.txt"),
+    ("50% off.txt", "50%25%20off.txt"),
+    ("a#b.txt", "a%23b.txt"),
+    ("a?b.txt", "a%3Fb.txt"),
+    ("a&b.txt", "a%26b.txt"),
+    ("tag[1].txt", "tag%5B1%5D.txt"),
+    ("naïve.txt", "na%C3%AFve.txt"),
+]
+parametrize_reserved = pytest.mark.parametrize("raw, encoded", RESERVED_CASES)
+
+
+@parametrize_method
+@parametrize_reserved
+def test_encodes_reserved_characters_in_body(
+    method: str, raw: str, encoded: str
+):
+    captured: list[httpx.Request] = []
+    client = _make_capturing_client(captured)
+
+    getattr(client.files, method)(
+        source=f"files/test-bucket/{raw}",
+        destination="files/test-bucket/dst.txt",
+    )
+
+    assert _body(captured[0])["sourceUrl"] == f"files/test-bucket/{encoded}"
+
+
+@parametrize_method
+@parametrize_reserved
+@pytest.mark.asyncio
+async def test_async_encodes_reserved_characters_in_body(
+    method: str, raw: str, encoded: str
+):
+    captured: list[httpx.Request] = []
+    client = _make_async_capturing_client(captured)
+
+    await getattr(client.files, method)(
+        source=f"files/test-bucket/{raw}",
+        destination="files/test-bucket/dst.txt",
+    )
+
+    assert _body(captured[0])["sourceUrl"] == f"files/test-bucket/{encoded}"
+
+
+@parametrize_method
+def test_already_encoded_input_is_not_double_encoded(method: str):
+    captured: list[httpx.Request] = []
+    client = _make_capturing_client(captured)
+
+    # A url as returned by the API (percent-encoded) must round-trip unchanged.
+    getattr(client.files, method)(
+        source="files/test-bucket/my%20file.txt",
+        destination="files/test-bucket/50%25%20off.txt",
+    )
+
+    body = _body(captured[0])
+    assert body["sourceUrl"] == "files/test-bucket/my%20file.txt"
+    assert body["destinationUrl"] == "files/test-bucket/50%25%20off.txt"
+
+
 @parametrize_method
 @pytest.mark.parametrize(
     "bad_arg",
