@@ -1,13 +1,35 @@
-from typing import Literal
+from typing import Any, Literal
 
 from typing_extensions import Required, TypedDict
 
+from aidial_client.types.chat.cache import CacheBreakpointParam
 from aidial_client.types.chat.function import FunctionCallParam
 from aidial_client.types.chat.tool import ToolCallParam
 
 
-class ResponseFormat(TypedDict, total=False):
-    type: Literal["json_object", "text"]
+class ResponseFormatText(TypedDict):
+    type: Literal["text"]
+
+
+class ResponseFormatJsonObject(TypedDict):
+    type: Literal["json_object"]
+
+
+class ResponseFormatJsonSchemaObject(TypedDict, total=False):
+    name: Required[str]
+    schema: Required[dict[str, Any]]
+    description: str | None
+    strict: bool | None
+
+
+class ResponseFormatJsonSchema(TypedDict):
+    type: Literal["json_schema"]
+    json_schema: ResponseFormatJsonSchemaObject
+
+
+ResponseFormat = (
+    ResponseFormatText | ResponseFormatJsonObject | ResponseFormatJsonSchema
+)
 
 
 class AttachmentParam(TypedDict, total=False):
@@ -19,49 +41,133 @@ class AttachmentParam(TypedDict, total=False):
     reference_url: str
 
 
+class StageParam(TypedDict, total=False):
+    name: Required[str]
+    status: Required[Literal["completed", "failed"]]
+    content: str | None
+    attachments: list[AttachmentParam] | None
+
+
 class CustomContentParam(TypedDict, total=False):
+    stages: list[StageParam] | None
     attachments: list[AttachmentParam] | None
     state: dict | None
+    form_value: Any | None
+    form_schema: Any | None
+
+
+class MessageCustomFieldsParam(TypedDict, total=False):
+    cache_breakpoint: CacheBreakpointParam | None
+
+
+class MessageContentTextPartParam(TypedDict):
+    type: Literal["text"]
+    text: str
+
+
+class ImageURLParam(TypedDict, total=False):
+    url: Required[str]
+    detail: Literal["auto", "low", "high"] | None
+
+
+class MessageContentImagePartParam(TypedDict):
+    type: Literal["image_url"]
+    image_url: ImageURLParam
+
+
+class InputFileParam(TypedDict, total=False):
+    file_data: str | None
+    file_id: str | None
+    filename: str | None
+
+
+class MessageContentFilePartParam(TypedDict):
+    type: Literal["file"]
+    file: InputFileParam
+
+
+class InputAudioParam(TypedDict):
+    data: str
+    """Either "wav", "mp3" or any other format supported by the model"""
+    format: str
+
+
+class MessageContentAudioPartParam(TypedDict):
+    type: Literal["input_audio"]
+    input_audio: InputAudioParam
+
+
+class MessageContentRefusalPartParam(TypedDict):
+    type: Literal["refusal"]
+    refusal: str
+
+
+MessageContentPartParam = (
+    MessageContentTextPartParam
+    | MessageContentImagePartParam
+    | MessageContentFilePartParam
+    | MessageContentAudioPartParam
+    | MessageContentRefusalPartParam
+)
+
+MessageContentParam = str | list[MessageContentPartParam]
 
 
 class SystemMessageParam(TypedDict, total=False):
     role: Required[Literal["system"]]
-    content: Required[str]
+    content: Required[MessageContentParam]
     custom_content: CustomContentParam | None
+    custom_fields: MessageCustomFieldsParam | None
+    name: str | None
+
+
+class DeveloperMessageParam(TypedDict, total=False):
+    role: Required[Literal["developer"]]
+    content: Required[MessageContentParam]
+    custom_content: CustomContentParam | None
+    custom_fields: MessageCustomFieldsParam | None
     name: str | None
 
 
 class UserMessageParam(TypedDict, total=False):
     role: Required[Literal["user"]]
-    content: Required[str]
+    content: Required[MessageContentParam]
     custom_content: CustomContentParam | None
+    custom_fields: MessageCustomFieldsParam | None
     name: str | None
 
 
 class AssistantMessageParam(TypedDict, total=False):
     role: Required[Literal["assistant"]]
-    content: str | None
+    content: MessageContentParam | None
     custom_content: CustomContentParam | None
+    custom_fields: MessageCustomFieldsParam | None
     function_call: FunctionCallParam | None
     tool_calls: list[ToolCallParam]
+    refusal: str | None
     name: str | None
 
 
 class ToolMessageParam(TypedDict, total=False):
     role: Required[Literal["tool"]]
-    content: Required[str]
+    content: Required[MessageContentParam]
     tool_call_id: Required[str]
+    custom_content: CustomContentParam | None
+    custom_fields: MessageCustomFieldsParam | None
 
 
 class FunctionMessageParam(TypedDict, total=False):
     role: Required[Literal["function"]]
-    content: Required[str]
+    content: Required[MessageContentParam]
     """Name of function call"""
     name: Required[str]
+    custom_content: CustomContentParam | None
+    custom_fields: MessageCustomFieldsParam | None
 
 
 Message = (
     SystemMessageParam
+    | DeveloperMessageParam
     | UserMessageParam
     | AssistantMessageParam
     | ToolMessageParam
