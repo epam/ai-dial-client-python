@@ -2,7 +2,10 @@ from typing import Any, Literal
 
 from typing_extensions import TypedDict
 
-from aidial_client.types.chat.cache import CacheBreakpointParam
+from aidial_client.types.chat.cache import (
+    CacheBreakpointParam,
+    PromptCacheOptionsParam,
+)
 from aidial_client.types.chat.function import (
     FunctionCallSpecParam,
     FunctionParam,
@@ -46,6 +49,8 @@ class ChatCompletionRequest(TypedDict, total=False):
     logprobs: bool | None
     top_logprobs: int | None
     reasoning_effort: ReasoningEffort | None
+    prompt_cache_key: str | None
+    prompt_cache_options: PromptCacheOptionsParam | None
     response_format: ResponseFormat | None
     tools: list[ToolParam | StaticToolParam] | None
     tool_choice: Literal["none", "auto", "required"] | ToolCallSpecParam | None

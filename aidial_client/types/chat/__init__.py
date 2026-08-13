@@ -1,4 +1,8 @@
-from .cache import CacheBreakpointParam
+from .cache import (
+    CacheBreakpointParam,
+    PromptCacheBreakpointParam,
+    PromptCacheOptionsParam,
+)
 from .function import FunctionCallSpecParam, FunctionParam
 from .request import (
     ChatCompletionRequest,
@@ -89,6 +93,8 @@ __all__ = [
     "MessageContentRefusalPartParam",
     "MessageContentTextPartParam",
     "MessageCustomFieldsParam",
+    "PromptCacheBreakpointParam",
+    "PromptCacheOptionsParam",
     "PromptTokensDetails",
     "ReasoningEffort",
     "ResponseFormat",

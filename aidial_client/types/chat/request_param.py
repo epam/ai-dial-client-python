@@ -2,7 +2,10 @@ from typing import Any, Literal
 
 from typing_extensions import Required, TypedDict
 
-from aidial_client.types.chat.cache import CacheBreakpointParam
+from aidial_client.types.chat.cache import (
+    CacheBreakpointParam,
+    PromptCacheBreakpointParam,
+)
 from aidial_client.types.chat.function import FunctionCallParam
 from aidial_client.types.chat.tool import ToolCallParam
 
@@ -60,9 +63,10 @@ class MessageCustomFieldsParam(TypedDict, total=False):
     cache_breakpoint: CacheBreakpointParam | None
 
 
-class MessageContentTextPartParam(TypedDict):
-    type: Literal["text"]
-    text: str
+class MessageContentTextPartParam(TypedDict, total=False):
+    type: Required[Literal["text"]]
+    text: Required[str]
+    prompt_cache_breakpoint: PromptCacheBreakpointParam | None
 
 
 class ImageURLParam(TypedDict, total=False):
@@ -70,9 +74,10 @@ class ImageURLParam(TypedDict, total=False):
     detail: Literal["auto", "low", "high"] | None
 
 
-class MessageContentImagePartParam(TypedDict):
-    type: Literal["image_url"]
-    image_url: ImageURLParam
+class MessageContentImagePartParam(TypedDict, total=False):
+    type: Required[Literal["image_url"]]
+    image_url: Required[ImageURLParam]
+    prompt_cache_breakpoint: PromptCacheBreakpointParam | None
 
 
 class InputFileParam(TypedDict, total=False):
@@ -81,9 +86,10 @@ class InputFileParam(TypedDict, total=False):
     filename: str | None
 
 
-class MessageContentFilePartParam(TypedDict):
-    type: Literal["file"]
-    file: InputFileParam
+class MessageContentFilePartParam(TypedDict, total=False):
+    type: Required[Literal["file"]]
+    file: Required[InputFileParam]
+    prompt_cache_breakpoint: PromptCacheBreakpointParam | None
 
 
 class InputAudioParam(TypedDict):
@@ -92,9 +98,10 @@ class InputAudioParam(TypedDict):
     format: str
 
 
-class MessageContentAudioPartParam(TypedDict):
-    type: Literal["input_audio"]
-    input_audio: InputAudioParam
+class MessageContentAudioPartParam(TypedDict, total=False):
+    type: Required[Literal["input_audio"]]
+    input_audio: Required[InputAudioParam]
+    prompt_cache_breakpoint: PromptCacheBreakpointParam | None
 
 
 class MessageContentRefusalPartParam(TypedDict):
