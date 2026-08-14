@@ -5,9 +5,9 @@ from aidial_client.types.deployment import Features
 class ToolsetInfo(ExtraAllowModel):
     id: str
     toolset: str
-    display_name: str | None = None
+    display_name: str | dict[str, str] | None = None
     display_version: str | None = None
-    description: str | None = None
+    description: str | dict[str, str] | None = None
     icon_url: str | None = None
     owner: str | None = None
     object: str | None = None
