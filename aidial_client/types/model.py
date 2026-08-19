@@ -32,8 +32,8 @@ class ModelPricing(ExtraAllowModel):
 class ModelInfo(ExtraAllowModel):
     id: str
     model: str
-    display_name: str | None = None
-    description: str | None = None
+    display_name: str | dict[str, str] | None = None
+    description: str | dict[str, str] | None = None
     owner: str | None = None
     object: str | None = None
     status: str | None = None
