@@ -40,8 +40,8 @@ class DeploymentBase(ExtraAllowModel):
     owner: str | None = None
     reference: str | None = None
     icon_url: str | None = None
-    description: str | None = None
-    display_name: str | None = None
+    description: str | dict[str, str] | None = None
+    display_name: str | dict[str, str] | None = None
     display_version: str | None = None
     status: str | None = None
     created_at: int
