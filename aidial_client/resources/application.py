@@ -19,7 +19,7 @@ class Application(Resource):
     def _list_raw(self) -> ApplicationsResponse:
         return self.http_client.request(
             cast_to=ApplicationsResponse,
-            options=FinalRequestOptions(method="GET", url=APPLICATION_PREFIX),
+            options=FinalRequestOptions(method="GET", url="openai/applications")
         )
 
     def list(self) -> list[ApplicationType]:
@@ -39,7 +39,7 @@ class AsyncApplication(AsyncResource):
     async def _list_raw(self) -> ApplicationsResponse:
         return await self.http_client.request(
             cast_to=ApplicationsResponse,
-            options=FinalRequestOptions(method="GET", url=APPLICATION_PREFIX),
+            options=FinalRequestOptions(method="GET", url="openai/applications")
         )
 
     async def list(self) -> list[ApplicationType]:
