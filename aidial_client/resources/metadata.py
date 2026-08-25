@@ -8,7 +8,7 @@ from aidial_client._internal_types._http_request import FinalRequestOptions
 from aidial_client._utils._dict import remove_none
 from aidial_client.helpers.storage_resource import (
     StorageResourceType,
-    percent_encode_resource_url,
+    _percent_encode_relative_url,
 )
 from aidial_client.resources.base import AsyncResource, Resource
 from aidial_client.types.metadata import (
@@ -76,7 +76,7 @@ class Metadata(Resource):
                 method="GET",
                 url=urljoin(
                     METADATA_PREFIX,
-                    percent_encode_resource_url(relative_url),
+                    _percent_encode_relative_url(relative_url),
                 ),
                 params=remove_none({"limit": limit, "token": token}),
             ),
@@ -128,7 +128,7 @@ class AsyncMetadata(AsyncResource):
                 method="GET",
                 url=urljoin(
                     METADATA_PREFIX,
-                    percent_encode_resource_url(relative_url),
+                    _percent_encode_relative_url(relative_url),
                 ),
                 params=remove_none({"limit": limit, "token": token}),
             ),

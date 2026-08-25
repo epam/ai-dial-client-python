@@ -32,8 +32,8 @@ def _move_copy_body(
     overwrite: bool,
 ) -> dict[str, object]:
     return {
-        "sourceUrl": resource.get_encoded_api_path(str(source)),
-        "destinationUrl": resource.get_encoded_api_path(str(destination)),
+        "sourceUrl": resource.get_api_path(source),
+        "destinationUrl": resource.get_api_path(destination),
         "overwrite": overwrite,
     }
 
@@ -67,7 +67,7 @@ class Files(Resource, DialStorageResourceMixin):
             cast_to=FileItem,
             options=FinalRequestOptions(
                 method="PUT",
-                url=urljoin(API_PREFIX, self.get_encoded_api_path(str(url))),
+                url=urljoin(API_PREFIX, self.get_api_path(url)),
                 files={"file": file},
                 headers=remove_none(
                     {
@@ -101,7 +101,7 @@ class Files(Resource, DialStorageResourceMixin):
             cast_to=NoneType,
             options=FinalRequestOptions(
                 method="DELETE",
-                url=urljoin(API_PREFIX, self.get_encoded_api_path(str(url))),
+                url=urljoin(API_PREFIX, self.get_api_path(url)),
                 headers=remove_none(
                     {
                         "If-Match": etag_if_match,
@@ -152,7 +152,7 @@ class Files(Resource, DialStorageResourceMixin):
     ) -> FileMetadata:
         return self.metadata.get(
             resource="files",
-            relative_url=self.get_encoded_api_path(str(url)),
+            relative_url=self.get_api_path(url),
             limit=limit,
             token=token,
         )
@@ -173,7 +173,7 @@ class AsyncFiles(AsyncResource, DialStorageResourceMixin):
             cast_to=FileItem,
             options=FinalRequestOptions(
                 method="PUT",
-                url=urljoin(API_PREFIX, self.get_encoded_api_path(str(url))),
+                url=urljoin(API_PREFIX, self.get_api_path(url)),
                 files={"file": file},
                 headers=remove_none(
                     {
@@ -220,7 +220,7 @@ class AsyncFiles(AsyncResource, DialStorageResourceMixin):
             cast_to=NoneType,
             options=FinalRequestOptions(
                 method="DELETE",
-                url=urljoin(API_PREFIX, self.get_encoded_api_path(str(url))),
+                url=urljoin(API_PREFIX, self.get_api_path(url)),
                 headers=remove_none(
                     {
                         "If-Match": etag_if_match,
@@ -271,7 +271,7 @@ class AsyncFiles(AsyncResource, DialStorageResourceMixin):
     ) -> FileMetadata:
         return await self.metadata.get(
             resource="files",
-            relative_url=self.get_encoded_api_path(str(url)),
+            relative_url=self.get_api_path(url),
             limit=limit,
             token=token,
         )

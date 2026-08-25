@@ -12,7 +12,7 @@ from aidial_client.helpers._url import enforce_trailing_slash
 StorageResourceType = Literal["files", "conversations", "prompts"]
 
 
-def percent_encode_resource_url(url: str) -> str:
+def _percent_encode_relative_url(url: str) -> str:
     """
     Percent-encode each path segment so reserved characters (space, ``#``,
     ``?``, ``[`` …) reach DIAL Core encoded instead of making it answer 500.
@@ -76,7 +76,7 @@ def safe_parse_storage_resource(
             f"API prefix as relative part is not allowed: {url}"
         )
 
-    absolute_url = urljoin(dial_api_url, url)
+    absolute_url = urljoin(dial_api_url, _percent_encode_relative_url(url))
     url_parsed = urlparse(absolute_url)
     dial_api_parsed = urlparse(dial_api_url)
     if url_parsed.netloc != dial_api_parsed.netloc:
@@ -149,36 +149,30 @@ class DialStorageResourceMixin(BaseModel):
     resource_type: StorageResourceType
     dial_api_url: str
 
-    def get_storage_resource(self, url: str) -> DialStorageResource:
+    def get_storage_resource(
+        self, url: str | PurePosixPath
+    ) -> DialStorageResource:
         """
         Get the storage resource object from the URL
         Args:
-            url (str): The URL to be processed.
+            url (str | PurePosixPath): The URL to be processed.
         Returns:
             DialStorageResource: The storage resource object
         """
         return parse_storage_resource(
-            url=url,
+            url=str(url),
             dial_api_url=self.dial_api_url,
             expected_resource_type=self.resource_type,
         )
 
-    def get_api_path(self, url: str) -> str:
+    def get_api_path(self, url: str | PurePosixPath) -> str:
         """
-        Convert URL, that could relative or absolute, to relative URL
+        Convert URL, that could relative or absolute, to relative,
+        percent-encoded API path.
         """
         return self.get_storage_resource(url).api_path
 
-    def get_encoded_api_path(self, url: str) -> str:
-        """
-        Relative api path with every segment percent-encoded for the wire.
-
-        Encodes before parsing so reserved characters (notably ``#`` and ``?``,
-        which ``urlparse`` would otherwise drop as fragment/query) survive.
-        """
-        return self.get_api_path(percent_encode_resource_url(url))
-
-    def get_display_name(self, url: str) -> str:
+    def get_display_name(self, url: str | PurePosixPath) -> str:
         """
         Get the display name of the resource from the URL
         """
@@ -189,9 +183,7 @@ class DialStorageResourceMixin(BaseModel):
         url: str | PurePosixPath,
         etag_if_match: str | None,
     ) -> tuple[FinalRequestOptions, str]:
-        storage_resource = self.get_storage_resource(
-            percent_encode_resource_url(str(url))
-        )
+        storage_resource = self.get_storage_resource(url)
 
         if storage_resource.filename is None:
             raise InvalidDialURLError("URL points to a directory, not a file")
