@@ -25,6 +25,19 @@ from aidial_client.types.file import FileDownloadResponse
 from aidial_client.types.metadata import FileItem, FileMetadata
 
 
+def _move_copy_body(
+    resource: DialStorageResourceMixin,
+    source: str | PurePosixPath,
+    destination: str | PurePosixPath,
+    overwrite: bool,
+) -> dict[str, object]:
+    return {
+        "sourceUrl": resource.get_api_path(source),
+        "destinationUrl": resource.get_api_path(destination),
+        "overwrite": overwrite,
+    }
+
+
 def _files_error_processor(
     http_status_error: httpx.HTTPStatusError,
 ) -> DialException | None:
@@ -54,7 +67,7 @@ class Files(Resource, DialStorageResourceMixin):
             cast_to=FileItem,
             options=FinalRequestOptions(
                 method="PUT",
-                url=urljoin(API_PREFIX, self.get_api_path(str(url))),
+                url=urljoin(API_PREFIX, self.get_api_path(url)),
                 files={"file": file},
                 headers=remove_none(
                     {
@@ -88,7 +101,7 @@ class Files(Resource, DialStorageResourceMixin):
             cast_to=NoneType,
             options=FinalRequestOptions(
                 method="DELETE",
-                url=urljoin(API_PREFIX, self.get_api_path(str(url))),
+                url=urljoin(API_PREFIX, self.get_api_path(url)),
                 headers=remove_none(
                     {
                         "If-Match": etag_if_match,
@@ -109,11 +122,7 @@ class Files(Resource, DialStorageResourceMixin):
             options=FinalRequestOptions(
                 method="POST",
                 url=urljoin(API_PREFIX, "ops/resource/move"),
-                json_data={
-                    "sourceUrl": self.get_api_path(str(source)),
-                    "destinationUrl": self.get_api_path(str(destination)),
-                    "overwrite": overwrite,
-                },
+                json_data=_move_copy_body(self, source, destination, overwrite),
             ),
             on_http_error=_files_error_processor,
         )
@@ -129,11 +138,7 @@ class Files(Resource, DialStorageResourceMixin):
             options=FinalRequestOptions(
                 method="POST",
                 url=urljoin(API_PREFIX, "ops/resource/copy"),
-                json_data={
-                    "sourceUrl": self.get_api_path(str(source)),
-                    "destinationUrl": self.get_api_path(str(destination)),
-                    "overwrite": overwrite,
-                },
+                json_data=_move_copy_body(self, source, destination, overwrite),
             ),
             on_http_error=_files_error_processor,
         )
@@ -147,7 +152,7 @@ class Files(Resource, DialStorageResourceMixin):
     ) -> FileMetadata:
         return self.metadata.get(
             resource="files",
-            relative_url=self.get_api_path(str(url)),
+            relative_url=self.get_api_path(url),
             limit=limit,
             token=token,
         )
@@ -168,7 +173,7 @@ class AsyncFiles(AsyncResource, DialStorageResourceMixin):
             cast_to=FileItem,
             options=FinalRequestOptions(
                 method="PUT",
-                url=urljoin(API_PREFIX, self.get_api_path(str(url))),
+                url=urljoin(API_PREFIX, self.get_api_path(url)),
                 files={"file": file},
                 headers=remove_none(
                     {
@@ -215,7 +220,7 @@ class AsyncFiles(AsyncResource, DialStorageResourceMixin):
             cast_to=NoneType,
             options=FinalRequestOptions(
                 method="DELETE",
-                url=urljoin(API_PREFIX, self.get_api_path(str(url))),
+                url=urljoin(API_PREFIX, self.get_api_path(url)),
                 headers=remove_none(
                     {
                         "If-Match": etag_if_match,
@@ -236,11 +241,7 @@ class AsyncFiles(AsyncResource, DialStorageResourceMixin):
             options=FinalRequestOptions(
                 method="POST",
                 url=urljoin(API_PREFIX, "ops/resource/move"),
-                json_data={
-                    "sourceUrl": self.get_api_path(str(source)),
-                    "destinationUrl": self.get_api_path(str(destination)),
-                    "overwrite": overwrite,
-                },
+                json_data=_move_copy_body(self, source, destination, overwrite),
             ),
             on_http_error=_files_error_processor,
         )
@@ -256,11 +257,7 @@ class AsyncFiles(AsyncResource, DialStorageResourceMixin):
             options=FinalRequestOptions(
                 method="POST",
                 url=urljoin(API_PREFIX, "ops/resource/copy"),
-                json_data={
-                    "sourceUrl": self.get_api_path(str(source)),
-                    "destinationUrl": self.get_api_path(str(destination)),
-                    "overwrite": overwrite,
-                },
+                json_data=_move_copy_body(self, source, destination, overwrite),
             ),
             on_http_error=_files_error_processor,
         )
@@ -274,7 +271,7 @@ class AsyncFiles(AsyncResource, DialStorageResourceMixin):
     ) -> FileMetadata:
         return await self.metadata.get(
             resource="files",
-            relative_url=self.get_api_path(str(url)),
+            relative_url=self.get_api_path(url),
             limit=limit,
             token=token,
         )

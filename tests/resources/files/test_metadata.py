@@ -86,6 +86,30 @@ def test_get_metadata():
         assert r.next_token == "next-page-token"  # noqa: S105
 
 
+def test_get_metadata_encodes_reserved_characters():
+    captured: list[httpx.Request] = []
+    client = _make_capturing_client(captured)
+
+    client.files.get_metadata(url="files/test-bucket/c#py (1)?.md")
+
+    assert captured[0].url.raw_path.decode() == (
+        "/v1/metadata/files/test-bucket/c%23py%20%281%29%3F.md"
+    )
+
+
+def test_low_level_metadata_get_encodes_reserved_characters():
+    # The generic client.metadata.get(...) is also used directly (bypassing
+    # files.get_metadata), so it must encode the path too.
+    captured: list[httpx.Request] = []
+    client = _make_capturing_client(captured)
+
+    client.metadata.get("files", "files/test-bucket/c#py (1)?.md")
+
+    assert captured[0].url.raw_path.decode() == (
+        "/v1/metadata/files/test-bucket/c%23py%20%281%29%3F.md"
+    )
+
+
 def test_get_metadata_sends_pagination_params():
     captured: list[httpx.Request] = []
     client = _make_capturing_client(captured)

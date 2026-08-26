@@ -56,7 +56,7 @@ class Prompts(Resource, DialStorageResourceMixin):
             cast_to=PromptItem,
             options=FinalRequestOptions(
                 method="PUT",
-                url=urljoin(API_PREFIX, self.get_api_path(str(url))),
+                url=urljoin(API_PREFIX, self.get_api_path(url)),
                 json_data=_prompt_to_json(prompt),
                 headers=remove_none(
                     {
@@ -74,7 +74,7 @@ class Prompts(Resource, DialStorageResourceMixin):
             cast_to=Prompt,
             options=FinalRequestOptions(
                 method="GET",
-                url=urljoin(API_PREFIX, self.get_api_path(str(url))),
+                url=urljoin(API_PREFIX, self.get_api_path(url)),
             ),
             on_http_error=_prompts_error_processor,
         )
@@ -88,7 +88,7 @@ class Prompts(Resource, DialStorageResourceMixin):
             cast_to=NoneType,
             options=FinalRequestOptions(
                 method="DELETE",
-                url=urljoin(API_PREFIX, self.get_api_path(str(url))),
+                url=urljoin(API_PREFIX, self.get_api_path(url)),
                 headers=remove_none(
                     {
                         "If-Match": etag_if_match,
@@ -101,7 +101,7 @@ class Prompts(Resource, DialStorageResourceMixin):
     def get_metadata(self, url: str | PurePosixPath) -> PromptMetadata:
         return self.metadata.get(
             resource="prompts",
-            relative_url=self.get_api_path(str(url)),
+            relative_url=self.get_api_path(url),
         )
 
 
@@ -120,7 +120,7 @@ class AsyncPrompts(AsyncResource, DialStorageResourceMixin):
             cast_to=PromptItem,
             options=FinalRequestOptions(
                 method="PUT",
-                url=urljoin(API_PREFIX, self.get_api_path(str(url))),
+                url=urljoin(API_PREFIX, self.get_api_path(url)),
                 json_data=_prompt_to_json(prompt),
                 headers=remove_none(
                     {
@@ -138,7 +138,7 @@ class AsyncPrompts(AsyncResource, DialStorageResourceMixin):
             cast_to=Prompt,
             options=FinalRequestOptions(
                 method="GET",
-                url=urljoin(API_PREFIX, self.get_api_path(str(url))),
+                url=urljoin(API_PREFIX, self.get_api_path(url)),
             ),
             on_http_error=_prompts_error_processor,
         )
@@ -152,7 +152,7 @@ class AsyncPrompts(AsyncResource, DialStorageResourceMixin):
             cast_to=NoneType,
             options=FinalRequestOptions(
                 method="DELETE",
-                url=urljoin(API_PREFIX, self.get_api_path(str(url))),
+                url=urljoin(API_PREFIX, self.get_api_path(url)),
                 headers=remove_none(
                     {
                         "If-Match": etag_if_match,
@@ -165,5 +165,5 @@ class AsyncPrompts(AsyncResource, DialStorageResourceMixin):
     async def get_metadata(self, url: str | PurePosixPath) -> PromptMetadata:
         return await self.metadata.get(
             resource="prompts",
-            relative_url=self.get_api_path(str(url)),
+            relative_url=self.get_api_path(url),
         )

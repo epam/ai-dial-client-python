@@ -1,12 +1,59 @@
 from typing import Any, cast
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, Mock
 
 import httpx
 import pytest
 
+from aidial_client import Dial
 from aidial_client._client import AsyncDial
 from aidial_client._exception import InvalidDialURLError
 from tests.client_mock import MockStreamIterator
+
+
+def _make_capturing_client(captured: list[httpx.Request]) -> Dial:
+    client = Dial(api_key="dummy", base_url="http://dial.core")
+
+    def send_mock(request: httpx.Request, **_: Any) -> httpx.Response:
+        captured.append(request)
+        return httpx.Response(status_code=200, request=request, content=b"x")
+
+    client._http_client._internal_http_client.send = cast(Any, send_mock)
+    client._get_my_bucket = cast(Any, Mock(return_value="test-bucket"))
+    return client
+
+
+@pytest.mark.parametrize(
+    "raw, encoded",
+    [
+        ("my file.txt", "my%20file.txt"),
+        ("a#b.txt", "a%23b.txt"),
+        ("a?b.txt", "a%3Fb.txt"),
+        ("tag[1].txt", "tag%5B1%5D.txt"),
+    ],
+)
+def test_download_encodes_url_and_decodes_filename(raw: str, encoded: str):
+    captured: list[httpx.Request] = []
+    client = _make_capturing_client(captured)
+
+    response = client.files.download(f"files/test-bucket/{raw}")
+
+    assert (
+        captured[0].url.raw_path.decode() == f"/v1/files/test-bucket/{encoded}"
+    )
+    assert response.filename == raw
+
+
+def test_download_accepts_already_encoded_url():
+    captured: list[httpx.Request] = []
+    client = _make_capturing_client(captured)
+
+    response = client.files.download("files/test-bucket/my%20file.txt")
+
+    assert (
+        captured[0].url.raw_path.decode()
+        == "/v1/files/test-bucket/my%20file.txt"
+    )
+    assert response.filename == "my file.txt"
 
 
 @pytest.mark.asyncio
