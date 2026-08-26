@@ -27,6 +27,7 @@ def get_client_mock(
     json_mock: dict[str, Any] | None = None,
     stream_chunks_mock: list[bytes] | None = None,
     exception_mock: Exception | None = None,
+    sent_requests: list[httpx.Request] | None = None,
 ) -> Dial:
     client_mock = Dial(
         api_key="dummy",
@@ -34,6 +35,8 @@ def get_client_mock(
     )
 
     def send_mock(request: httpx.Request, **kwargs):
+        if sent_requests is not None:
+            sent_requests.append(request)
         if json_mock is not None:
             assert status_code
             mock_response = httpx.Response(
@@ -64,6 +67,7 @@ def get_async_client_mock(
     json_mock: dict[str, Any] | None = None,
     stream_chunks_mock: list[bytes] | None = None,
     exception_mock: Exception | None = None,
+    sent_requests: list[httpx.Request] | None = None,
 ) -> AsyncDial:
     client_mock = AsyncDial(
         api_key="dummy",
@@ -71,6 +75,8 @@ def get_async_client_mock(
     )
 
     async def send_mock(request: httpx.Request, **kwargs):
+        if sent_requests is not None:
+            sent_requests.append(request)
         if json_mock is not None:
             assert status_code
             mock_response = httpx.Response(

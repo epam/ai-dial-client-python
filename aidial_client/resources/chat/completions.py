@@ -28,6 +28,11 @@ from aidial_client.types.chat import (
     FunctionCallSpecParam,
     FunctionParam,
     Message,
+    PromptCacheOptionsParam,
+    ReasoningEffort,
+    ResponseFormat,
+    StaticToolParam,
+    StreamOptions,
     ToolCallSpecParam,
     ToolParam,
 )
@@ -51,19 +56,28 @@ class ChatCompletions(Resource):
         function_call: Literal["none", "auto"]
         | FunctionCallSpecParam
         | None = None,
-        tools: list[ToolParam] | None = None,
-        tool_choice: Literal["none", "auto"] | ToolCallSpecParam | None = None,
+        tools: list[ToolParam | StaticToolParam] | None = None,
+        tool_choice: Literal["none", "auto", "required"]
+        | ToolCallSpecParam
+        | None = None,
+        parallel_tool_calls: bool | None = None,
         temperature: float | None = None,
         top_p: float | None = None,
         n: int | None = None,
         stop: str | list[str] | None = None,
         max_tokens: int | None = None,
+        max_completion_tokens: int | None = None,
         max_prompt_tokens: Literal["infinity"] | int | None = None,
         presence_penalty: float | None = None,
         frequency_penalty: float | None = None,
         logit_bias: dict | None = None,
         seed: int | None = None,
         user: str | None = None,
+        reasoning_effort: ReasoningEffort | None = None,
+        prompt_cache_key: str | None = None,
+        prompt_cache_options: PromptCacheOptionsParam | None = None,
+        response_format: ResponseFormat | None = None,
+        stream_options: StreamOptions | None = None,
         custom_fields: ChatCompletionRequestCustomFields | None = None,
         logprobs: bool | None = None,
         top_logprobs: int | None = None,
@@ -86,19 +100,28 @@ class ChatCompletions(Resource):
         function_call: Literal["none", "auto"]
         | FunctionCallSpecParam
         | None = None,
-        tools: list[ToolParam] | None = None,
-        tool_choice: Literal["none", "auto"] | ToolCallSpecParam | None = None,
+        tools: list[ToolParam | StaticToolParam] | None = None,
+        tool_choice: Literal["none", "auto", "required"]
+        | ToolCallSpecParam
+        | None = None,
+        parallel_tool_calls: bool | None = None,
         temperature: float | None = None,
         top_p: float | None = None,
         n: int | None = None,
         stop: str | list[str] | None = None,
         max_tokens: int | None = None,
+        max_completion_tokens: int | None = None,
         max_prompt_tokens: Literal["infinity"] | int | None = None,
         presence_penalty: float | None = None,
         frequency_penalty: float | None = None,
         logit_bias: dict | None = None,
         seed: int | None = None,
         user: str | None = None,
+        reasoning_effort: ReasoningEffort | None = None,
+        prompt_cache_key: str | None = None,
+        prompt_cache_options: PromptCacheOptionsParam | None = None,
+        response_format: ResponseFormat | None = None,
+        stream_options: StreamOptions | None = None,
         custom_fields: ChatCompletionRequestCustomFields | None = None,
         logprobs: bool | None = None,
         top_logprobs: int | None = None,
@@ -120,19 +143,28 @@ class ChatCompletions(Resource):
         function_call: Literal["none", "auto"]
         | FunctionCallSpecParam
         | None = None,
-        tools: list[ToolParam] | None = None,
-        tool_choice: Literal["none", "auto"] | ToolCallSpecParam | None = None,
+        tools: list[ToolParam | StaticToolParam] | None = None,
+        tool_choice: Literal["none", "auto", "required"]
+        | ToolCallSpecParam
+        | None = None,
+        parallel_tool_calls: bool | None = None,
         temperature: float | None = None,
         top_p: float | None = None,
         n: int | None = None,
         stop: str | list[str] | None = None,
         max_tokens: int | None = None,
+        max_completion_tokens: int | None = None,
         max_prompt_tokens: Literal["infinity"] | int | None = None,
         presence_penalty: float | None = None,
         frequency_penalty: float | None = None,
         logit_bias: dict | None = None,
         seed: int | None = None,
         user: str | None = None,
+        reasoning_effort: ReasoningEffort | None = None,
+        prompt_cache_key: str | None = None,
+        prompt_cache_options: PromptCacheOptionsParam | None = None,
+        response_format: ResponseFormat | None = None,
+        stream_options: StreamOptions | None = None,
         custom_fields: ChatCompletionRequestCustomFields | None = None,
         logprobs: bool | None = None,
         top_logprobs: int | None = None,
@@ -165,11 +197,26 @@ class ChatCompletions(Resource):
                 "tools": tools,
                 "top_p": top_p,
                 "user": user,
-                "max_prompt_tokens": max_prompt_tokens,
-                "custom_fields": custom_fields,
                 "logprobs": logprobs,
                 "top_logprobs": top_logprobs,
-                "extra_body": extra_body,
+                # DIAL-specific parameters and the ones which aren't supported
+                # by every openai version are sent in the request body directly
+                "extra_body": {
+                    **remove_none(
+                        {
+                            "max_prompt_tokens": max_prompt_tokens,
+                            "custom_fields": custom_fields,
+                            "max_completion_tokens": max_completion_tokens,
+                            "parallel_tool_calls": parallel_tool_calls,
+                            "reasoning_effort": reasoning_effort,
+                            "prompt_cache_key": prompt_cache_key,
+                            "prompt_cache_options": prompt_cache_options,
+                            "response_format": response_format,
+                            "stream_options": stream_options,
+                        }
+                    ),
+                    **extra_body,
+                },
                 "extra_query": {
                     "api-version": (
                         api_version or self.default_api_version or Omit()
@@ -217,20 +264,31 @@ class AsyncChatCompletions(AsyncResource):
         function_call: Literal["none", "auto"]
         | FunctionCallSpecParam
         | None = None,
-        tools: list[ToolParam] | None = None,
-        tool_choice: Literal["none", "auto"] | ToolCallSpecParam | None = None,
+        tools: list[ToolParam | StaticToolParam] | None = None,
+        tool_choice: Literal["none", "auto", "required"]
+        | ToolCallSpecParam
+        | None = None,
+        parallel_tool_calls: bool | None = None,
         temperature: float | None = None,
         top_p: float | None = None,
         n: int | None = None,
         stop: str | list[str] | None = None,
         max_tokens: int | None = None,
+        max_completion_tokens: int | None = None,
         max_prompt_tokens: Literal["infinity"] | int | None = None,
         presence_penalty: float | None = None,
         frequency_penalty: float | None = None,
         logit_bias: dict | None = None,
         seed: int | None = None,
         user: str | None = None,
+        reasoning_effort: ReasoningEffort | None = None,
+        prompt_cache_key: str | None = None,
+        prompt_cache_options: PromptCacheOptionsParam | None = None,
+        response_format: ResponseFormat | None = None,
+        stream_options: StreamOptions | None = None,
         custom_fields: ChatCompletionRequestCustomFields | None = None,
+        logprobs: bool | None = None,
+        top_logprobs: int | None = None,
         # Extra params
         extra_body: dict[str, Any] | None = None,
         extra_headers: Mapping[StrictStr, StrictStr] | None = None,
@@ -250,19 +308,28 @@ class AsyncChatCompletions(AsyncResource):
         function_call: Literal["none", "auto"]
         | FunctionCallSpecParam
         | None = None,
-        tools: list[ToolParam] | None = None,
-        tool_choice: Literal["none", "auto"] | ToolCallSpecParam | None = None,
+        tools: list[ToolParam | StaticToolParam] | None = None,
+        tool_choice: Literal["none", "auto", "required"]
+        | ToolCallSpecParam
+        | None = None,
+        parallel_tool_calls: bool | None = None,
         temperature: float | None = None,
         top_p: float | None = None,
         n: int | None = None,
         stop: str | list[str] | None = None,
         max_tokens: int | None = None,
+        max_completion_tokens: int | None = None,
         max_prompt_tokens: Literal["infinity"] | int | None = None,
         presence_penalty: float | None = None,
         frequency_penalty: float | None = None,
         logit_bias: dict | None = None,
         seed: int | None = None,
         user: str | None = None,
+        reasoning_effort: ReasoningEffort | None = None,
+        prompt_cache_key: str | None = None,
+        prompt_cache_options: PromptCacheOptionsParam | None = None,
+        response_format: ResponseFormat | None = None,
+        stream_options: StreamOptions | None = None,
         custom_fields: ChatCompletionRequestCustomFields | None = None,
         logprobs: bool | None = None,
         top_logprobs: int | None = None,
@@ -284,19 +351,28 @@ class AsyncChatCompletions(AsyncResource):
         function_call: Literal["none", "auto"]
         | FunctionCallSpecParam
         | None = None,
-        tools: list[ToolParam] | None = None,
-        tool_choice: Literal["none", "auto"] | ToolCallSpecParam | None = None,
+        tools: list[ToolParam | StaticToolParam] | None = None,
+        tool_choice: Literal["none", "auto", "required"]
+        | ToolCallSpecParam
+        | None = None,
+        parallel_tool_calls: bool | None = None,
         temperature: float | None = None,
         top_p: float | None = None,
         n: int | None = None,
         stop: str | list[str] | None = None,
         max_tokens: int | None = None,
+        max_completion_tokens: int | None = None,
         max_prompt_tokens: Literal["infinity"] | int | None = None,
         presence_penalty: float | None = None,
         frequency_penalty: float | None = None,
         logit_bias: dict | None = None,
         seed: int | None = None,
         user: str | None = None,
+        reasoning_effort: ReasoningEffort | None = None,
+        prompt_cache_key: str | None = None,
+        prompt_cache_options: PromptCacheOptionsParam | None = None,
+        response_format: ResponseFormat | None = None,
+        stream_options: StreamOptions | None = None,
         custom_fields: ChatCompletionRequestCustomFields | None = None,
         logprobs: bool | None = None,
         top_logprobs: int | None = None,
@@ -329,11 +405,26 @@ class AsyncChatCompletions(AsyncResource):
                 "tools": tools,
                 "top_p": top_p,
                 "user": user,
-                "max_prompt_tokens": max_prompt_tokens,
-                "custom_fields": custom_fields,
                 "logprobs": logprobs,
                 "top_logprobs": top_logprobs,
-                "extra_body": extra_body,
+                # DIAL-specific parameters and the ones which aren't supported
+                # by every openai version are sent in the request body directly
+                "extra_body": {
+                    **remove_none(
+                        {
+                            "max_prompt_tokens": max_prompt_tokens,
+                            "custom_fields": custom_fields,
+                            "max_completion_tokens": max_completion_tokens,
+                            "parallel_tool_calls": parallel_tool_calls,
+                            "reasoning_effort": reasoning_effort,
+                            "prompt_cache_key": prompt_cache_key,
+                            "prompt_cache_options": prompt_cache_options,
+                            "response_format": response_format,
+                            "stream_options": stream_options,
+                        }
+                    ),
+                    **extra_body,
+                },
                 "extra_query": {
                     "api-version": (
                         api_version or self.default_api_version or Omit()

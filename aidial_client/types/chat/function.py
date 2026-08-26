@@ -5,6 +5,7 @@ class FunctionParam(TypedDict, total=False):
     name: Required[str]
     description: str | None
     parameters: dict | None
+    strict: bool | None
 
 
 class FunctionCallParam(TypedDict):

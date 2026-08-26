@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Any, Literal
 
 from aidial_client._compatibility.pydantic import PYDANTIC_V2
 from aidial_client._compatibility.pydantic_v1 import root_validator
@@ -9,6 +9,9 @@ if PYDANTIC_V2:
 
 
 class Attachment(ExtraAllowModel):
+    """Index is only set in streaming responses"""
+
+    index: int | None = None
     type: str | None = None
     title: str | None = None
     data: str | None = None
@@ -38,15 +41,52 @@ class Attachment(ExtraAllowModel):
             return values
 
 
+class Stage(ExtraAllowModel):
+    """Index is only set in streaming responses"""
+
+    index: int | None = None
+    name: str | None = None
+    status: Literal["completed", "failed"] | None = None
+    content: str | None = None
+    attachments: list[Attachment] | None = None
+
+
 class CustomContent(ExtraAllowModel):
+    stages: list[Stage] | None = None
     attachments: list[Attachment] | None = None
     state: dict | None = None
+    form_value: Any | None = None
+    form_schema: Any | None = None
+
+
+class PromptTokensDetails(ExtraAllowModel):
+    cached_tokens: int | None = None
+    cache_write_tokens: int | None = None
+
+
+class CompletionTokensDetails(ExtraAllowModel):
+    reasoning_tokens: int | None = None
 
 
 class CompletionUsage(ExtraAllowModel):
     prompt_tokens: int
     completion_tokens: int
     total_tokens: int
+    prompt_tokens_details: PromptTokensDetails | None = None
+    completion_tokens_details: CompletionTokensDetails | None = None
+
+
+class UsagePerModel(ExtraAllowModel):
+    index: int | None = None
+    model: str | None = None
+    prompt_tokens: int
+    completion_tokens: int
+    total_tokens: int
+
+
+class Statistics(ExtraAllowModel):
+    usage_per_model: list[UsagePerModel] | None = None
+    discarded_messages: list[int] | None = None
 
 
 class FunctionCall(ExtraAllowModel):
@@ -75,6 +115,7 @@ class ToolCallDelta(ExtraAllowModel):
 class ChatCompletionMessage(ExtraAllowModel):
     role: Literal["assistant"]
     content: str | None = None
+    refusal: str | None = None
     custom_content: CustomContent | None = None
     function_call: FunctionCall | None = None
     tool_calls: list[ChatCompletionMessageToolCall] | None = None
@@ -83,6 +124,7 @@ class ChatCompletionMessage(ExtraAllowModel):
 class ChatCompletionMessageDelta(ExtraAllowModel):
     role: Literal["assistant"] | None = None
     content: str | None = None
+    refusal: str | None = None
     custom_content: CustomContent | None = None
     function_call: FunctionCallDelta | None = None
     tool_calls: list[ToolCallDelta] | None = None
@@ -107,6 +149,7 @@ class ChatCompletionResponse(ExtraAllowModel):
     created: int
     model: str | None = None
     usage: CompletionUsage | None = None
+    statistics: Statistics | None = None
 
 
 class ChatCompletionChunk(ExtraAllowModel):
@@ -116,3 +159,4 @@ class ChatCompletionChunk(ExtraAllowModel):
     created: int
     model: str | None = None
     usage: CompletionUsage | None = None
+    statistics: Statistics | None = None

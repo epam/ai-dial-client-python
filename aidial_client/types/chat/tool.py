@@ -1,7 +1,8 @@
-from typing import Literal
+from typing import Any, Literal
 
 from typing_extensions import Required, TypedDict
 
+from aidial_client.types.chat.cache import CacheBreakpointParam
 from aidial_client.types.chat.function import (
     FunctionCallParam,
     FunctionCallSpecParam,
@@ -9,9 +10,25 @@ from aidial_client.types.chat.function import (
 )
 
 
-class ToolParam(TypedDict):
-    type: Literal["function"]
-    function: FunctionParam
+class ToolCustomFieldsParam(TypedDict, total=False):
+    cache_breakpoint: CacheBreakpointParam | None
+
+
+class ToolParam(TypedDict, total=False):
+    type: Required[Literal["function"]]
+    function: Required[FunctionParam]
+    custom_fields: ToolCustomFieldsParam | None
+
+
+class StaticFunctionParam(TypedDict, total=False):
+    name: Required[str]
+    description: str | None
+    configuration: dict[str, Any] | None
+
+
+class StaticToolParam(TypedDict):
+    type: Literal["static_function"]
+    static_function: StaticFunctionParam
 
 
 class ToolCallParam(TypedDict):
