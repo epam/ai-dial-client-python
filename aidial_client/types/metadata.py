@@ -22,7 +22,7 @@ class BaseMetadata(ExtraAllowModel):
     bucket: str
     url: str
     node_type: Literal["FOLDER", "ITEM"]
-    resource_type: Literal["FILE", "CONVERSATION", "PROMPT"]
+    resource_type: Literal["FILE", "CONVERSATION", "PROMPT", "SKILL"]
 
 
 class ResourceItemMetadata(BaseMetadata):
@@ -69,3 +69,39 @@ class PromptMetadata(BaseMetadata):
     next_token: str | None = None
     items: list[PromptItem] | None
     resource_type: Literal["PROMPT"]
+
+
+class SkillItem(ResourceItemMetadata):
+    """
+    A node in the skills listing: a skill (ITEM) or a grouping folder (FOLDER).
+
+    DIAL Core builds these from the folder marker's listing metadata without
+    reading the marker body, so no ``etag`` and no skill name/description are
+    carried here - they are available via a whole-resource GET.
+    """
+
+    node_type: Literal["FOLDER", "ITEM"]
+    resource_type: Literal["SKILL"]
+
+
+class SkillMetadata(BaseMetadata):
+    node_type: Literal["FOLDER", "ITEM"]
+    resource_type: Literal["SKILL"]
+    next_token: str | None = None
+    items: list[SkillItem] | None = None
+
+
+class SkillFileItem(ResourceItemMetadata):
+    """A file (ITEM) or a subfolder (FOLDER) inside a skill."""
+
+    node_type: Literal["FOLDER", "ITEM"]
+    resource_type: Literal["SKILL"]
+    content_length: int | None = None
+    content_type: str | None = None
+
+
+class SkillFileMetadata(BaseMetadata):
+    node_type: Literal["FOLDER", "ITEM"]
+    resource_type: Literal["SKILL"]
+    next_token: str | None = None
+    items: list[SkillFileItem] | None = None

@@ -7,18 +7,16 @@ from urllib.parse import urljoin
 import httpx
 
 from aidial_client._constants import API_PREFIX
-from aidial_client._exception import (
-    DialException,
-    EtagMismatchError,
-    ResourceNotFoundError,
-)
 from aidial_client._internal_types._generic import NoneType
 from aidial_client._internal_types._http_request import (
     FileTypes,
     FinalRequestOptions,
 )
 from aidial_client._utils._dict import remove_none
-from aidial_client.helpers.storage_resource import DialStorageResourceMixin
+from aidial_client.helpers.storage_resource import (
+    DialStorageResourceMixin,
+    storage_error_processor,
+)
 from aidial_client.resources.base import AsyncResource, Resource
 from aidial_client.resources.metadata import AsyncMetadata, Metadata
 from aidial_client.types.file import FileDownloadResponse
@@ -36,20 +34,6 @@ def _move_copy_body(
         "destinationUrl": resource.get_api_path(destination),
         "overwrite": overwrite,
     }
-
-
-def _files_error_processor(
-    http_status_error: httpx.HTTPStatusError,
-) -> DialException | None:
-    if http_status_error.response.status_code == 412:
-        return EtagMismatchError(
-            message=http_status_error.response.text,
-        )
-    elif http_status_error.response.status_code == 404:
-        return ResourceNotFoundError(
-            message=http_status_error.response.text,
-        )
-    return None
 
 
 class Files(Resource, DialStorageResourceMixin):
@@ -76,7 +60,7 @@ class Files(Resource, DialStorageResourceMixin):
                     }
                 ),
             ),
-            on_http_error=_files_error_processor,
+            on_http_error=storage_error_processor,
         )
 
     def download(
@@ -88,7 +72,7 @@ class Files(Resource, DialStorageResourceMixin):
         response = self.http_client.request(
             cast_to=httpx.Response,
             options=options,
-            on_http_error=_files_error_processor,
+            on_http_error=storage_error_processor,
         )
         return FileDownloadResponse(response=response, filename=filename)
 
@@ -108,7 +92,7 @@ class Files(Resource, DialStorageResourceMixin):
                     }
                 ),
             ),
-            on_http_error=_files_error_processor,
+            on_http_error=storage_error_processor,
         )
 
     def move_to(
@@ -124,7 +108,7 @@ class Files(Resource, DialStorageResourceMixin):
                 url=urljoin(API_PREFIX, "ops/resource/move"),
                 json_data=_move_copy_body(self, source, destination, overwrite),
             ),
-            on_http_error=_files_error_processor,
+            on_http_error=storage_error_processor,
         )
 
     def copy_to(
@@ -140,7 +124,7 @@ class Files(Resource, DialStorageResourceMixin):
                 url=urljoin(API_PREFIX, "ops/resource/copy"),
                 json_data=_move_copy_body(self, source, destination, overwrite),
             ),
-            on_http_error=_files_error_processor,
+            on_http_error=storage_error_processor,
         )
 
     def get_metadata(
@@ -182,7 +166,7 @@ class AsyncFiles(AsyncResource, DialStorageResourceMixin):
                     }
                 ),
             ),
-            on_http_error=_files_error_processor,
+            on_http_error=storage_error_processor,
         )
 
     async def download(
@@ -194,7 +178,7 @@ class AsyncFiles(AsyncResource, DialStorageResourceMixin):
         response = await self.http_client.request(
             cast_to=httpx.Response,
             options=options,
-            on_http_error=_files_error_processor,
+            on_http_error=storage_error_processor,
         )
         return FileDownloadResponse(response=response, filename=filename)
 
@@ -207,7 +191,7 @@ class AsyncFiles(AsyncResource, DialStorageResourceMixin):
         options, filename = self._prepare_download_request(url, etag_if_match)
         async with self.http_client.stream(
             options=options,
-            on_http_error=_files_error_processor,
+            on_http_error=storage_error_processor,
         ) as response:
             yield FileDownloadResponse(response=response, filename=filename)
 
@@ -227,7 +211,7 @@ class AsyncFiles(AsyncResource, DialStorageResourceMixin):
                     }
                 ),
             ),
-            on_http_error=_files_error_processor,
+            on_http_error=storage_error_processor,
         )
 
     async def move_to(
@@ -243,7 +227,7 @@ class AsyncFiles(AsyncResource, DialStorageResourceMixin):
                 url=urljoin(API_PREFIX, "ops/resource/move"),
                 json_data=_move_copy_body(self, source, destination, overwrite),
             ),
-            on_http_error=_files_error_processor,
+            on_http_error=storage_error_processor,
         )
 
     async def copy_to(
@@ -259,7 +243,7 @@ class AsyncFiles(AsyncResource, DialStorageResourceMixin):
                 url=urljoin(API_PREFIX, "ops/resource/copy"),
                 json_data=_move_copy_body(self, source, destination, overwrite),
             ),
-            on_http_error=_files_error_processor,
+            on_http_error=storage_error_processor,
         )
 
     async def get_metadata(

@@ -16,6 +16,7 @@ from aidial_client._auth import (
 )
 from aidial_client._constants import (
     API_PREFIX,
+    API_V2_PREFIX,
     DEFAULT_MAX_RETRIES,
     DEFAULT_TIMEOUT,
     OPENAI_PREFIX,
@@ -74,6 +75,10 @@ class BaseDialClient(Generic[_HttpClientT, AuthValueT], ABC):
         return urljoin(self._base_url, API_PREFIX)
 
     @property
+    def api_v2_url(self) -> str:
+        return urljoin(self._base_url, API_V2_PREFIX)
+
+    @property
     def base_url(self) -> str:
         return self._base_url
 
@@ -109,6 +114,10 @@ class Dial(BaseDialClient[SyncHTTPClient, SyncAuthValue]):
             http_client=self._http_client,
             metadata=self.metadata,
             dial_api_url=self.api_url,
+        )
+        self.skills = resources.Skills(
+            http_client=self._http_client,
+            dial_api_url=self.api_v2_url,
         )
         self.deployments = resources.Deployments(http_client=self._http_client)
         self.application = resources.Application(http_client=self._http_client)
@@ -148,6 +157,9 @@ class Dial(BaseDialClient[SyncHTTPClient, SyncAuthValue]):
 
     def my_prompts_home(self) -> PurePosixPath:
         return "prompts" / PurePosixPath(self.my_bucket())
+
+    def my_skills_home(self) -> PurePosixPath:
+        return "skills" / PurePosixPath(self.my_bucket())
 
     def _get_my_appdata(self) -> AppData | None:
         return self.bucket.get_appdata()
@@ -211,6 +223,10 @@ class AsyncDial(BaseDialClient[AsyncHTTPClient, AsyncAuthValue]):
             metadata=self.metadata,
             dial_api_url=self.api_url,
         )
+        self.skills = resources.AsyncSkills(
+            http_client=self._http_client,
+            dial_api_url=self.api_v2_url,
+        )
         self.deployments = resources.AsyncDeployments(
             http_client=self._http_client
         )
@@ -253,6 +269,9 @@ class AsyncDial(BaseDialClient[AsyncHTTPClient, AsyncAuthValue]):
 
     async def my_prompts_home(self) -> PurePosixPath:
         return "prompts" / PurePosixPath(await self.my_bucket())
+
+    async def my_skills_home(self) -> PurePosixPath:
+        return "skills" / PurePosixPath(await self.my_bucket())
 
     async def _get_my_appdata(self) -> AppData | None:
         return await self.bucket.get_appdata()

@@ -13,6 +13,10 @@ API_PREFIX = "v1/"
 METADATA_PREFIX = urljoin(API_PREFIX, "metadata/")
 FILES_PREFIX = urljoin(API_PREFIX, "files/")
 
+# DIAL Core exposes folder-shaped resources (agent skills) under /v2.
+API_V2_PREFIX = "v2/"
+METADATA_V2_PREFIX = urljoin(API_V2_PREFIX, "metadata/")
+
 
 OPENAI_PREFIX = "openai/"
 APPLICATION_PREFIX = urljoin(OPENAI_PREFIX, "applications/")
