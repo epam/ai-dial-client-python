@@ -115,9 +115,16 @@ class SkillsMixin(DialStorageResourceMixin):
         # Core lists the bucket root when {path} is empty, so a bucket-root
         # url ("skills/my-bucket") is a valid target here.
         api_path = self.get_api_path(url, allow_bucket_root=True)
+        # This route always addresses a folder, and the separator after
+        # {bucket} in Core's route regex is literal:
+        #   ^/v2/metadata/skills/(?<bucket>[a-zA-Z0-9]+)/(?<path>.*)$
+        # so an empty {path} only matches with a trailing slash. api_path
+        # comes from PurePosixPath and never carries one. Core strips a
+        # trailing slash off {path} again, so appending it unconditionally
+        # leaves the deeper paths resolving to the same folder as before.
         return FinalRequestOptions(
             method="GET",
-            url=urljoin(METADATA_V2_PREFIX, api_path),
+            url=urljoin(METADATA_V2_PREFIX, f"{api_path}/"),
             params=self._listing_params(limit, token, recursive),
         )
 
@@ -140,7 +147,6 @@ class SkillsMixin(DialStorageResourceMixin):
         self,
         url: str | PurePosixPath,
         file_path: str,
-        etag_if_match: str | None,
     ) -> tuple[FinalRequestOptions, str]:
         segments = _relative_path_segments(file_path, "file_path")
         if segments[-1] == "":
@@ -150,23 +156,25 @@ class SkillsMixin(DialStorageResourceMixin):
 
         relative = _percent_encode_relative_url("/".join(segments))
         api_path = f"{self.get_api_path(url)}/{FILES_SEGMENT}/{relative}"
+        # No If-Match: unlike the /v1 reads, neither v2 read honours it -
+        # ComplexResourceController.getFile never calls ProxyUtil.etag, and
+        # the operation declares no If-Match parameter and no 412 response.
         options = FinalRequestOptions(
             method="GET",
             url=urljoin(API_V2_PREFIX, api_path),
-            headers=remove_none({"If-Match": etag_if_match}),
         )
         return options, unquote(segments[-1])
 
     def _prepare_download_archive_request(
         self,
         url: str | PurePosixPath,
-        etag_if_match: str | None,
     ) -> tuple[FinalRequestOptions, str]:
         api_path = self.get_api_path(url)
+        # See _prepare_get_file_request: Core ignores If-Match on this read
+        # too (ComplexResourceController.get).
         options = FinalRequestOptions(
             method="GET",
             url=urljoin(API_V2_PREFIX, api_path),
-            headers=remove_none({"If-Match": etag_if_match}),
         )
         # Core answers application/zip without a Content-Disposition header,
         # so name the archive after the skill.
@@ -229,7 +237,6 @@ class Skills(Resource, SkillsMixin):
         self,
         url: str | PurePosixPath,
         file_path: str,
-        etag_if_match: str | None = None,
     ) -> FileDownloadResponse:
         """
         Download a single file bundled in the skill at ``url``.
@@ -237,9 +244,7 @@ class Skills(Resource, SkillsMixin):
         ``file_path`` is relative to the skill root, e.g. "SKILL.md" or
         "references/api-schema.md".
         """
-        options, filename = self._prepare_get_file_request(
-            url, file_path, etag_if_match
-        )
+        options, filename = self._prepare_get_file_request(url, file_path)
         response = self.http_client.request(
             cast_to=httpx.Response,
             options=options,
@@ -250,14 +255,11 @@ class Skills(Resource, SkillsMixin):
     def download(
         self,
         url: str | PurePosixPath,
-        etag_if_match: str | None = None,
     ) -> FileDownloadResponse:
         """
         Download the whole skill at ``url`` as a ZIP archive.
         """
-        options, filename = self._prepare_download_archive_request(
-            url, etag_if_match
-        )
+        options, filename = self._prepare_download_archive_request(url)
         response = self.http_client.request(
             cast_to=httpx.Response,
             options=options,
@@ -322,7 +324,6 @@ class AsyncSkills(AsyncResource, SkillsMixin):
         self,
         url: str | PurePosixPath,
         file_path: str,
-        etag_if_match: str | None = None,
     ) -> FileDownloadResponse:
         """
         Download a single file bundled in the skill at ``url``.
@@ -330,9 +331,7 @@ class AsyncSkills(AsyncResource, SkillsMixin):
         ``file_path`` is relative to the skill root, e.g. "SKILL.md" or
         "references/api-schema.md".
         """
-        options, filename = self._prepare_get_file_request(
-            url, file_path, etag_if_match
-        )
+        options, filename = self._prepare_get_file_request(url, file_path)
         response = await self.http_client.request(
             cast_to=httpx.Response,
             options=options,
@@ -345,14 +344,11 @@ class AsyncSkills(AsyncResource, SkillsMixin):
         self,
         url: str | PurePosixPath,
         file_path: str,
-        etag_if_match: str | None = None,
     ) -> AsyncIterator[FileDownloadResponse]:
         """
         Stream a single file bundled in the skill at ``url``.
         """
-        options, filename = self._prepare_get_file_request(
-            url, file_path, etag_if_match
-        )
+        options, filename = self._prepare_get_file_request(url, file_path)
         async with self.http_client.stream(
             options=options,
             on_http_error=storage_error_processor,
@@ -362,14 +358,11 @@ class AsyncSkills(AsyncResource, SkillsMixin):
     async def download(
         self,
         url: str | PurePosixPath,
-        etag_if_match: str | None = None,
     ) -> FileDownloadResponse:
         """
         Download the whole skill at ``url`` as a ZIP archive.
         """
-        options, filename = self._prepare_download_archive_request(
-            url, etag_if_match
-        )
+        options, filename = self._prepare_download_archive_request(url)
         response = await self.http_client.request(
             cast_to=httpx.Response,
             options=options,
@@ -381,14 +374,11 @@ class AsyncSkills(AsyncResource, SkillsMixin):
     async def stream_download(
         self,
         url: str | PurePosixPath,
-        etag_if_match: str | None = None,
     ) -> AsyncIterator[FileDownloadResponse]:
         """
         Stream the whole skill at ``url`` as a ZIP archive.
         """
-        options, filename = self._prepare_download_archive_request(
-            url, etag_if_match
-        )
+        options, filename = self._prepare_download_archive_request(url)
         async with self.http_client.stream(
             options=options,
             on_http_error=storage_error_processor,

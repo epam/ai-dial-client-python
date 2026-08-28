@@ -92,12 +92,22 @@ class SkillMetadata(BaseMetadata):
 
 
 class SkillFileItem(ResourceItemMetadata):
-    """A file (ITEM) or a subfolder (FOLDER) inside a skill."""
+    """
+    A file or a subfolder inside a skill.
+
+    Use the trailing "/" of ``url`` to tell them apart, not ``node_type``:
+    DIAL Core builds every entry of this listing as a plain item and never
+    overrides its node type, so a subfolder is reported as ``"ITEM"`` too.
+    ``node_type`` is left as a union because that is a Core-side bug, and a
+    fix upstream should not turn into a parsing error here.
+
+    Unlike the /v1 files listing, no ``content_length`` or ``content_type``
+    is carried - Core copies only the etag, timestamps and author onto these
+    entries.
+    """
 
     node_type: Literal["FOLDER", "ITEM"]
     resource_type: Literal["SKILL"]
-    content_length: int | None = None
-    content_type: str | None = None
 
 
 class SkillFileMetadata(BaseMetadata):

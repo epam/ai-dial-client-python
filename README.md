@@ -888,6 +888,17 @@ Scope the listing to a subfolder with `path`:
 page = await async_client.skills.list_files(skill, path="references")
 ```
 
+> [!IMPORTANT]
+> In this listing, use the trailing `/` of `url` to tell subfolders from
+> files — not `node_type`. DIAL Core builds every entry as a plain item and
+> never overrides its node type, so subfolders are reported as `"ITEM"` too.
+> This differs from [Listing Skills](#listing-skills), where `node_type`
+> does distinguish a skill from a grouping folder.
+>
+> ```python
+> files = [item for item in page.items or [] if not item.url.endswith("/")]
+> ```
+
 Example of the response:
 
 ```python
