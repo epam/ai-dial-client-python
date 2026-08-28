@@ -61,8 +61,11 @@ SKILL_FILES_MOCK = {
             "name": "references",
             "parentPath": "tone-of-voice/files",
             "bucket": "test-bucket",
+            # A subfolder. Core builds every entry of the files listing as a
+            # plain item and never overrides the node type, so it reports
+            # "ITEM" here too - only the trailing "/" marks it as a folder.
             "url": "skills/test-bucket/tone-of-voice/files/references/",
-            "nodeType": "FOLDER",
+            "nodeType": "ITEM",
             "resourceType": "SKILL",
         },
     ],
@@ -108,7 +111,7 @@ def test_get_metadata_lists_bucket_root():
 
     result = client.skills.get_metadata(client.my_skills_home())
 
-    assert captured[0].url.path == "/v2/metadata/skills/test-bucket"
+    assert captured[0].url.path == "/v2/metadata/skills/test-bucket/"
     assert result.resource_type == "SKILL"
     assert result.next_token == "next-page-token"  # noqa: S105
 
@@ -132,7 +135,7 @@ def test_get_metadata_passes_listing_params():
     )
 
     request = captured[0]
-    assert request.url.path == "/v2/metadata/skills/test-bucket/writing"
+    assert request.url.path == "/v2/metadata/skills/test-bucket/writing/"
     assert dict(request.url.params) == {
         "limit": "1000",
         "token": "page-2",  # noqa: S105
@@ -165,9 +168,13 @@ def test_list_files_defaults_to_skill_root():
     assert dict(request.url.params) == {"limit": "1000", "recursive": "true"}
 
     items = result.items or []
-    assert [item.node_type for item in items] == ["ITEM", "FOLDER"]
     assert items[0].etag == "abc123"
     assert result.next_token is None
+
+    # Core reports subfolders of a skill as "ITEM" as well, so a caller has
+    # to key off the trailing "/" of the url instead.
+    assert [item.node_type for item in items] == ["ITEM", "ITEM"]
+    assert [item.url.endswith("/") for item in items] == [False, True]
 
 
 def test_list_files_scopes_to_subfolder():
@@ -241,7 +248,7 @@ async def test_async_get_metadata_and_list_files():
     client = _async_client(captured, SKILLS_LISTING_MOCK)
 
     result = await client.skills.get_metadata(await client.my_skills_home())
-    assert captured[0].url.path == "/v2/metadata/skills/test-bucket"
+    assert captured[0].url.path == "/v2/metadata/skills/test-bucket/"
     assert (result.items or [])[0].name == "tone-of-voice"
 
     await client.skills.list_files(

@@ -60,13 +60,18 @@ def test_download_whole_skill_as_zip():
     assert response.filename == "tone-of-voice.zip"
 
 
-def test_download_forwards_if_match():
+def test_reads_send_no_if_match():
+    # DIAL Core ignores If-Match on both v2 reads: neither
+    # ComplexResourceController.get nor .getFile calls ProxyUtil.etag, and
+    # neither operation declares the header or a 412 response. Sending it
+    # anyway would advertise a precondition the server does not enforce.
     captured: list[httpx.Request] = []
     client = _capturing_client(captured, ZIP_BYTES)
 
-    client.skills.download(SKILL_URL, etag_if_match="aggregate-etag")
+    client.skills.download(SKILL_URL)
+    client.skills.get_file(SKILL_URL, "SKILL.md")
 
-    assert captured[0].headers["if-match"] == "aggregate-etag"
+    assert all("if-match" not in request.headers for request in captured)
 
 
 def test_download_rejects_non_skill_url():
