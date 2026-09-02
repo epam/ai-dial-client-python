@@ -178,3 +178,92 @@ def test_parse_storage_resource_non_dial_ignore():
             dial_api_url="https://dial.core/v1/",
             expected_resource_type="files",
         )
+
+
+@pytest.mark.parametrize(
+    "url, expected_api_path",
+    [
+        ("skills/my-bucket/my-skill", "skills/my-bucket/my-skill"),
+        ("skills/my-bucket/group/my-skill", "skills/my-bucket/group/my-skill"),
+        (
+            "https://dial.core/v2/skills/my-bucket/my-skill",
+            "skills/my-bucket/my-skill",
+        ),
+    ],
+)
+def test_parse_v2_skill_resource(url, expected_api_path):
+    result = parse_storage_resource(
+        url=url,
+        dial_api_url="https://dial.core/v2/",
+        expected_resource_type="skills",
+        api_prefix="v2/",
+    )
+    assert result.resource_type == "skills"
+    assert result.bucket == "my-bucket"
+    assert result.api_path == expected_api_path
+
+
+@pytest.mark.parametrize(
+    "url, dial_api_url, resource_type, api_prefix",
+    [
+        ("skills/my-bucket", "https://dial.core/v2/", "skills", "v2/"),
+        ("skills/my-bucket/", "https://dial.core/v2/", "skills", "v2/"),
+        ("files/my-bucket", "https://dial.core/v1/", "files", "v1/"),
+    ],
+)
+def test_parse_bucket_root_when_allowed(
+    url, dial_api_url, resource_type, api_prefix
+):
+    result = parse_storage_resource(
+        url=url,
+        dial_api_url=dial_api_url,
+        expected_resource_type=resource_type,
+        api_prefix=api_prefix,
+        allow_bucket_root=True,
+    )
+    assert result.bucket == "my-bucket"
+    assert result.bucket_path == ""
+    assert result.filename is None
+    assert result.api_path == f"{resource_type}/my-bucket"
+
+
+@pytest.mark.parametrize(
+    "url, dial_api_url, resource_type, api_prefix",
+    [
+        ("skills/my-bucket", "https://dial.core/v2/", "skills", "v2/"),
+        ("files/my-bucket", "https://dial.core/v1/", "files", "v1/"),
+    ],
+)
+def test_parse_bucket_root_rejected_by_default(
+    url, dial_api_url, resource_type, api_prefix
+):
+    # A two-segment path is ambiguous ("files/my-file.txt" has the same
+    # shape), so bucket-root parsing stays opt-in.
+    with pytest.raises(InvalidDialURLError, match="Missing bucket in URL"):
+        parse_storage_resource(
+            url=url,
+            dial_api_url=dial_api_url,
+            expected_resource_type=resource_type,
+            api_prefix=api_prefix,
+        )
+
+
+def test_parse_rejects_v2_api_prefix_as_relative_part():
+    with pytest.raises(
+        InvalidDialURLError, match="API prefix as relative part"
+    ):
+        parse_storage_resource(
+            url="v2/skills/my-bucket/my-skill",
+            dial_api_url="https://dial.core/v2/",
+            expected_resource_type="skills",
+            api_prefix="v2/",
+        )
+
+
+def test_parse_rejects_skills_url_for_v1_resource():
+    with pytest.raises(InvalidDialURLError, match="Invalid resource type"):
+        parse_storage_resource(
+            url="skills/my-bucket/my-skill",
+            dial_api_url="https://dial.core/v1/",
+            expected_resource_type="files",
+        )

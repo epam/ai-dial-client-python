@@ -37,6 +37,11 @@
     - [Get Prompt](#get-prompt)
     - [Get Prompt Metadata](#get-prompt-metadata)
     - [Delete Prompt](#delete-prompt)
+  - [Skills](#skills)
+    - [Listing Skills](#listing-skills)
+    - [Listing Files in a Skill](#listing-files-in-a-skill)
+    - [Reading a File from a Skill](#reading-a-file-from-a-skill)
+    - [Downloading a Skill](#downloading-a-skill)
   - [Applications](#applications)
     - [List Applications](#list-applications)
     - [Get Application by Id](#get-application-by-id)
@@ -793,6 +798,177 @@ Use `delete()` to remove a prompt by its storage path:
 client.prompts.delete("prompts/my-bucket/my-folder/my-prompt")
 # Async
 await async_client.prompts.delete("prompts/my-bucket/my-folder/my-prompt")
+```
+
+### Skills
+
+A DIAL *skill* is a folder-shaped resource served by DIAL Core's `/v2/skills`
+API: a mandatory `SKILL.md` manifest plus an arbitrary hierarchy of bundled
+files, addressed as a unit at `skills/{bucket}/{path}`.
+
+> [!NOTE]
+> The `/v2/skills` endpoints are marked as preview in DIAL Core, so their
+> contract may still change. The client currently supports the read
+> operations; writes are tracked separately.
+
+#### Listing Skills
+
+Use `get_metadata()` to list the skills and grouping folders at a location.
+Pass `my_skills_home()` to list the bucket root:
+
+```python
+# Sync
+listing = client.skills.get_metadata(client.my_skills_home())
+# Async
+listing = await async_client.skills.get_metadata(
+    await async_client.my_skills_home()
+)
+
+for item in listing.items or []:
+    # "ITEM" is a skill, "FOLDER" is a grouping folder
+    print(item.node_type, item.url)
+```
+
+Example of the response:
+
+```python
+SkillMetadata(
+    name="writing",
+    parent_path=None,
+    bucket="my-bucket",
+    url="skills/my-bucket/writing/",
+    node_type="FOLDER",
+    resource_type="SKILL",
+    next_token=None,
+    items=[
+        SkillItem(
+            name="tone-of-voice",
+            parent_path="writing",
+            bucket="my-bucket",
+            url="skills/my-bucket/writing/tone-of-voice",
+            node_type="ITEM",
+            resource_type="SKILL",
+            created_at=1724836229736,
+            updated_at=1724836248936,
+            author="user@example.com",
+            etag=None,
+        )
+    ],
+)
+```
+
+> [!NOTE]
+> DIAL Core builds this listing without reading each skill's marker, so
+> `etag` is always `None` here and the skill's `name`/`description` from
+> `SKILL.md` are not included. Read `SKILL.md` itself if you need them.
+
+#### Listing Files in a Skill
+
+Use `list_files()` to enumerate what a skill contains. A page may hold fewer
+entries than `limit`, so follow `next_token` until it is `None`:
+
+```python
+skill = "skills/my-bucket/writing/tone-of-voice"
+
+token = None
+while True:
+    page = client.skills.list_files(
+        skill, recursive=True, limit=1000, token=token
+    )
+    for item in page.items or []:
+        print(item.url, item.etag)
+    token = page.next_token
+    if token is None:
+        break
+```
+
+Scope the listing to a subfolder with `path`:
+
+```python
+page = await async_client.skills.list_files(skill, path="references")
+```
+
+> [!IMPORTANT]
+> In this listing, use the trailing `/` of `url` to tell subfolders from
+> files — not `node_type`. DIAL Core builds every entry as a plain item and
+> never overrides its node type, so subfolders are reported as `"ITEM"` too.
+> This differs from [Listing Skills](#listing-skills), where `node_type`
+> does distinguish a skill from a grouping folder.
+>
+> ```python
+> files = [item for item in page.items or [] if not item.url.endswith("/")]
+> ```
+
+Example of the response:
+
+```python
+SkillFileMetadata(
+    name="files",
+    parent_path="writing/tone-of-voice",
+    bucket="my-bucket",
+    url="skills/my-bucket/writing/tone-of-voice/files/",
+    node_type="FOLDER",
+    resource_type="SKILL",
+    next_token=None,
+    items=[
+        SkillFileItem(
+            name="SKILL.md",
+            parent_path="writing/tone-of-voice/files",
+            bucket="my-bucket",
+            url="skills/my-bucket/writing/tone-of-voice/files/SKILL.md",
+            node_type="ITEM",
+            resource_type="SKILL",
+            etag="9749fad13d6e7092a6337c4af9d83764",
+            updated_at=1724836248936,
+        )
+    ],
+)
+```
+
+#### Reading a File from a Skill
+
+Use `get_file()` with a path relative to the skill root:
+
+```python
+# Sync
+manifest = client.skills.get_file(skill, "SKILL.md")
+print(manifest.get_content().decode())
+
+# Async
+manifest = await async_client.skills.get_file(skill, "SKILL.md")
+schema = await async_client.skills.get_file(
+    skill, "references/api-schema.md"
+)
+await schema.awrite_to("api-schema.md")
+```
+
+The async client can stream instead, which avoids holding the file in memory:
+
+```python
+async with async_client.skills.stream_file(skill, "assets/logo.png") as file:
+    await file.awrite_to("logo.png")
+```
+
+#### Downloading a Skill
+
+Use `download()` to fetch the whole skill as a ZIP archive:
+
+```python
+# Sync
+archive = client.skills.download(skill)
+archive.write_to("tone-of-voice.zip")
+
+# Async, streamed
+async with async_client.skills.stream_download(skill) as archive:
+    await archive.awrite_to("tone-of-voice.zip")
+```
+
+DIAL Core sends no `Content-Disposition` for this endpoint, so `filename`
+defaults to the skill name with a `.zip` suffix (`tone-of-voice.zip` above).
+The response's `ETag` header carries the skill's aggregate etag:
+
+```python
+etag = archive.headers["etag"]
 ```
 
 ### Applications
