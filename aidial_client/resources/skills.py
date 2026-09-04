@@ -1,18 +1,38 @@
-from collections.abc import AsyncIterator
+"""
+Chained references to DIAL Core's ``/v2/skills`` API.
+
+A skill is a folder-shaped resource: the whole skill is addressed as a unit at
+"skills/{bucket}/{path}", and its bundled files hang off
+"skills/{bucket}/{path}/files/{filePath}".
+
+Rather than taking a hand-built URL per call, the resource is a reference that
+is narrowed step by step - ``client.skills / "writing" / "tone-of-voice"`` -
+so the URL is assembled from validated segments and cannot be typed wrong.
+Each narrowing returns a new reference; references are immutable and issue no
+requests until a terminal call (``list``/``read``/``download``/``stream``).
+
+The invariant that splits the two kinds of error: **constructing a reference
+validates segment syntax; a terminal call validates that the reference has
+enough path for its route.**
+"""
+
+from collections.abc import AsyncIterator, Awaitable, Callable, Sequence
 from contextlib import asynccontextmanager
-from pathlib import PurePosixPath
-from urllib.parse import unquote, urljoin
+from urllib.parse import unquote
 
 import httpx
+from typing_extensions import Self, overload
 
-from aidial_client._constants import API_V2_PREFIX, METADATA_V2_PREFIX
+from aidial_client._constants import API_PREFIX_V2, METADATA_PREFIX_V2
 from aidial_client._exception import InvalidDialURLError
 from aidial_client._internal_types._http_request import FinalRequestOptions
 from aidial_client._utils._dict import remove_none
 from aidial_client.helpers.storage_resource import (
     DialStorageResourceMixin,
+    StorageResourceTypeV2,
     _percent_encode_relative_url,
-    storage_error_processor,
+    _storage_error_processor,
+    split_relative_segments,
 )
 from aidial_client.resources.base import AsyncResource, Resource
 from aidial_client.types.file import FileDownloadResponse
@@ -20,367 +40,456 @@ from aidial_client.types.metadata import SkillFileMetadata, SkillMetadata
 
 # DIAL Core reserves this path segment to keep the
 # ".../{path}/files/{filePath}" grammar unambiguous.
-FILES_SEGMENT = "files"
+_FILES_SEGMENT = "files"
 
 
-def _relative_path_segments(path: str, param: str) -> list[str]:
-    """
-    Validate a path relative to the skill root and split it into segments.
+def _encode(segments: Sequence[str]) -> str:
+    """Percent-encode each segment, so none can contribute a separator."""
+    return "/".join(_percent_encode_relative_url(seg) for seg in segments)
 
-    Unlike the ``url`` argument, this path is concatenated onto an
-    already-parsed api path and never goes back through the url parser, so
-    nothing else would catch a traversal segment. ``urljoin`` resolves "." and
-    ".." while building the request, which shifts the bucket segment: a
-    ``file_path`` of "../../../other-bucket/their-skill/files/SKILL.md" turns a
-    validated "skills/my-bucket/my-skill" into a request against
-    ``other-bucket``. Reject those segments instead.
 
-    Each segment is checked *as it will decode*, because
-    ``_percent_encode_relative_url`` normalizes with ``unquote`` before quoting:
-    "%2e%2e" would otherwise pass a literal check here and still reach
-    ``urljoin`` as "..", and "%2f" would smuggle in a separator.
-    """
-    if not path.strip():
-        raise InvalidDialURLError(f"{param} must not be empty")
-    if path.startswith("/"):
+def _listing_params(
+    limit: int | None,
+    token: str | None,
+    recursive: bool | None,
+) -> dict[str, object]:
+    return remove_none({"limit": limit, "token": token, "recursive": recursive})
+
+
+def _validate_bucket(bucket: str) -> str:
+    """A bucket is a URL segment too, so it gets the same treatment."""
+    segments = split_relative_segments(bucket, "bucket")
+    if len(segments) != 1:
         raise InvalidDialURLError(
-            f"{param} must be relative to the skill root, got: {path}"
+            f"bucket must be a single path segment, got: {bucket!r}"
         )
-
-    segments = path.split("/")
-    decoded = [unquote(segment) for segment in segments]
-    if any(segment in (".", "..") for segment in decoded):
-        raise InvalidDialURLError(
-            f'"." and ".." are not allowed in {param}, got: {path}'
-        )
-    if any("/" in segment for segment in decoded):
-        raise InvalidDialURLError(
-            f"An encoded path separator is not allowed in {param}, got: {path}"
-        )
-    # A trailing slash is allowed (it denotes a folder) but an interior empty
-    # segment is a malformed path.
-    if any(segment == "" for segment in segments[:-1]):
-        raise InvalidDialURLError(f"Empty path segment in {param}, got: {path}")
-    return segments
+    return segments[0]
 
 
-class SkillsMixin(DialStorageResourceMixin):
-    """
-    URL and request shaping shared by the sync and async skills resources.
+class _RefCommon(DialStorageResourceMixin):
+    """State and URL parsing shared by both kinds of reference."""
 
-    A skill is a folder-shaped resource: the whole skill is addressed as a unit
-    at "skills/{bucket}/{path}", and its bundled files hang off
-    "skills/{bucket}/{path}/files/{filePath}".
-    """
+    resource_type: StorageResourceTypeV2 = "skills"
+    bucket: str | None = None
+    """None means "the caller's own bucket", resolved at terminal-call time."""
 
-    resource_type: str = "skills"
-    api_prefix: str = API_V2_PREFIX
+    def _split_url(self, url: str) -> tuple[str, tuple[str, ...]]:
+        # allow_empty_bucket_path is unconditional: a reference does not know
+        # which terminal call comes next, so "skills/my-bucket" must parse and
+        # the shape guards decide later whether an empty path is acceptable.
+        parsed = self.get_storage_resource(url, allow_empty_bucket_path=True)
+        if parsed.bucket_path is None:
+            return parsed.bucket, ()
+        return parsed.bucket, tuple(parsed.bucket_path.rstrip("/").split("/"))
 
-    def _files_path(
-        self, url: str | PurePosixPath, path: str | None = None
-    ) -> str:
-        api_path = f"{self.get_api_path(url)}/{FILES_SEGMENT}"
-        # None is the "unset" signal; "" goes through the same validation as
-        # file_path so the two entry points agree.
-        if path is None:
-            return api_path
 
-        segments = _relative_path_segments(path, "path")
-        if segments[-1] == "":
-            # Scoping to a folder - drop the trailing empty segment.
-            segments = segments[:-1]
-        if not segments:
-            return api_path
-        relative = _percent_encode_relative_url("/".join(segments))
-        return f"{api_path}/{relative}"
+class _SkillsRefBase(_RefCommon):
+    """A skill, a grouping folder, or the bucket root."""
 
-    @staticmethod
-    def _listing_params(
-        limit: int | None,
-        token: str | None,
-        recursive: bool | None,
-    ) -> dict[str, object]:
-        return remove_none(
-            {"limit": limit, "token": token, "recursive": recursive}
-        )
+    path: tuple[str, ...] = ()
 
-    def _prepare_metadata_request(
+    @overload
+    def __call__(self, *, path: str, bucket: str | None = None) -> Self: ...
+    @overload
+    def __call__(self, *, bucket: str) -> Self: ...
+    @overload
+    def __call__(self, *, url: str) -> Self: ...
+
+    def __call__(
         self,
-        url: str | PurePosixPath,
         *,
-        limit: int | None,
-        token: str | None,
-        recursive: bool | None,
-    ) -> FinalRequestOptions:
-        # Core lists the bucket root when {path} is empty, so a bucket-root
-        # url ("skills/my-bucket") is a valid target here.
-        api_path = self.get_api_path(url, allow_bucket_root=True)
-        # This route always addresses a folder, and the separator after
-        # {bucket} in Core's route regex is literal:
-        #   ^/v2/metadata/skills/(?<bucket>[a-zA-Z0-9]+)/(?<path>.*)$
-        # so an empty {path} only matches with a trailing slash. api_path
-        # comes from PurePosixPath and never carries one. Core strips a
-        # trailing slash off {path} again, so appending it unconditionally
-        # leaves the deeper paths resolving to the same folder as before.
-        return FinalRequestOptions(
-            method="GET",
-            url=urljoin(METADATA_V2_PREFIX, f"{api_path}/"),
-            params=self._listing_params(limit, token, recursive),
-        )
+        path: str | None = None,
+        bucket: str | None = None,
+        url: str | None = None,
+    ) -> Self:
+        if url is not None:
+            if path is not None or bucket is not None:
+                raise TypeError("url= cannot be combined with bucket= or path=")
+            new_bucket, segments = self._split_url(url)
+            return self.copy(update={"bucket": new_bucket, "path": segments})
+        if path is None and bucket is None:
+            raise TypeError("one of url=, bucket= or path= is required")
 
-    def _prepare_list_files_request(
-        self,
-        url: str | PurePosixPath,
-        *,
-        path: str | None,
-        limit: int | None,
-        token: str | None,
-        recursive: bool | None,
-    ) -> FinalRequestOptions:
-        return FinalRequestOptions(
-            method="GET",
-            url=urljoin(METADATA_V2_PREFIX, self._files_path(url, path)),
-            params=self._listing_params(limit, token, recursive),
-        )
+        update: dict[str, object] = {}
+        if bucket is not None:
+            update["bucket"] = _validate_bucket(bucket)
+        if path is not None:
+            update["path"] = (
+                *self.path,
+                *split_relative_segments(path, "path"),
+            )
+        return self.copy(update=update)
 
-    def _prepare_get_file_request(
-        self,
-        url: str | PurePosixPath,
-        file_path: str,
-    ) -> tuple[FinalRequestOptions, str]:
-        segments = _relative_path_segments(file_path, "file_path")
-        if segments[-1] == "":
+    def __truediv__(self, path: str) -> Self:
+        return self(path=path)
+
+    def __repr__(self) -> str:
+        bucket = self.bucket if self.bucket is not None else "<my-bucket>"
+        return f"{type(self).__name__}('skills/{bucket}/{'/'.join(self.path)}')"
+
+    def _require_skill_path(self, operation: str) -> None:
+        if not self.path:
             raise InvalidDialURLError(
-                f"file_path points to a directory, not a file: {file_path}"
+                f"{operation} addresses one skill, but this reference points"
+                " at the bucket root. Descend to a skill first, e.g."
+                ' client.skills / "my-skill".'
             )
 
-        relative = _percent_encode_relative_url("/".join(segments))
-        api_path = f"{self.get_api_path(url)}/{FILES_SEGMENT}/{relative}"
-        # No If-Match: unlike the /v1 reads, neither v2 read honours it -
-        # ComplexResourceController.getFile never calls ProxyUtil.etag, and
-        # the operation declares no If-Match parameter and no 412 response.
+    def _metadata_url(self, bucket: str) -> str:
+        """``GET /v2/metadata/skills/{bucket}/{path}/`` - a folder listing.
+
+        The separator after ``{bucket}`` in Core's route regex is literal, so
+        an empty ``{path}`` only matches with the trailing slash. Core strips a
+        trailing slash off ``{path}`` again, so appending it unconditionally
+        leaves deeper paths resolving to the same folder as before.
+        """
+        encoded = _encode(self.path)
+        suffix = f"{encoded}/" if encoded else ""
+        return f"{METADATA_PREFIX_V2}skills/{bucket}/{suffix}"
+
+    def _archive_url(self, bucket: str) -> tuple[FinalRequestOptions, str]:
+        """``GET /v2/skills/{bucket}/{path}`` - the skill as a ZIP archive.
+
+        Core answers ``application/zip`` without a ``Content-Disposition``
+        header, so name the archive after the skill.
+        """
         options = FinalRequestOptions(
             method="GET",
-            url=urljoin(API_V2_PREFIX, api_path),
+            url=f"{API_PREFIX_V2}skills/{bucket}/{_encode(self.path)}",
         )
-        return options, unquote(segments[-1])
+        return options, f"{unquote(self.path[-1])}.zip"
 
-    def _prepare_download_archive_request(
+
+class _SkillFilesRefBase(_RefCommon):
+    """The files bundled inside one skill, or a subfolder of them."""
+
+    skill_path: tuple[str, ...] = ()
+    path: tuple[str, ...] = ()
+
+    @overload
+    def __call__(self, *, path: str) -> Self: ...
+    @overload
+    def __call__(self, *, url: str) -> Self: ...
+
+    def __call__(
         self,
-        url: str | PurePosixPath,
-    ) -> tuple[FinalRequestOptions, str]:
-        api_path = self.get_api_path(url)
-        # See _prepare_get_file_request: Core ignores If-Match on this read
-        # too (ComplexResourceController.get).
+        *,
+        path: str | None = None,
+        url: str | None = None,
+    ) -> Self:
+        if url is not None:
+            if path is not None:
+                raise TypeError("url= cannot be combined with path=")
+            bucket, skill_path, file_path = self._split_files_url(url)
+            return self.copy(
+                update={
+                    "bucket": bucket,
+                    "skill_path": skill_path,
+                    "path": file_path,
+                }
+            )
+        if path is None:
+            raise TypeError("one of url= or path= is required")
+        return self.copy(
+            update={
+                "path": (*self.path, *split_relative_segments(path, "path"))
+            }
+        )
+
+    def __truediv__(self, path: str) -> Self:
+        return self(path=path)
+
+    def __repr__(self) -> str:
+        bucket = self.bucket if self.bucket is not None else "<my-bucket>"
+        skill = "/".join(self.skill_path)
+        return (
+            f"{type(self).__name__}('skills/{bucket}/{skill}"
+            f"/{_FILES_SEGMENT}/{'/'.join(self.path)}')"
+        )
+
+    def _split_files_url(
+        self, url: str
+    ) -> tuple[str, tuple[str, ...], tuple[str, ...]]:
+        """Split ``skills/{bucket}/{path}/files/{filePath}`` back into parts.
+
+        The search starts at index 1 because Core's route requires at least
+        one segment before ``files`` (``(?<path>.+?)/files/``), so a skill
+        named "files" resolves the same way here as it does there.
+        """
+        bucket, segments = self._split_url(url)
+        try:
+            index = segments.index(_FILES_SEGMENT, 1)
+        except ValueError:
+            raise InvalidDialURLError(
+                f'url must address a file inside a skill ("…/{_FILES_SEGMENT}'
+                f'/…"), got: {url!r}'
+            ) from None
+        return bucket, segments[:index], segments[index + 1 :]
+
+    def _require_skill_path(self, operation: str) -> None:
+        if not self.skill_path:
+            raise InvalidDialURLError(
+                f"{operation} lists the files of one skill, but this"
+                " reference points at the bucket root. Descend to a skill"
+                ' first, e.g. (client.skills / "my-skill").files.'
+            )
+
+    def _require_file_path(self, operation: str) -> None:
+        self._require_skill_path(operation)
+        if not self.path:
+            raise InvalidDialURLError(
+                f"{operation} addresses one file, but no file path was given."
+                ' Use skill.files(path="SKILL.md") to name it.'
+            )
+
+    def _files_metadata_url(self, bucket: str) -> str:
+        """``GET /v2/metadata/skills/{b}/{p}/files[/{filePath}]``."""
+        base = (
+            f"{METADATA_PREFIX_V2}skills/{bucket}"
+            f"/{_encode(self.skill_path)}/{_FILES_SEGMENT}"
+        )
+        tail = _encode(self.path)
+        return f"{base}/{tail}" if tail else base
+
+    def _file_url(self, bucket: str) -> tuple[FinalRequestOptions, str]:
+        """``GET /v2/skills/{b}/{p}/files/{filePath}`` - one bundled file."""
         options = FinalRequestOptions(
             method="GET",
-            url=urljoin(API_V2_PREFIX, api_path),
+            url=(
+                f"{API_PREFIX_V2}skills/{bucket}"
+                f"/{_encode(self.skill_path)}/{_FILES_SEGMENT}"
+                f"/{_encode(self.path)}"
+            ),
         )
-        # Core answers application/zip without a Content-Disposition header,
-        # so name the archive after the skill.
-        filename = f"{unquote(PurePosixPath(api_path).name)}.zip"
-        return options, filename
+        # The path is percent-encoded; return a human-readable filename.
+        return options, unquote(self.path[-1])
 
 
-class Skills(Resource, SkillsMixin):
-    def get_metadata(
+class SkillsRef(Resource, _SkillsRefBase):
+    class Config:
+        arbitrary_types_allowed = True
+        allow_mutation = False
+
+    resolve_bucket: Callable[[], str]
+
+    def _bucket(self) -> str:
+        if self.bucket is not None:
+            return self.bucket
+        return self.resolve_bucket()
+
+    @property
+    def files(self) -> "SkillFilesRef":
+        return SkillFilesRef(
+            http_client=self.http_client,
+            dial_api_url=self.dial_api_url,
+            bucket=self.bucket,
+            skill_path=self.path,
+            resolve_bucket=self.resolve_bucket,
+        )
+
+    def list(
         self,
-        url: str | PurePosixPath,
         *,
         limit: int | None = None,
         token: str | None = None,
         recursive: bool | None = None,
     ) -> SkillMetadata:
         """
-        List the skills and grouping folders at ``url``.
+        List the skills and grouping folders this reference points at.
 
-        Pass a bucket-root url (``client.my_skills_home()``) to list the whole
-        bucket. Follow ``next_token`` until it is ``None`` to read every page.
+        Follow ``next_token`` until it is ``None`` to read every page.
         """
         return self.http_client.request(
             cast_to=SkillMetadata,
-            options=self._prepare_metadata_request(
-                url, limit=limit, token=token, recursive=recursive
+            options=FinalRequestOptions(
+                method="GET",
+                url=self._metadata_url(self._bucket()),
+                params=_listing_params(limit, token, recursive),
             ),
-            on_http_error=storage_error_processor,
+            on_http_error=_storage_error_processor,
         )
 
-    def list_files(
+    def download(self) -> FileDownloadResponse:
+        """Download the whole skill as a ZIP archive."""
+        self._require_skill_path("download()")
+        options, filename = self._archive_url(self._bucket())
+        response = self.http_client.request(
+            cast_to=httpx.Response,
+            options=options,
+            on_http_error=_storage_error_processor,
+        )
+        return FileDownloadResponse(response=response, filename=filename)
+
+
+class SkillFilesRef(Resource, _SkillFilesRefBase):
+    class Config:
+        arbitrary_types_allowed = True
+        allow_mutation = False
+
+    resolve_bucket: Callable[[], str]
+
+    def _bucket(self) -> str:
+        if self.bucket is not None:
+            return self.bucket
+        return self.resolve_bucket()
+
+    def list(
         self,
-        url: str | PurePosixPath,
         *,
-        path: str | None = None,
         limit: int | None = None,
         token: str | None = None,
         recursive: bool | None = None,
     ) -> SkillFileMetadata:
         """
-        List the files of the skill at ``url``, optionally scoped to the
-        ``path`` subfolder inside it.
+        List the skill's files, optionally scoped to a subfolder.
 
         A page may hold fewer entries than ``limit``, so follow ``next_token``
-        until it is ``None`` rather than assuming a single page is complete.
+        until it is ``None`` rather than assuming one page is complete.
         """
+        self._require_skill_path("list()")
         return self.http_client.request(
             cast_to=SkillFileMetadata,
-            options=self._prepare_list_files_request(
-                url,
-                path=path,
-                limit=limit,
-                token=token,
-                recursive=recursive,
+            options=FinalRequestOptions(
+                method="GET",
+                url=self._files_metadata_url(self._bucket()),
+                params=_listing_params(limit, token, recursive),
             ),
-            on_http_error=storage_error_processor,
+            on_http_error=_storage_error_processor,
         )
 
-    def get_file(
-        self,
-        url: str | PurePosixPath,
-        file_path: str,
-    ) -> FileDownloadResponse:
-        """
-        Download a single file bundled in the skill at ``url``.
-
-        ``file_path`` is relative to the skill root, e.g. "SKILL.md" or
-        "references/api-schema.md".
-        """
-        options, filename = self._prepare_get_file_request(url, file_path)
+    def read(self) -> FileDownloadResponse:
+        """Download the single file this reference names."""
+        self._require_file_path("read()")
+        options, filename = self._file_url(self._bucket())
         response = self.http_client.request(
             cast_to=httpx.Response,
             options=options,
-            on_http_error=storage_error_processor,
-        )
-        return FileDownloadResponse(response=response, filename=filename)
-
-    def download(
-        self,
-        url: str | PurePosixPath,
-    ) -> FileDownloadResponse:
-        """
-        Download the whole skill at ``url`` as a ZIP archive.
-        """
-        options, filename = self._prepare_download_archive_request(url)
-        response = self.http_client.request(
-            cast_to=httpx.Response,
-            options=options,
-            on_http_error=storage_error_processor,
+            on_http_error=_storage_error_processor,
         )
         return FileDownloadResponse(response=response, filename=filename)
 
 
-class AsyncSkills(AsyncResource, SkillsMixin):
-    async def get_metadata(
+class AsyncSkillsRef(AsyncResource, _SkillsRefBase):
+    class Config:
+        arbitrary_types_allowed = True
+        allow_mutation = False
+
+    resolve_bucket: Callable[[], Awaitable[str]]
+
+    async def _bucket(self) -> str:
+        if self.bucket is not None:
+            return self.bucket
+        return await self.resolve_bucket()
+
+    @property
+    def files(self) -> "AsyncSkillFilesRef":
+        return AsyncSkillFilesRef(
+            http_client=self.http_client,
+            dial_api_url=self.dial_api_url,
+            bucket=self.bucket,
+            skill_path=self.path,
+            resolve_bucket=self.resolve_bucket,
+        )
+
+    async def list(
         self,
-        url: str | PurePosixPath,
         *,
         limit: int | None = None,
         token: str | None = None,
         recursive: bool | None = None,
     ) -> SkillMetadata:
         """
-        List the skills and grouping folders at ``url``.
+        List the skills and grouping folders this reference points at.
 
-        Pass a bucket-root url (``await client.my_skills_home()``) to list the
-        whole bucket. Follow ``next_token`` until it is ``None`` to read every
-        page.
+        Follow ``next_token`` until it is ``None`` to read every page.
         """
         return await self.http_client.request(
             cast_to=SkillMetadata,
-            options=self._prepare_metadata_request(
-                url, limit=limit, token=token, recursive=recursive
+            options=FinalRequestOptions(
+                method="GET",
+                url=self._metadata_url(await self._bucket()),
+                params=_listing_params(limit, token, recursive),
             ),
-            on_http_error=storage_error_processor,
+            on_http_error=_storage_error_processor,
         )
 
-    async def list_files(
-        self,
-        url: str | PurePosixPath,
-        *,
-        path: str | None = None,
-        limit: int | None = None,
-        token: str | None = None,
-        recursive: bool | None = None,
-    ) -> SkillFileMetadata:
-        """
-        List the files of the skill at ``url``, optionally scoped to the
-        ``path`` subfolder inside it.
-
-        A page may hold fewer entries than ``limit``, so follow ``next_token``
-        until it is ``None`` rather than assuming a single page is complete.
-        """
-        return await self.http_client.request(
-            cast_to=SkillFileMetadata,
-            options=self._prepare_list_files_request(
-                url,
-                path=path,
-                limit=limit,
-                token=token,
-                recursive=recursive,
-            ),
-            on_http_error=storage_error_processor,
-        )
-
-    async def get_file(
-        self,
-        url: str | PurePosixPath,
-        file_path: str,
-    ) -> FileDownloadResponse:
-        """
-        Download a single file bundled in the skill at ``url``.
-
-        ``file_path`` is relative to the skill root, e.g. "SKILL.md" or
-        "references/api-schema.md".
-        """
-        options, filename = self._prepare_get_file_request(url, file_path)
+    async def download(self) -> FileDownloadResponse:
+        """Download the whole skill as a ZIP archive."""
+        self._require_skill_path("download()")
+        options, filename = self._archive_url(await self._bucket())
         response = await self.http_client.request(
             cast_to=httpx.Response,
             options=options,
-            on_http_error=storage_error_processor,
+            on_http_error=_storage_error_processor,
         )
         return FileDownloadResponse(response=response, filename=filename)
 
     @asynccontextmanager
-    async def stream_file(
-        self,
-        url: str | PurePosixPath,
-        file_path: str,
-    ) -> AsyncIterator[FileDownloadResponse]:
-        """
-        Stream a single file bundled in the skill at ``url``.
-        """
-        options, filename = self._prepare_get_file_request(url, file_path)
+    async def stream_download(self) -> AsyncIterator[FileDownloadResponse]:
+        """Stream the whole skill as a ZIP archive."""
+        self._require_skill_path("stream_download()")
+        options, filename = self._archive_url(await self._bucket())
         async with self.http_client.stream(
             options=options,
-            on_http_error=storage_error_processor,
+            on_http_error=_storage_error_processor,
         ) as response:
             yield FileDownloadResponse(response=response, filename=filename)
 
-    async def download(
+
+class AsyncSkillFilesRef(AsyncResource, _SkillFilesRefBase):
+    class Config:
+        arbitrary_types_allowed = True
+        allow_mutation = False
+
+    resolve_bucket: Callable[[], Awaitable[str]]
+
+    async def _bucket(self) -> str:
+        if self.bucket is not None:
+            return self.bucket
+        return await self.resolve_bucket()
+
+    async def list(
         self,
-        url: str | PurePosixPath,
-    ) -> FileDownloadResponse:
+        *,
+        limit: int | None = None,
+        token: str | None = None,
+        recursive: bool | None = None,
+    ) -> SkillFileMetadata:
         """
-        Download the whole skill at ``url`` as a ZIP archive.
+        List the skill's files, optionally scoped to a subfolder.
+
+        A page may hold fewer entries than ``limit``, so follow ``next_token``
+        until it is ``None`` rather than assuming one page is complete.
         """
-        options, filename = self._prepare_download_archive_request(url)
+        self._require_skill_path("list()")
+        return await self.http_client.request(
+            cast_to=SkillFileMetadata,
+            options=FinalRequestOptions(
+                method="GET",
+                url=self._files_metadata_url(await self._bucket()),
+                params=_listing_params(limit, token, recursive),
+            ),
+            on_http_error=_storage_error_processor,
+        )
+
+    async def read(self) -> FileDownloadResponse:
+        """Download the single file this reference names."""
+        self._require_file_path("read()")
+        options, filename = self._file_url(await self._bucket())
         response = await self.http_client.request(
             cast_to=httpx.Response,
             options=options,
-            on_http_error=storage_error_processor,
+            on_http_error=_storage_error_processor,
         )
         return FileDownloadResponse(response=response, filename=filename)
 
     @asynccontextmanager
-    async def stream_download(
-        self,
-        url: str | PurePosixPath,
-    ) -> AsyncIterator[FileDownloadResponse]:
-        """
-        Stream the whole skill at ``url`` as a ZIP archive.
-        """
-        options, filename = self._prepare_download_archive_request(url)
+    async def stream(self) -> AsyncIterator[FileDownloadResponse]:
+        """Stream the single file this reference names."""
+        self._require_file_path("stream()")
+        options, filename = self._file_url(await self._bucket())
         async with self.http_client.stream(
             options=options,
-            on_http_error=storage_error_processor,
+            on_http_error=_storage_error_processor,
         ) as response:
             yield FileDownloadResponse(response=response, filename=filename)

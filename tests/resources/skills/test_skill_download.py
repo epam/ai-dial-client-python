@@ -48,7 +48,7 @@ def test_download_whole_skill_as_zip():
         {"content-type": "application/zip", "etag": "aggregate-etag"},
     )
 
-    response = client.skills.download(SKILL_URL)
+    response = client.skills(url=SKILL_URL).download()
 
     assert (
         captured[0].url.path == "/v2/skills/test-bucket/writing/tone-of-voice"
@@ -68,8 +68,8 @@ def test_reads_send_no_if_match():
     captured: list[httpx.Request] = []
     client = _capturing_client(captured, ZIP_BYTES)
 
-    client.skills.download(SKILL_URL)
-    client.skills.get_file(SKILL_URL, "SKILL.md")
+    client.skills(url=SKILL_URL).download()
+    client.skills(url=SKILL_URL).files(path="SKILL.md").read()
 
     assert all("if-match" not in request.headers for request in captured)
 
@@ -78,7 +78,7 @@ def test_download_rejects_non_skill_url():
     client = _capturing_client([], ZIP_BYTES)
 
     with pytest.raises(InvalidDialURLError, match="Invalid resource type"):
-        client.skills.download("files/test-bucket/folder/file.txt")
+        client.skills(url="files/test-bucket/folder/file.txt")
 
 
 def test_get_file_returns_bytes():
@@ -89,7 +89,7 @@ def test_get_file_returns_bytes():
         {"content-type": "text/markdown", "etag": "aggregate-etag"},
     )
 
-    response = client.skills.get_file(SKILL_URL, "SKILL.md")
+    response = client.skills(url=SKILL_URL).files(path="SKILL.md").read()
 
     assert captured[0].url.path == (
         "/v2/skills/test-bucket/writing/tone-of-voice/files/SKILL.md"
@@ -102,7 +102,11 @@ def test_get_file_percent_encodes_relative_path():
     captured: list[httpx.Request] = []
     client = _capturing_client(captured, b"schema")
 
-    response = client.skills.get_file(SKILL_URL, "references/api schema.md")
+    response = (
+        client.skills(url=SKILL_URL)
+        .files(path="references/api schema.md")
+        .read()
+    )
 
     assert captured[0].url.raw_path.decode() == (
         "/v2/skills/test-bucket/writing/tone-of-voice"
@@ -116,7 +120,7 @@ def test_get_file_accepts_already_encoded_path():
     captured: list[httpx.Request] = []
     client = _capturing_client(captured, b"schema")
 
-    client.skills.get_file(SKILL_URL, "references/api%20schema.md")
+    client.skills(url=SKILL_URL).files(path="references/api%20schema.md").read()
 
     assert captured[0].url.raw_path.decode() == (
         "/v2/skills/test-bucket/writing/tone-of-voice"
@@ -128,7 +132,7 @@ def test_get_file_preserves_non_utf8_content():
     payload = b"\x89PNG\r\n\x1a\n\xff\xfe"
     client = _capturing_client([], payload, {"content-type": "image/png"})
 
-    response = client.skills.get_file(SKILL_URL, "assets/logo.png")
+    response = client.skills(url=SKILL_URL).files(path="assets/logo.png").read()
 
     assert response.get_content() == payload
 
@@ -147,7 +151,7 @@ def test_error_mapping(status_code, expected_exception):
     )
 
     with pytest.raises(expected_exception) as exc_info:
-        client.skills.get_file(SKILL_URL, "SKILL.md")
+        client.skills(url=SKILL_URL).files(path="SKILL.md").read()
 
     if status_code == 403:
         assert exc_info.value.status_code == 403
@@ -176,7 +180,7 @@ async def test_async_stream_download_streams_and_closes():
 
     client._http_client._internal_http_client.send = cast(Any, send_mock)
 
-    async with client.skills.stream_download(SKILL_URL) as response:
+    async with client.skills(url=SKILL_URL).stream_download() as response:
         assert response.filename == "tone-of-voice.zip"
         chunks = [chunk async for chunk in response]
         assert b"".join(chunks) == b"PK\x03\x04rest"
@@ -206,7 +210,9 @@ async def test_async_stream_file_streams_and_closes():
 
     client._http_client._internal_http_client.send = cast(Any, send_mock)
 
-    async with client.skills.stream_file(SKILL_URL, "SKILL.md") as response:
+    async with (
+        client.skills(url=SKILL_URL).files(path="SKILL.md").stream() as response
+    ):
         assert response.filename == "SKILL.md"
         assert b"".join([c async for c in response]) == b"# skill"
 
@@ -242,7 +248,7 @@ def test_get_file_rejects_traversal_segments(bad_path):
     client = _capturing_client(captured, b"x")
 
     with pytest.raises(InvalidDialURLError, match=r'"\." and "\.\."'):
-        client.skills.get_file(SKILL_URL, bad_path)
+        client.skills(url=SKILL_URL).files(path=bad_path).read()
 
     assert captured == []
 
@@ -260,7 +266,7 @@ def test_list_files_rejects_traversal_segments(bad_path):
     client = _capturing_client(captured, b"x")
 
     with pytest.raises(InvalidDialURLError, match=r'"\." and "\.\."'):
-        client.skills.list_files(SKILL_URL, path=bad_path)
+        client.skills(url=SKILL_URL).files(path=bad_path).list()
 
     assert captured == []
 
@@ -270,8 +276,8 @@ def test_list_files_rejects_traversal_segments(bad_path):
     [
         ("", "must not be empty"),
         ("   ", "must not be empty"),
-        ("/abs/path.md", "must be relative to the skill root"),
-        ("refs/", "points to a directory, not a file"),
+        ("/abs/path.md", "must be relative"),
+        ("refs/", "must not end with"),
         ("a//b.md", "Empty path segment"),
     ],
 )
@@ -280,17 +286,19 @@ def test_get_file_rejects_malformed_path(bad_path, message):
     client = _capturing_client(captured, b"x")
 
     with pytest.raises(InvalidDialURLError, match=message):
-        client.skills.get_file(SKILL_URL, bad_path)
+        client.skills(url=SKILL_URL).files(path=bad_path).read()
 
     assert captured == []
 
 
 @pytest.mark.asyncio
 async def test_async_get_file_rejects_traversal():
+    # The reference is built synchronously, so a bad segment is rejected
+    # before anything is awaited - there is no request to intercept.
     client = AsyncDial(api_key="dummy", base_url="http://dial.core")
 
     with pytest.raises(InvalidDialURLError, match=r'"\." and "\.\."'):
-        await client.skills.get_file(SKILL_URL, "../../../other/s/files/x.md")
+        client.skills(url=SKILL_URL).files(path="../../../other/s/files/x.md")
 
 
 @pytest.mark.parametrize(
@@ -304,18 +312,19 @@ def test_get_file_rejects_encoded_separator(bad_path):
     client = _capturing_client(captured, b"x")
 
     with pytest.raises(InvalidDialURLError, match="encoded path separator"):
-        client.skills.get_file(SKILL_URL, bad_path)
+        client.skills(url=SKILL_URL).files(path=bad_path).read()
 
     assert captured == []
 
 
-def test_list_files_rejects_empty_path_like_get_file():
-    # "" is validated the same way for both entry points; None means "unset".
+def test_rejects_empty_path():
+    # Omitting path= keeps the reference where it is; passing "" is an error,
+    # not a way to say "no path".
     captured: list[httpx.Request] = []
     client = _capturing_client(captured, b"x")
 
     with pytest.raises(InvalidDialURLError, match="path must not be empty"):
-        client.skills.list_files(SKILL_URL, path="")
+        client.skills(url=SKILL_URL).files(path="")
 
     assert captured == []
 
@@ -336,7 +345,7 @@ def test_get_file_accepts_legitimate_paths(
     captured: list[httpx.Request] = []
     client = _capturing_client(captured, b"x")
 
-    response = client.skills.get_file(SKILL_URL, good_path)
+    response = client.skills(url=SKILL_URL).files(path=good_path).read()
 
     assert captured[0].url.raw_path.decode() == (
         f"/v2/skills/test-bucket/writing/tone-of-voice/files/{expected_raw}"

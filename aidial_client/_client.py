@@ -15,8 +15,8 @@ from aidial_client._auth import (
     validate_auth,
 )
 from aidial_client._constants import (
-    API_PREFIX,
-    API_V2_PREFIX,
+    API_PREFIX_V1,
+    API_PREFIX_V2,
     DEFAULT_MAX_RETRIES,
     DEFAULT_TIMEOUT,
     OPENAI_PREFIX,
@@ -72,11 +72,11 @@ class BaseDialClient(Generic[_HttpClientT, AuthValueT], ABC):
 
     @property
     def api_url(self) -> str:
-        return urljoin(self._base_url, API_PREFIX)
+        return urljoin(self._base_url, API_PREFIX_V1)
 
     @property
-    def api_v2_url(self) -> str:
-        return urljoin(self._base_url, API_V2_PREFIX)
+    def api_url_v2(self) -> str:
+        return urljoin(self._base_url, API_PREFIX_V2)
 
     @property
     def base_url(self) -> str:
@@ -115,9 +115,10 @@ class Dial(BaseDialClient[SyncHTTPClient, SyncAuthValue]):
             metadata=self.metadata,
             dial_api_url=self.api_url,
         )
-        self.skills = resources.Skills(
+        self.skills = resources.SkillsRef(
             http_client=self._http_client,
-            dial_api_url=self.api_v2_url,
+            dial_api_url=self.api_url_v2,
+            resolve_bucket=self.my_bucket,
         )
         self.deployments = resources.Deployments(http_client=self._http_client)
         self.application = resources.Application(http_client=self._http_client)
@@ -157,9 +158,6 @@ class Dial(BaseDialClient[SyncHTTPClient, SyncAuthValue]):
 
     def my_prompts_home(self) -> PurePosixPath:
         return "prompts" / PurePosixPath(self.my_bucket())
-
-    def my_skills_home(self) -> PurePosixPath:
-        return "skills" / PurePosixPath(self.my_bucket())
 
     def _get_my_appdata(self) -> AppData | None:
         return self.bucket.get_appdata()
@@ -223,9 +221,10 @@ class AsyncDial(BaseDialClient[AsyncHTTPClient, AsyncAuthValue]):
             metadata=self.metadata,
             dial_api_url=self.api_url,
         )
-        self.skills = resources.AsyncSkills(
+        self.skills = resources.AsyncSkillsRef(
             http_client=self._http_client,
-            dial_api_url=self.api_v2_url,
+            dial_api_url=self.api_url_v2,
+            resolve_bucket=self.my_bucket,
         )
         self.deployments = resources.AsyncDeployments(
             http_client=self._http_client
@@ -269,9 +268,6 @@ class AsyncDial(BaseDialClient[AsyncHTTPClient, AsyncAuthValue]):
 
     async def my_prompts_home(self) -> PurePosixPath:
         return "prompts" / PurePosixPath(await self.my_bucket())
-
-    async def my_skills_home(self) -> PurePosixPath:
-        return "skills" / PurePosixPath(await self.my_bucket())
 
     async def _get_my_appdata(self) -> AppData | None:
         return await self.bucket.get_appdata()

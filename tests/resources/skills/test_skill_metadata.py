@@ -54,6 +54,8 @@ SKILL_FILES_MOCK = {
             "url": "skills/test-bucket/tone-of-voice/files/SKILL.md",
             "nodeType": "ITEM",
             "resourceType": "SKILL",
+            # Observed responses carry no etag on these entries at all;
+            # this pins that one is parsed when a deployment does send it.
             "etag": "abc123",
             "updatedAt": 1700000001000,
         },
@@ -61,9 +63,8 @@ SKILL_FILES_MOCK = {
             "name": "references",
             "parentPath": "tone-of-voice/files",
             "bucket": "test-bucket",
-            # A subfolder. Core builds every entry of the files listing as a
-            # plain item and never overrides the node type, so it reports
-            # "ITEM" here too - only the trailing "/" marks it as a folder.
+            # A subfolder, as a non-recursive listing reports one: Core
+            # sends "ITEM" and only the trailing "/" marks it as a folder.
             "url": "skills/test-bucket/tone-of-voice/files/references/",
             "nodeType": "ITEM",
             "resourceType": "SKILL",
@@ -109,7 +110,7 @@ def test_get_metadata_lists_bucket_root():
     captured: list[httpx.Request] = []
     client = _sync_client(captured, SKILLS_LISTING_MOCK)
 
-    result = client.skills.get_metadata(client.my_skills_home())
+    result = client.skills.list()
 
     assert captured[0].url.path == "/v2/metadata/skills/test-bucket/"
     assert result.resource_type == "SKILL"
@@ -127,8 +128,7 @@ def test_get_metadata_passes_listing_params():
     captured: list[httpx.Request] = []
     client = _sync_client(captured, SKILLS_LISTING_MOCK)
 
-    client.skills.get_metadata(
-        "skills/test-bucket/writing",
+    (client.skills / "writing").list(
         limit=1000,
         token="page-2",  # noqa: S106
         recursive=True,
@@ -147,7 +147,7 @@ def test_get_metadata_omits_unset_params():
     captured: list[httpx.Request] = []
     client = _sync_client(captured, SKILLS_LISTING_MOCK)
 
-    client.skills.get_metadata("skills/test-bucket/writing")
+    (client.skills / "writing").list()
 
     assert dict(captured[0].url.params) == {}
 
@@ -156,8 +156,8 @@ def test_list_files_defaults_to_skill_root():
     captured: list[httpx.Request] = []
     client = _sync_client(captured, SKILL_FILES_MOCK)
 
-    result = client.skills.list_files(
-        "skills/test-bucket/tone-of-voice", recursive=True, limit=1000
+    result = client.skills(url="skills/test-bucket/tone-of-voice").files.list(
+        recursive=True, limit=1000
     )
 
     request = captured[0]
@@ -171,9 +171,9 @@ def test_list_files_defaults_to_skill_root():
     assert items[0].etag == "abc123"
     assert result.next_token is None
 
-    # Core reports subfolders of a skill as "ITEM" as well, so a caller has
-    # to key off the trailing "/" of the url instead.
-    assert [item.node_type for item in items] == ["ITEM", "ITEM"]
+    # Core reports subfolders of a skill as "ITEM" too; the validator
+    # derives node_type from the url so callers do not have to.
+    assert [item.node_type for item in items] == ["ITEM", "FOLDER"]
     assert [item.url.endswith("/") for item in items] == [False, True]
 
 
@@ -181,9 +181,9 @@ def test_list_files_scopes_to_subfolder():
     captured: list[httpx.Request] = []
     client = _sync_client(captured, SKILL_FILES_MOCK)
 
-    client.skills.list_files(
-        "skills/test-bucket/tone-of-voice", path="references/api schema"
-    )
+    client.skills(url="skills/test-bucket/tone-of-voice").files(
+        path="references/api schema"
+    ).list()
 
     assert captured[0].url.raw_path.decode() == (
         "/v2/metadata/skills/test-bucket/tone-of-voice"
@@ -211,12 +211,12 @@ def test_list_files_pagination_loop_terminates():
 
     client._http_client._internal_http_client.send = send_mock
 
+    files = client.skills(url="skills/test-bucket/tone-of-voice").files
+
     token = None
     seen = 0
     while True:
-        page = client.skills.list_files(
-            "skills/test-bucket/tone-of-voice", token=token
-        )
+        page = files.list(token=token)
         seen += len(page.items or [])
         token = page.next_token
         if token is None:
@@ -228,18 +228,26 @@ def test_list_files_pagination_loop_terminates():
 
 
 def test_get_metadata_rejects_non_skill_url():
-    client = _sync_client([], SKILLS_LISTING_MOCK)
+    captured: list[httpx.Request] = []
+    client = _sync_client(captured, SKILLS_LISTING_MOCK)
 
+    # Rejected while the reference is built, so nothing reaches the wire.
     with pytest.raises(InvalidDialURLError, match="Invalid resource type"):
-        client.skills.get_metadata("files/test-bucket/folder")
+        client.skills(url="files/test-bucket/folder")
+
+    assert captured == []
 
 
 def test_list_files_rejects_bucket_root():
-    # A bucket has no files of its own - only skills do.
-    client = _sync_client([], SKILL_FILES_MOCK)
+    # A bucket has no files of its own - only skills do. The reference is
+    # legal; the terminal call is what has too little path for its route.
+    captured: list[httpx.Request] = []
+    client = _sync_client(captured, SKILL_FILES_MOCK)
 
-    with pytest.raises(InvalidDialURLError, match="Missing bucket in URL"):
-        client.skills.list_files("skills/test-bucket")
+    with pytest.raises(InvalidDialURLError, match="points at the bucket root"):
+        client.skills(url="skills/test-bucket").files.list()
+
+    assert captured == []
 
 
 @pytest.mark.asyncio
@@ -247,12 +255,12 @@ async def test_async_get_metadata_and_list_files():
     captured: list[httpx.Request] = []
     client = _async_client(captured, SKILLS_LISTING_MOCK)
 
-    result = await client.skills.get_metadata(await client.my_skills_home())
+    result = await client.skills.list()
     assert captured[0].url.path == "/v2/metadata/skills/test-bucket/"
     assert (result.items or [])[0].name == "tone-of-voice"
 
-    await client.skills.list_files(
-        "skills/test-bucket/tone-of-voice", recursive=True
+    await client.skills(url="skills/test-bucket/tone-of-voice").files.list(
+        recursive=True
     )
     assert (
         captured[1].url.path
@@ -260,14 +268,15 @@ async def test_async_get_metadata_and_list_files():
     )
 
 
-def test_list_files_accepts_folder_path_with_trailing_slash():
+def test_rejects_folder_path_with_trailing_slash():
+    # A reference carries no trailing slash: list() vs read() is what decides
+    # whether it names a folder or a file. The old list_files(path="refs/")
+    # accepted this and dropped the slash silently.
     captured: list[httpx.Request] = []
     client = _sync_client(captured, SKILL_FILES_MOCK)
 
-    client.skills.list_files(
-        "skills/test-bucket/tone-of-voice", path="references/"
-    )
+    skill = client.skills(url="skills/test-bucket/tone-of-voice")
+    with pytest.raises(InvalidDialURLError, match="must not end with"):
+        skill.files(path="references/")
 
-    assert captured[0].url.path == (
-        "/v2/metadata/skills/test-bucket/tone-of-voice/files/references"
-    )
+    assert captured == []

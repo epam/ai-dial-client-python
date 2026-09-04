@@ -92,9 +92,7 @@ def _route(
 
 
 def test_bucket_root_listing_is_routable():
-    route, groups = _route(
-        lambda client: client.skills.get_metadata(client.my_skills_home())
-    )
+    route, groups = _route(lambda client: client.skills.list())
 
     assert route == "COMPLEX_RESOURCE_METADATA"
     assert groups["bucket"] == BUCKET
@@ -104,16 +102,14 @@ def test_bucket_root_listing_is_routable():
 
 
 def test_grouping_folder_listing_is_routable():
-    route, groups = _route(
-        lambda client: client.skills.get_metadata(f"skills/{BUCKET}/writing")
-    )
+    route, groups = _route(lambda client: (client.skills / "writing").list())
 
     assert route == "COMPLEX_RESOURCE_METADATA"
     assert groups["path"] == "writing/"
 
 
 def test_list_files_is_routable():
-    route, groups = _route(lambda client: client.skills.list_files(SKILL))
+    route, groups = _route(lambda client: client.skills(url=SKILL).files.list())
 
     assert route == "COMPLEX_RESOURCE_FILE_METADATA"
     assert groups["path"] == "writing/toneofvoice"
@@ -122,7 +118,7 @@ def test_list_files_is_routable():
 
 def test_list_files_subfolder_is_routable():
     route, groups = _route(
-        lambda client: client.skills.list_files(SKILL, path="references")
+        lambda client: client.skills(url=SKILL).files(path="references").list()
     )
 
     assert route == "COMPLEX_RESOURCE_FILE_METADATA"
@@ -131,7 +127,7 @@ def test_list_files_subfolder_is_routable():
 
 def test_get_file_is_routable():
     route, groups = _route(
-        lambda client: client.skills.get_file(SKILL, "SKILL.md")
+        lambda client: client.skills(url=SKILL).files(path="SKILL.md").read()
     )
 
     assert route == "COMPLEX_RESOURCE_FILE"
@@ -140,7 +136,7 @@ def test_get_file_is_routable():
 
 
 def test_download_is_routable():
-    route, groups = _route(lambda client: client.skills.download(SKILL))
+    route, groups = _route(lambda client: client.skills(url=SKILL).download())
 
     assert route == "COMPLEX_RESOURCE"
     assert groups["path"] == "writing/toneofvoice"

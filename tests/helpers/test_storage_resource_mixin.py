@@ -104,7 +104,7 @@ def test_get_api_path_missing_bucket(resource_type, url):
     mixin = DialStorageResourceMixin(
         resource_type=resource_type, dial_api_url=DIAL_API_URL
     )
-    with pytest.raises(InvalidDialURLError, match="Missing bucket in URL"):
+    with pytest.raises(InvalidDialURLError, match="Missing bucket path in URL"):
         mixin.get_api_path(url)
 
 

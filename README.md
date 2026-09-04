@@ -811,22 +811,55 @@ files, addressed as a unit at `skills/{bucket}/{path}`.
 > contract may still change. The client currently supports the read
 > operations; writes are tracked separately.
 
+Unlike the other resources, `client.skills` is not called with a URL you build
+yourself. It is a *reference* that you narrow step by step, and each step
+returns a new reference:
+
+```python
+skill = client.skills / "writing" / "tone-of-voice"
+# equivalently: client.skills(path="writing/tone-of-voice")
+```
+
+References are immutable, validate every path segment as they are built, and
+issue no request until a terminal call (`list()`, `read()`, `download()`,
+`stream()`, `stream_download()`). Building one is identical for the sync and
+async clients — only the terminal call is awaited.
+
+A reference points at your own bucket unless told otherwise. Use `bucket=` for
+a shared bucket such as `public`, and `url=` to follow an entry returned by a
+listing:
+
+```python
+client.skills(bucket="public") / "demo" / "azure-resource-visualizer"
+
+appdata = client.my_appdata()
+client.skills(bucket=appdata.user_bucket, path=f"appdata/{appdata.app_name}")
+```
+
 #### Listing Skills
 
-Use `get_metadata()` to list the skills and grouping folders at a location.
-Pass `my_skills_home()` to list the bucket root:
+`list()` returns the skills and grouping folders at the reference. With no
+narrowing it lists your bucket root:
 
 ```python
 # Sync
-listing = client.skills.get_metadata(client.my_skills_home())
+listing = client.skills.list()
 # Async
-listing = await async_client.skills.get_metadata(
-    await async_client.my_skills_home()
-)
+listing = await async_client.skills.list()
 
 for item in listing.items or []:
     # "ITEM" is a skill, "FOLDER" is a grouping folder
     print(item.node_type, item.url)
+
+    # Follow either one with url=
+    nested = client.skills(url=item.url)
+```
+
+Narrow first to list a grouping folder, and pass the listing options to the
+terminal call:
+
+```python
+page = (client.skills / "writing").list(recursive=True, limit=1000)
 ```
 
 Example of the response:
@@ -864,40 +897,29 @@ SkillMetadata(
 
 #### Listing Files in a Skill
 
-Use `list_files()` to enumerate what a skill contains. A page may hold fewer
-entries than `limit`, so follow `next_token` until it is `None`:
+`skill.files` is a reference to the skill's bundled files. A page may hold
+fewer entries than `limit`, so follow `next_token` until it is `None` —
+building the reference once and varying only the token:
 
 ```python
-skill = "skills/my-bucket/writing/tone-of-voice"
+skill = client.skills / "writing" / "tone-of-voice"
+files = skill.files
 
 token = None
 while True:
-    page = client.skills.list_files(
-        skill, recursive=True, limit=1000, token=token
-    )
+    page = files.list(recursive=True, limit=1000, token=token)
     for item in page.items or []:
-        print(item.url, item.etag)
+        print(item.node_type, item.url)
     token = page.next_token
     if token is None:
         break
 ```
 
-Scope the listing to a subfolder with `path`:
+Narrow to a subfolder the same way as anywhere else:
 
 ```python
-page = await async_client.skills.list_files(skill, path="references")
+page = await (async_skill.files / "references").list()
 ```
-
-> [!IMPORTANT]
-> In this listing, use the trailing `/` of `url` to tell subfolders from
-> files — not `node_type`. DIAL Core builds every entry as a plain item and
-> never overrides its node type, so subfolders are reported as `"ITEM"` too.
-> This differs from [Listing Skills](#listing-skills), where `node_type`
-> does distinguish a skill from a grouping folder.
->
-> ```python
-> files = [item for item in page.items or [] if not item.url.endswith("/")]
-> ```
 
 Example of the response:
 
@@ -918,48 +940,81 @@ SkillFileMetadata(
             url="skills/my-bucket/writing/tone-of-voice/files/SKILL.md",
             node_type="ITEM",
             resource_type="SKILL",
-            etag="9749fad13d6e7092a6337c4af9d83764",
             updated_at=1724836248936,
-        )
+        ),
+        SkillFileItem(
+            # A subfolder, as returned by a non-recursive listing. Core sends
+            # node_type="ITEM"; the client corrects it from the trailing "/".
+            name="references",
+            parent_path="writing/tone-of-voice/files",
+            bucket="my-bucket",
+            url="skills/my-bucket/writing/tone-of-voice/files/references/",
+            node_type="FOLDER",
+            resource_type="SKILL",
+        ),
     ],
 )
 ```
 
+> [!NOTE]
+> A non-recursive listing returns the immediate subfolders, and DIAL Core
+> reports them with `nodeType: "ITEM"` — the same value as the files beside
+> them. The client derives `node_type` from the trailing `/` of `url`, so
+> `node_type` is reliable here and you do not have to inspect urls yourself.
+
+> [!NOTE]
+> The two modes answer different questions. `recursive=True` flattens the
+> tree: every file at every depth, no folder entries at all, with
+> `parent_path` showing where each file sits. A non-recursive listing returns
+> only the immediate children. Empty folders never appear in either mode.
+
+Unlike the `/v1` files listing, these entries are sparse: no
+`content_length`, no `content_type`, and in observed responses no `etag`
+either. Folder entries carry no `updated_at`. Treat every field except
+`name`, `url`, `node_type` and `resource_type` as optional here.
+
 #### Reading a File from a Skill
 
-Use `get_file()` with a path relative to the skill root:
+Name the file with `path=`, relative to the skill root, then `read()`:
 
 ```python
 # Sync
-manifest = client.skills.get_file(skill, "SKILL.md")
+manifest = skill.files(path="SKILL.md").read()
 print(manifest.get_content().decode())
 
 # Async
-manifest = await async_client.skills.get_file(skill, "SKILL.md")
-schema = await async_client.skills.get_file(
-    skill, "references/api-schema.md"
-)
+manifest = await async_skill.files(path="SKILL.md").read()
+schema = await async_skill.files(path="references/api-schema.md").read()
 await schema.awrite_to("api-schema.md")
+```
+
+An entry from a files listing can be followed directly, without slicing its
+url apart:
+
+```python
+for item in files.list().items or []:
+    if item.node_type == "ITEM":
+        content = skill.files(url=item.url).read()
 ```
 
 The async client can stream instead, which avoids holding the file in memory:
 
 ```python
-async with async_client.skills.stream_file(skill, "assets/logo.png") as file:
+async with async_skill.files(path="assets/logo.png").stream() as file:
     await file.awrite_to("logo.png")
 ```
 
 #### Downloading a Skill
 
-Use `download()` to fetch the whole skill as a ZIP archive:
+`download()` fetches the whole skill as a ZIP archive:
 
 ```python
 # Sync
-archive = client.skills.download(skill)
+archive = skill.download()
 archive.write_to("tone-of-voice.zip")
 
 # Async, streamed
-async with async_client.skills.stream_download(skill) as archive:
+async with async_skill.stream_download() as archive:
     await archive.awrite_to("tone-of-voice.zip")
 ```
 
@@ -970,6 +1025,7 @@ The response's `ETag` header carries the skill's aggregate etag:
 ```python
 etag = archive.headers["etag"]
 ```
+
 
 ### Applications
 

@@ -9,13 +9,13 @@ DEFAULT_CONNECTION_LIMITS = httpx.Limits(
 )
 INITIAL_RETRY_DELAY = 0.5
 MAX_RETRY_DELAY = 8.0
-API_PREFIX = "v1/"
-METADATA_PREFIX = urljoin(API_PREFIX, "metadata/")
-FILES_PREFIX = urljoin(API_PREFIX, "files/")
+API_PREFIX_V1 = "v1/"
+METADATA_PREFIX_V1 = urljoin(API_PREFIX_V1, "metadata/")
+FILES_PREFIX = urljoin(API_PREFIX_V1, "files/")
 
 # DIAL Core exposes folder-shaped resources (agent skills) under /v2.
-API_V2_PREFIX = "v2/"
-METADATA_V2_PREFIX = urljoin(API_V2_PREFIX, "metadata/")
+API_PREFIX_V2 = "v2/"
+METADATA_PREFIX_V2 = urljoin(API_PREFIX_V2, "metadata/")
 
 
 OPENAI_PREFIX = "openai/"

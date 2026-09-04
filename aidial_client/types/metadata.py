@@ -1,8 +1,12 @@
-from typing import Literal
+from typing import Any, Literal
 
 from aidial_client._compatibility.pydantic import PYDANTIC_V2
+from aidial_client._compatibility.pydantic_v1 import validator
 from aidial_client._internal_types._model import ExtraAllowModel
 from aidial_client._utils._alias import to_camel
+
+if PYDANTIC_V2:
+    from pydantic import field_validator
 
 
 class BaseMetadata(ExtraAllowModel):
@@ -71,13 +75,22 @@ class PromptMetadata(BaseMetadata):
     resource_type: Literal["PROMPT"]
 
 
+# Fixing the bug in DIAL Core: a non-recursive listing of a skill's files
+# reports its subfolders with nodeType "ITEM".
+# https://github.com/epam/ai-dial-core/issues/1912
+def _node_type_from_url(node_type: Any, url: Any) -> Any:
+    if not isinstance(url, str):
+        return node_type
+    return "FOLDER" if url.endswith("/") else "ITEM"
+
+
 class SkillItem(ResourceItemMetadata):
     """
     A node in the skills listing: a skill (ITEM) or a grouping folder (FOLDER).
 
-    DIAL Core builds these from the folder marker's listing metadata without
-    reading the marker body, so no ``etag`` and no skill name/description are
-    carried here - they are available via a whole-resource GET.
+    ``node_type`` is taken from the response as-is. The bug worked around in
+    ``SkillFileItem`` was observed only on the file listing inside a skill,
+    not on this one.
     """
 
     node_type: Literal["FOLDER", "ITEM"]
@@ -95,19 +108,33 @@ class SkillFileItem(ResourceItemMetadata):
     """
     A file or a subfolder inside a skill.
 
-    Use the trailing "/" of ``url`` to tell them apart, not ``node_type``:
-    DIAL Core builds every entry of this listing as a plain item and never
-    overrides its node type, so a subfolder is reported as ``"ITEM"`` too.
-    ``node_type`` is left as a union because that is a Core-side bug, and a
-    fix upstream should not turn into a parsing error here.
+    ``node_type`` is derived from ``url`` rather than taken from the
+    response - see ``_node_type_from_url``. A recursive listing is flattened
+    and contains no subfolder entries at all, so the two kinds only ever
+    appear together in a non-recursive one.
 
-    Unlike the /v1 files listing, no ``content_length`` or ``content_type``
-    is carried - Core copies only the etag, timestamps and author onto these
-    entries.
+    Sparser than the /v1 files listing: no ``content_length``, no
+    ``content_type``, and in observed responses no ``etag`` either.
+    Subfolder entries carry no timestamps.
     """
 
     node_type: Literal["FOLDER", "ITEM"]
     resource_type: Literal["SKILL"]
+
+    if PYDANTIC_V2:
+
+        @field_validator("node_type")
+        @classmethod
+        def _derive_node_type_v2(cls, value: Any, info: Any) -> Any:
+            return _node_type_from_url(value, info.data.get("url"))
+
+    else:
+
+        @validator("node_type")
+        def _derive_node_type_v1(  # noqa: N805
+            cls, value: Any, values: dict[str, Any]
+        ) -> Any:
+            return _node_type_from_url(value, values.get("url"))
 
 
 class SkillFileMetadata(BaseMetadata):
@@ -115,3 +142,18 @@ class SkillFileMetadata(BaseMetadata):
     resource_type: Literal["SKILL"]
     next_token: str | None = None
     items: list[SkillFileItem] | None = None
+
+    if PYDANTIC_V2:
+
+        @field_validator("node_type")
+        @classmethod
+        def _derive_node_type_v2(cls, value: Any, info: Any) -> Any:
+            return _node_type_from_url(value, info.data.get("url"))
+
+    else:
+
+        @validator("node_type")
+        def _derive_node_type_v1(  # noqa: N805
+            cls, value: Any, values: dict[str, Any]
+        ) -> Any:
+            return _node_type_from_url(value, values.get("url"))
