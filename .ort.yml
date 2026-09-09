@@ -1,4 +1,6 @@
 ---
+analyzer:
+  skip_excluded: true
 excludes:
   scopes:
     - pattern: "dev"
@@ -10,20 +12,3 @@ excludes:
     - pattern: "test"
       reason: "TEST_DEPENDENCY_OF"
       comment: "Packages for testing only."
-resolutions:
-  rule_violations:
-    - message: ".*PyPI::setuptools:78\\..*"
-      reason: "CANT_FIX_EXCEPTION"
-      comment: "BSD 3-Clause License: https://github.com/pypa/setuptools/blob/v78.1.1/LICENSE"
-    - message: ".*PyPI::httpcore:1\\..*"
-      reason: "CANT_FIX_EXCEPTION"
-      comment: "BSD 3-Clause License: https://github.com/encode/httpcore/blob/master/LICENSE.md"
-    - message: ".*PyPI::httpx:0\\..*"
-      reason: "CANT_FIX_EXCEPTION"
-      comment: "BSD 3-Clause License: https://github.com/encode/httpx/blob/master/LICENSE.md"
-    - message: ".*PyPI::typing-extensions:4\\..*"
-      reason: "CANT_FIX_EXCEPTION"
-      comment: "Same as CPython: https://github.com/python/typing_extensions/blob/main/LICENSE"
-    - message: ".*PyPI::idna:3\\..*"
-      reason: "CANT_FIX_EXCEPTION"
-      comment: "BSD 3-Clause License: https://github.com/kjd/idna/blob/master/LICENSE.md"
