@@ -22,7 +22,7 @@ class BaseMetadata(ExtraAllowModel):
     bucket: str
     url: str
     node_type: Literal["FOLDER", "ITEM"]
-    resource_type: Literal["FILE", "CONVERSATION", "PROMPT"]
+    resource_type: Literal["FILE", "CONVERSATION", "PROMPT", "SKILL"]
 
 
 class ResourceItemMetadata(BaseMetadata):
@@ -69,3 +69,40 @@ class PromptMetadata(BaseMetadata):
     next_token: str | None = None
     items: list[PromptItem] | None
     resource_type: Literal["PROMPT"]
+
+
+class SkillItem(ResourceItemMetadata):
+    """A node in the skills listing: a skill (ITEM) or a grouping folder."""
+
+    node_type: Literal["FOLDER", "ITEM"]
+    resource_type: Literal["SKILL"]
+
+
+class SkillMetadata(BaseMetadata):
+    node_type: Literal["FOLDER", "ITEM"]
+    resource_type: Literal["SKILL"]
+    next_token: str | None = None
+    items: list[SkillItem] | None = None
+
+
+class SkillFileItem(ResourceItemMetadata):
+    """
+    A file (ITEM) or a subfolder (FOLDER) inside a skill.
+
+    A recursive listing is flattened and contains no subfolder entries at
+    all, so the two kinds only ever appear together in a non-recursive one.
+
+    Sparser than the /v1 files listing: no ``content_length``, no
+    ``content_type``, and in observed responses no ``etag`` either.
+    Subfolder entries carry no timestamps.
+    """
+
+    node_type: Literal["FOLDER", "ITEM"]
+    resource_type: Literal["SKILL"]
+
+
+class SkillFileMetadata(BaseMetadata):
+    node_type: Literal["FOLDER", "ITEM"]
+    resource_type: Literal["SKILL"]
+    next_token: str | None = None
+    items: list[SkillFileItem] | None = None

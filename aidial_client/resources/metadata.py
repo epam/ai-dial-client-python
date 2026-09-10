@@ -3,11 +3,11 @@ from urllib.parse import urljoin
 
 from typing_extensions import assert_never
 
-from aidial_client._constants import METADATA_PREFIX
+from aidial_client._constants import METADATA_PREFIX_V1
 from aidial_client._internal_types._http_request import FinalRequestOptions
 from aidial_client._utils._dict import remove_none
 from aidial_client.helpers.storage_resource import (
-    StorageResourceType,
+    StorageResourceTypeV1,
     _percent_encode_relative_url,
 )
 from aidial_client.resources.base import AsyncResource, Resource
@@ -19,7 +19,7 @@ from aidial_client.types.metadata import (
 
 
 def _get_cast_to(
-    resource: StorageResourceType,
+    resource: StorageResourceTypeV1,
 ) -> type[FileMetadata] | type[ConversationMetadata] | type[PromptMetadata]:
     if resource == "files":
         return FileMetadata
@@ -64,7 +64,7 @@ class Metadata(Resource):
 
     def get(
         self,
-        resource: StorageResourceType,
+        resource: StorageResourceTypeV1,
         relative_url: str,
         *,
         limit: int | None = None,
@@ -75,7 +75,7 @@ class Metadata(Resource):
             options=FinalRequestOptions(
                 method="GET",
                 url=urljoin(
-                    METADATA_PREFIX,
+                    METADATA_PREFIX_V1,
                     _percent_encode_relative_url(relative_url),
                 ),
                 params=remove_none({"limit": limit, "token": token}),
@@ -116,7 +116,7 @@ class AsyncMetadata(AsyncResource):
 
     async def get(
         self,
-        resource: StorageResourceType,
+        resource: StorageResourceTypeV1,
         relative_url: str,
         *,
         limit: int | None = None,
@@ -127,7 +127,7 @@ class AsyncMetadata(AsyncResource):
             options=FinalRequestOptions(
                 method="GET",
                 url=urljoin(
-                    METADATA_PREFIX,
+                    METADATA_PREFIX_V1,
                     _percent_encode_relative_url(relative_url),
                 ),
                 params=remove_none({"limit": limit, "token": token}),

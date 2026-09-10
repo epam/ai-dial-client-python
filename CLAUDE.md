@@ -28,8 +28,8 @@ make coverage             # Run tests with coverage report
 poetry run pytest tests/test_auth.py -k "test_name"
 
 # Linting & formatting
-make lint                 # Run all linters (pyright, flake8, codespell, format check)
-make format               # Auto-format code (autoflake, isort, black)
+make lint                 # Run all linters (ruff check, ruff format --check, pyright)
+make format               # Auto-format code (ruff check --fix, ruff format)
 ```
 
 ## Dependency Compatibility Matrix

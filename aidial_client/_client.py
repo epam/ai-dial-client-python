@@ -15,7 +15,8 @@ from aidial_client._auth import (
     validate_auth,
 )
 from aidial_client._constants import (
-    API_PREFIX,
+    API_PREFIX_V1,
+    API_PREFIX_V2,
     DEFAULT_MAX_RETRIES,
     DEFAULT_TIMEOUT,
     OPENAI_PREFIX,
@@ -71,7 +72,11 @@ class BaseDialClient(Generic[_HttpClientT, AuthValueT], ABC):
 
     @property
     def api_url(self) -> str:
-        return urljoin(self._base_url, API_PREFIX)
+        return urljoin(self._base_url, API_PREFIX_V1)
+
+    @property
+    def api_url_v2(self) -> str:
+        return urljoin(self._base_url, API_PREFIX_V2)
 
     @property
     def base_url(self) -> str:
@@ -109,6 +114,11 @@ class Dial(BaseDialClient[SyncHTTPClient, SyncAuthValue]):
             http_client=self._http_client,
             metadata=self.metadata,
             dial_api_url=self.api_url,
+        )
+        self.skills = resources.SkillsRef(
+            http_client=self._http_client,
+            dial_api_url=self.api_url_v2,
+            resolve_bucket=self.my_bucket,
         )
         self.deployments = resources.Deployments(http_client=self._http_client)
         self.application = resources.Application(http_client=self._http_client)
@@ -210,6 +220,11 @@ class AsyncDial(BaseDialClient[AsyncHTTPClient, AsyncAuthValue]):
             http_client=self._http_client,
             metadata=self.metadata,
             dial_api_url=self.api_url,
+        )
+        self.skills = resources.AsyncSkillsRef(
+            http_client=self._http_client,
+            dial_api_url=self.api_url_v2,
+            resolve_bucket=self.my_bucket,
         )
         self.deployments = resources.AsyncDeployments(
             http_client=self._http_client

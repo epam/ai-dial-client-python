@@ -17,6 +17,12 @@ from .bucket import AsyncBucket, Bucket
 from .chat import AsyncChat, Chat
 from .files import AsyncFiles, Files
 from .prompts import AsyncPrompts, Prompts
+from .skills import (
+    AsyncSkillFilesRef,
+    AsyncSkillsRef,
+    SkillFilesRef,
+    SkillsRef,
+)
 
 __all__ = [
     "Chat",
@@ -27,6 +33,10 @@ __all__ = [
     "AsyncFiles",
     "Prompts",
     "AsyncPrompts",
+    "SkillsRef",
+    "AsyncSkillsRef",
+    "SkillFilesRef",
+    "AsyncSkillFilesRef",
     "AsyncDeployments",
     "Deployments",
     "AsyncMetadata",

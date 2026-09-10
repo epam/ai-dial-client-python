@@ -37,6 +37,11 @@
     - [Get Prompt](#get-prompt)
     - [Get Prompt Metadata](#get-prompt-metadata)
     - [Delete Prompt](#delete-prompt)
+  - [Skills](#skills)
+    - [Listing Skills](#listing-skills)
+    - [Listing Files in a Skill](#listing-files-in-a-skill)
+    - [Reading a File from a Skill](#reading-a-file-from-a-skill)
+    - [Downloading a Skill](#downloading-a-skill)
   - [Applications](#applications)
     - [List Applications](#list-applications)
     - [Get Application by Id](#get-application-by-id)
@@ -794,6 +799,227 @@ client.prompts.delete("prompts/my-bucket/my-folder/my-prompt")
 # Async
 await async_client.prompts.delete("prompts/my-bucket/my-folder/my-prompt")
 ```
+
+### Skills
+
+A DIAL *skill* is a folder-shaped resource served by DIAL Core's `/v2/skills`
+API: a mandatory `SKILL.md` manifest plus an arbitrary hierarchy of bundled
+files, addressed as a unit at `skills/{bucket}/{path}`.
+
+> [!NOTE]
+> The `/v2/skills` endpoints are marked as preview in DIAL Core, so their
+> contract may still change. The client currently supports the read
+> operations; writes are tracked separately.
+
+Unlike the other resources, `client.skills` is not called with a URL you build
+yourself. It is a *reference* that you narrow step by step, and each step
+returns a new reference:
+
+```python
+skill = client.skills / "writing" / "tone-of-voice"
+# equivalently: client.skills(path="writing/tone-of-voice")
+```
+
+References are immutable, validate every path segment as they are built, and
+issue no request until a terminal call (`list()`, `read()`, `download()`,
+`stream()`, `stream_download()`). Building one is identical for the sync and
+async clients — only the terminal call is awaited.
+
+A reference points at your own bucket unless told otherwise. Use `bucket=` for
+a shared bucket such as `public`, and `url=` to follow an entry returned by a
+listing:
+
+```python
+client.skills(bucket="public") / "demo" / "azure-resource-visualizer"
+
+appdata = client.my_appdata()
+client.skills(bucket=appdata.user_bucket, path=f"appdata/{appdata.app_name}")
+```
+
+#### Listing Skills
+
+`list()` returns the skills and grouping folders at the reference. With no
+narrowing it lists your bucket root:
+
+```python
+# Sync
+listing = client.skills.list()
+# Async
+listing = await async_client.skills.list()
+
+for item in listing.items or []:
+    # "ITEM" is a skill, "FOLDER" is a grouping folder
+    print(item.node_type, item.url)
+
+    # Follow either one with url=
+    nested = client.skills(url=item.url)
+```
+
+Narrow first to list a grouping folder, and pass the listing options to the
+terminal call:
+
+```python
+page = (client.skills / "writing").list(recursive=True, limit=1000)
+```
+
+Example of the response:
+
+```python
+SkillMetadata(
+    name="writing",
+    parent_path=None,
+    bucket="my-bucket",
+    url="skills/my-bucket/writing/",
+    node_type="FOLDER",
+    resource_type="SKILL",
+    next_token=None,
+    items=[
+        SkillItem(
+            name="tone-of-voice",
+            parent_path="writing",
+            bucket="my-bucket",
+            url="skills/my-bucket/writing/tone-of-voice",
+            node_type="ITEM",
+            resource_type="SKILL",
+            created_at=1724836229736,
+            updated_at=1724836248936,
+            author="user@example.com",
+            etag=None,
+        )
+    ],
+)
+```
+
+> [!NOTE]
+> DIAL Core builds this listing without reading each skill's marker, so
+> `etag` is always `None` here and the skill's `name`/`description` from
+> `SKILL.md` are not included. Read `SKILL.md` itself if you need them.
+
+#### Listing Files in a Skill
+
+`skill.files` is a reference to the skill's bundled files. A page may hold
+fewer entries than `limit`, so follow `next_token` until it is `None` —
+building the reference once and varying only the token:
+
+```python
+skill = client.skills / "writing" / "tone-of-voice"
+files = skill.files
+
+token = None
+while True:
+    page = files.list(recursive=True, limit=1000, token=token)
+    for item in page.items or []:
+        print(item.node_type, item.url)
+    token = page.next_token
+    if token is None:
+        break
+```
+
+Narrow to a subfolder the same way as anywhere else:
+
+```python
+page = await (async_skill.files / "references").list()
+```
+
+Example of the response:
+
+```python
+SkillFileMetadata(
+    name="files",
+    parent_path="writing/tone-of-voice",
+    bucket="my-bucket",
+    url="skills/my-bucket/writing/tone-of-voice/files/",
+    node_type="FOLDER",
+    resource_type="SKILL",
+    next_token=None,
+    items=[
+        SkillFileItem(
+            name="SKILL.md",
+            parent_path="writing/tone-of-voice/files",
+            bucket="my-bucket",
+            url="skills/my-bucket/writing/tone-of-voice/files/SKILL.md",
+            node_type="ITEM",
+            resource_type="SKILL",
+            updated_at=1724836248936,
+        ),
+        SkillFileItem(
+            # A subfolder, as returned by a non-recursive listing.
+            name="references",
+            parent_path="writing/tone-of-voice/files",
+            bucket="my-bucket",
+            url="skills/my-bucket/writing/tone-of-voice/files/references/",
+            node_type="FOLDER",
+            resource_type="SKILL",
+        ),
+    ],
+)
+```
+
+> [!NOTE]
+> The two modes answer different questions. `recursive=True` flattens the
+> tree: every file at every depth, no folder entries at all, with
+> `parent_path` showing where each file sits. A non-recursive listing returns
+> the immediate children, folders included, distinguished by
+> `node_type == "FOLDER"`. Empty folders never appear in either mode.
+
+Unlike the `/v1` files listing, these entries are sparse: no
+`content_length`, no `content_type`, and in observed responses no `etag`
+either. Folder entries carry no `updated_at`. Treat every field except
+`name`, `url`, `node_type` and `resource_type` as optional here.
+
+#### Reading a File from a Skill
+
+Name the file with `path=`, relative to the skill root, then `read()`:
+
+```python
+# Sync
+manifest = skill.files(path="SKILL.md").read()
+print(manifest.get_content().decode())
+
+# Async
+manifest = await async_skill.files(path="SKILL.md").read()
+schema = await async_skill.files(path="references/api-schema.md").read()
+await schema.awrite_to("api-schema.md")
+```
+
+An entry from a files listing can be followed directly, without slicing its
+url apart:
+
+```python
+for item in files.list().items or []:
+    if item.node_type == "ITEM":
+        content = skill.files(url=item.url).read()
+```
+
+The async client can stream instead, which avoids holding the file in memory:
+
+```python
+async with async_skill.files(path="assets/logo.png").stream() as file:
+    await file.awrite_to("logo.png")
+```
+
+#### Downloading a Skill
+
+`download()` fetches the whole skill as a ZIP archive:
+
+```python
+# Sync
+archive = skill.download()
+archive.write_to("tone-of-voice.zip")
+
+# Async, streamed
+async with async_skill.stream_download() as archive:
+    await archive.awrite_to("tone-of-voice.zip")
+```
+
+DIAL Core sends no `Content-Disposition` for this endpoint, so `filename`
+defaults to the skill name with a `.zip` suffix (`tone-of-voice.zip` above).
+The response's `ETag` header carries the skill's aggregate etag:
+
+```python
+etag = archive.headers["etag"]
+```
+
 
 ### Applications
 

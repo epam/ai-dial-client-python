@@ -1,6 +1,6 @@
 from urllib.parse import urljoin
 
-from aidial_client._constants import API_PREFIX
+from aidial_client._constants import API_PREFIX_V1
 from aidial_client._internal_types._http_request import FinalRequestOptions
 from aidial_client.resources.base import AsyncResource, Resource
 from aidial_client.types.bucket import AppData, BucketResponse
@@ -11,7 +11,7 @@ class Bucket(Resource):
         return self.http_client.request(
             cast_to=BucketResponse,
             options=FinalRequestOptions(
-                method="GET", url=urljoin(API_PREFIX, "bucket")
+                method="GET", url=urljoin(API_PREFIX_V1, "bucket")
             ),
         )
 
@@ -31,7 +31,7 @@ class AsyncBucket(AsyncResource):
         return await self.http_client.request(
             cast_to=BucketResponse,
             options=FinalRequestOptions(
-                method="GET", url=urljoin(API_PREFIX, "bucket")
+                method="GET", url=urljoin(API_PREFIX_V1, "bucket")
             ),
         )
 
