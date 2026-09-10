@@ -12,7 +12,7 @@ import pytest
 
 from aidial_client import AsyncDial, Dial
 from aidial_client._exception import InvalidDialURLError
-from aidial_client.types.metadata import SkillFileItem, SkillFileMetadata
+from aidial_client.types.metadata import SkillFileMetadata
 
 BUCKET = "test-bucket"
 SKILL_URL = f"skills/{BUCKET}/writing/tone-of-voice"
@@ -314,12 +314,11 @@ async def test_async_chain_builds_without_awaiting():
     assert client._get_my_bucket.await_count == 1
 
 
-# --- node_type derivation ------------------------------------------------
+# --- listing shapes -------------------------------------------------------
 
 # Real listings captured from DIAL Core (2026-09-04), one per mode. A
 # recursive listing flattens the tree to leaf files at every depth; a
-# non-recursive one returns the immediate children, and reports its
-# subfolders as "ITEM" with a trailing slash. Neither carries an etag.
+# non-recursive one returns the immediate children. Neither carries an etag.
 REAL_RECURSIVE_LISTING: dict[str, Any] = {
     "name": "files",
     "parentPath": "all-three-conventionss",
@@ -370,46 +369,10 @@ REAL_RECURSIVE_LISTING: dict[str, Any] = {
     ],
 }
 
-
-def test_real_recursive_listing_is_left_alone():
-    page = SkillFileMetadata(**REAL_RECURSIVE_LISTING)
-
-    assert page.node_type == "FOLDER"
-    assert [item.node_type for item in page.items or []] == ["ITEM"] * 3
-    assert [item.name for item in page.items or []] == [
-        "SKILL.md",
-        "regions.csv",
-        "extract.py",
-    ]
-
-
-def test_trailing_slash_derives_folder():
-    payload: dict[str, Any] = {
-        "bucket": BUCKET,
-        "url": f"{SKILL_URL}/files/references/",
-        "nodeType": "ITEM",
-        "resourceType": "SKILL",
-    }
-
-    assert SkillFileItem(**payload).node_type == "FOLDER"
-
-
-def test_no_trailing_slash_derives_item():
-    # The derivation is symmetric, as the review asked for: the url is the
-    # only input. A listing root scoped to a subfolder is requested without
-    # a trailing slash, so this is the case to watch - see the PR thread.
-    payload: dict[str, Any] = {
-        "bucket": BUCKET,
-        "url": f"{SKILL_URL}/files/references",
-        "nodeType": "FOLDER",
-        "resourceType": "SKILL",
-    }
-
-    assert SkillFileMetadata(**payload).node_type == "ITEM"
-
-
-# The same skill listed non-recursively: files and directories side by side,
-# every one of them "ITEM", directories distinguished only by trailing "/".
+# The same skill listed non-recursively: files and directories side by side.
+# The directory nodeTypes here are post-fix (epam/ai-dial-core#1912) - the
+# original capture reported them as "ITEM", which is what the client used to
+# correct. Directories still carry no timestamps: that branch copies none.
 REAL_NON_RECURSIVE_LISTING: dict[str, Any] = {
     "name": "files",
     "parentPath": "skill-creator",
@@ -441,7 +404,7 @@ REAL_NON_RECURSIVE_LISTING: dict[str, Any] = {
                 "skills/4T56XoBkFtVqFQFmwHtbkUbjx8zLC8Sypb3xrJH4MACc"
                 "/skill-creator/files/agents/"
             ),
-            "nodeType": "ITEM",
+            "nodeType": "FOLDER",
             "resourceType": "SKILL",
         },
         {
@@ -452,24 +415,36 @@ REAL_NON_RECURSIVE_LISTING: dict[str, Any] = {
                 "skills/4T56XoBkFtVqFQFmwHtbkUbjx8zLC8Sypb3xrJH4MACc"
                 "/skill-creator/files/scripts/"
             ),
-            "nodeType": "ITEM",
+            "nodeType": "FOLDER",
             "resourceType": "SKILL",
         },
     ],
 }
 
 
-def test_real_non_recursive_listing_corrects_subfolders():
-    page = SkillFileMetadata(**REAL_NON_RECURSIVE_LISTING)
+def test_recursive_listing_is_flat():
+    page = SkillFileMetadata(**REAL_RECURSIVE_LISTING)
 
-    # Core sent "ITEM" for all three; the validator corrects the two
-    # directories from the trailing "/" of their url.
-    assert [(i.name, i.node_type) for i in page.items or []] == [
+    # Leaf files at every depth, no folder entries, structure in parent_path.
+    assert page.node_type == "FOLDER"
+    assert [i.node_type for i in page.items or []] == ["ITEM"] * 3
+    assert [i.name for i in page.items or []] == [
+        "SKILL.md",
+        "regions.csv",
+        "extract.py",
+    ]
+
+
+def test_non_recursive_listing_carries_subfolders():
+    page = SkillFileMetadata(**REAL_NON_RECURSIVE_LISTING)
+    items = page.items or []
+
+    # node_type comes straight from the response; nothing is rewritten.
+    assert [(i.name, i.node_type) for i in items] == [
         ("SKILL.md", "ITEM"),
         ("agents", "FOLDER"),
         ("scripts", "FOLDER"),
     ]
-    # Directory entries carry no timestamp, and nothing here carries an etag.
-    items = page.items or []
+    # Subfolder entries carry no timestamp, and nothing here carries an etag.
     assert [i.updated_at for i in items] == [1788530552986, None, None]
     assert all(i.etag is None for i in items)

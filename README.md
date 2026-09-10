@@ -943,8 +943,7 @@ SkillFileMetadata(
             updated_at=1724836248936,
         ),
         SkillFileItem(
-            # A subfolder, as returned by a non-recursive listing. Core sends
-            # node_type="ITEM"; the client corrects it from the trailing "/".
+            # A subfolder, as returned by a non-recursive listing.
             name="references",
             parent_path="writing/tone-of-voice/files",
             bucket="my-bucket",
@@ -957,16 +956,11 @@ SkillFileMetadata(
 ```
 
 > [!NOTE]
-> A non-recursive listing returns the immediate subfolders, and DIAL Core
-> reports them with `nodeType: "ITEM"` — the same value as the files beside
-> them. The client derives `node_type` from the trailing `/` of `url`, so
-> `node_type` is reliable here and you do not have to inspect urls yourself.
-
-> [!NOTE]
 > The two modes answer different questions. `recursive=True` flattens the
 > tree: every file at every depth, no folder entries at all, with
 > `parent_path` showing where each file sits. A non-recursive listing returns
-> only the immediate children. Empty folders never appear in either mode.
+> the immediate children, folders included, distinguished by
+> `node_type == "FOLDER"`. Empty folders never appear in either mode.
 
 Unlike the `/v1` files listing, these entries are sparse: no
 `content_length`, no `content_type`, and in observed responses no `etag`

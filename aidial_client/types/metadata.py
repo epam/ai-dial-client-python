@@ -1,12 +1,8 @@
-from typing import Any, Literal
+from typing import Literal
 
 from aidial_client._compatibility.pydantic import PYDANTIC_V2
-from aidial_client._compatibility.pydantic_v1 import validator
 from aidial_client._internal_types._model import ExtraAllowModel
 from aidial_client._utils._alias import to_camel
-
-if PYDANTIC_V2:
-    from pydantic import field_validator
 
 
 class BaseMetadata(ExtraAllowModel):
@@ -75,23 +71,8 @@ class PromptMetadata(BaseMetadata):
     resource_type: Literal["PROMPT"]
 
 
-# Fixing the bug in DIAL Core: a non-recursive listing of a skill's files
-# reports its subfolders with nodeType "ITEM".
-# https://github.com/epam/ai-dial-core/issues/1912
-def _node_type_from_url(node_type: Any, url: Any) -> Any:
-    if not isinstance(url, str):
-        return node_type
-    return "FOLDER" if url.endswith("/") else "ITEM"
-
-
 class SkillItem(ResourceItemMetadata):
-    """
-    A node in the skills listing: a skill (ITEM) or a grouping folder (FOLDER).
-
-    ``node_type`` is taken from the response as-is. The bug worked around in
-    ``SkillFileItem`` was observed only on the file listing inside a skill,
-    not on this one.
-    """
+    """A node in the skills listing: a skill (ITEM) or a grouping folder."""
 
     node_type: Literal["FOLDER", "ITEM"]
     resource_type: Literal["SKILL"]
@@ -106,12 +87,10 @@ class SkillMetadata(BaseMetadata):
 
 class SkillFileItem(ResourceItemMetadata):
     """
-    A file or a subfolder inside a skill.
+    A file (ITEM) or a subfolder (FOLDER) inside a skill.
 
-    ``node_type`` is derived from ``url`` rather than taken from the
-    response - see ``_node_type_from_url``. A recursive listing is flattened
-    and contains no subfolder entries at all, so the two kinds only ever
-    appear together in a non-recursive one.
+    A recursive listing is flattened and contains no subfolder entries at
+    all, so the two kinds only ever appear together in a non-recursive one.
 
     Sparser than the /v1 files listing: no ``content_length``, no
     ``content_type``, and in observed responses no ``etag`` either.
@@ -121,39 +100,9 @@ class SkillFileItem(ResourceItemMetadata):
     node_type: Literal["FOLDER", "ITEM"]
     resource_type: Literal["SKILL"]
 
-    if PYDANTIC_V2:
-
-        @field_validator("node_type")
-        @classmethod
-        def _derive_node_type_v2(cls, value: Any, info: Any) -> Any:
-            return _node_type_from_url(value, info.data.get("url"))
-
-    else:
-
-        @validator("node_type")
-        def _derive_node_type_v1(  # noqa: N805
-            cls, value: Any, values: dict[str, Any]
-        ) -> Any:
-            return _node_type_from_url(value, values.get("url"))
-
 
 class SkillFileMetadata(BaseMetadata):
     node_type: Literal["FOLDER", "ITEM"]
     resource_type: Literal["SKILL"]
     next_token: str | None = None
     items: list[SkillFileItem] | None = None
-
-    if PYDANTIC_V2:
-
-        @field_validator("node_type")
-        @classmethod
-        def _derive_node_type_v2(cls, value: Any, info: Any) -> Any:
-            return _node_type_from_url(value, info.data.get("url"))
-
-    else:
-
-        @validator("node_type")
-        def _derive_node_type_v1(  # noqa: N805
-            cls, value: Any, values: dict[str, Any]
-        ) -> Any:
-            return _node_type_from_url(value, values.get("url"))

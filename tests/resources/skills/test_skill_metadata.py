@@ -63,10 +63,9 @@ SKILL_FILES_MOCK = {
             "name": "references",
             "parentPath": "tone-of-voice/files",
             "bucket": "test-bucket",
-            # A subfolder, as a non-recursive listing reports one: Core
-            # sends "ITEM" and only the trailing "/" marks it as a folder.
+            # A subfolder, as a non-recursive listing reports one.
             "url": "skills/test-bucket/tone-of-voice/files/references/",
-            "nodeType": "ITEM",
+            "nodeType": "FOLDER",
             "resourceType": "SKILL",
         },
     ],
@@ -171,8 +170,7 @@ def test_list_files_defaults_to_skill_root():
     assert items[0].etag == "abc123"
     assert result.next_token is None
 
-    # Core reports subfolders of a skill as "ITEM" too; the validator
-    # derives node_type from the url so callers do not have to.
+    # A subfolder is a FOLDER and carries a trailing "/" on its url.
     assert [item.node_type for item in items] == ["ITEM", "FOLDER"]
     assert [item.url.endswith("/") for item in items] == [False, True]
 
