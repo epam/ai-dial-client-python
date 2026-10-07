@@ -20,6 +20,7 @@
   - [Lifecycle Management](#lifecycle-management)
   - [Deployments](#deployments)
     - [List Deployments](#list-deployments)
+    - [List Deployment Names](#list-deployment-names)
     - [Get Deployment by Id](#get-deployment-by-id)
     - [Get Deployment Configuration](#get-deployment-configuration)
   - [Make Chat Completions Requests](#make-chat-completions-requests)
@@ -221,6 +222,29 @@ deployments = await async_client.deployments.list()
     Deployment(id='gpt-35-turbo', model='gpt-35-turbo', owner='organization-owner', object='deployment', status='succeeded', created_at=1724760524, updated_at=1724760524, scale_settings=ScaleSettings(scale_type='standard'), features=Features(rate=False, tokenize=False, truncate_prompt=False, configuration=False, system_prompt=True, tools=False, seed=False, url_attachments=False, folder_attachments=False, allow_resume=True)),
     Deployment(id='stable-diffusion-xl', model='stable-diffusion-xl', owner='organization-owner', object='deployment', status='succeeded', created_at=1724760524, updated_at=1724760524, scale_settings=ScaleSettings(scale_type='standard'), features=Features(rate=False, tokenize=False, truncate_prompt=False, configuration=False, system_prompt=True, tools=False, seed=False, url_attachments=False, folder_attachments=False, allow_resume=True)),
     ...,
+]
+```
+
+#### List Deployment Names
+
+To get a lightweight list of the names and kinds of all deployments available to the caller (models, applications and toolsets), without loading their full definitions:
+
+```python
+# Sync
+names = client.deployments.list_names()
+# Async
+names = await async_client.deployments.list_names()
+
+# Only some kinds: "model", "application", "toolset"
+names = client.deployments.list_names(types=["model", "toolset"])
+```
+
+```pycon
+>>> client.deployments.list_names()
+[
+    DeploymentName(id='gpt-35-turbo', object='model'),
+    DeploymentName(id='my-app', object='application'),
+    DeploymentName(id='git', object='toolset'),
 ]
 ```
 

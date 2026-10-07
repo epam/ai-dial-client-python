@@ -60,3 +60,11 @@ class Deployment(DeploymentBase):
 class DeploymentsResponse(ExtraAllowModel):
     data: list[Deployment]
     object: Literal["list"]
+
+
+DeploymentKind = Literal["model", "application", "toolset"]
+
+
+class DeploymentName(ExtraAllowModel):
+    id: str
+    object: str

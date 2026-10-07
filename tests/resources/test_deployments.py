@@ -1,7 +1,7 @@
 import pytest
 
 from aidial_client._exception import DialException
-from aidial_client.types.deployment import Deployment
+from aidial_client.types.deployment import Deployment, DeploymentName
 from tests.client_mock import get_async_client_mock, get_client_mock
 
 DEPLOYMENT_MOCK = {
@@ -100,3 +100,49 @@ async def test_async_get_deployment_config_http_error():
     )
     with pytest.raises(DialException):
         await client.deployments.get_configuration_schema("gpt-4")
+
+
+NAMES_MOCK = [
+    {"id": "gpt-4", "object": "model"},
+    {"id": "git", "object": "toolset"},
+]
+
+
+def test_list_deployment_names():
+    requests: list = []
+    client = get_client_mock(
+        status_code=200, json_mock=NAMES_MOCK, sent_requests=requests
+    )
+    result = client.deployments.list_names()
+    assert result == [DeploymentName(**item) for item in NAMES_MOCK]
+    assert requests[0].url.path == "/v1/deployment-names"
+    assert "type" not in requests[0].url.params
+
+
+def test_list_deployment_names_with_types():
+    requests: list = []
+    client = get_client_mock(
+        status_code=200, json_mock=NAMES_MOCK, sent_requests=requests
+    )
+    client.deployments.list_names(types=["model", "toolset"])
+    assert requests[0].url.params["type"] == "model,toolset"
+
+
+@pytest.mark.asyncio
+async def test_async_list_deployment_names():
+    requests: list = []
+    client = get_async_client_mock(
+        status_code=200, json_mock=NAMES_MOCK, sent_requests=requests
+    )
+    result = await client.deployments.list_names(types=["model"])
+    assert [r.id for r in result] == ["gpt-4", "git"]
+    assert requests[0].url.params["type"] == "model"
+
+
+def test_list_deployment_names_http_error():
+    client = get_client_mock(
+        status_code=400,
+        json_mock={"error": {"message": "Bad", "type": "invalid_request"}},
+    )
+    with pytest.raises(DialException):
+        client.deployments.list_names(types=["bogus"])  # type: ignore[list-item]
