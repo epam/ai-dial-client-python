@@ -24,7 +24,7 @@ class MockStreamIterator(IteratorByteStream, AsyncIteratorByteStream):
 
 def get_client_mock(
     status_code: int | None,
-    json_mock: dict[str, Any] | None = None,
+    json_mock: Any = None,
     stream_chunks_mock: list[bytes] | None = None,
     exception_mock: Exception | None = None,
     sent_requests: list[httpx.Request] | None = None,
@@ -64,7 +64,7 @@ def get_client_mock(
 
 def get_async_client_mock(
     status_code: int | None,
-    json_mock: dict[str, Any] | None = None,
+    json_mock: Any = None,
     stream_chunks_mock: list[bytes] | None = None,
     exception_mock: Exception | None = None,
     sent_requests: list[httpx.Request] | None = None,
