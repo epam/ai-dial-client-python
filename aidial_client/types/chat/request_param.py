@@ -1,6 +1,6 @@
-from typing import Any, Literal
+from typing import Any, Literal, Required
 
-from typing_extensions import Required, TypedDict
+from typing_extensions import TypedDict
 
 from aidial_client.types.chat.cache import (
     CacheBreakpointParam,

@@ -1357,7 +1357,7 @@ To set up the development environment and run the project, follow the instructio
 The following tools are required to work with the project:
 
 1. `Make`
-2. `Python 3.10`
+2. `Python 3.11`
 3. `Poetry 2.*`. See the [Poetry installation guide](https://python-poetry.org/docs/#installation)
 
 ### Setup
