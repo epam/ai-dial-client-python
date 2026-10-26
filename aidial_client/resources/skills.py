@@ -18,10 +18,10 @@ enough path for its route.**
 
 from collections.abc import AsyncIterator, Awaitable, Callable, Sequence
 from contextlib import asynccontextmanager
+from typing import Self, overload
 from urllib.parse import unquote
 
 import httpx
-from typing_extensions import Self, overload
 
 from aidial_client._constants import API_PREFIX_V2, METADATA_PREFIX_V2
 from aidial_client._exception import InvalidDialURLError

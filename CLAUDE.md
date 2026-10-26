@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Python client library for the AI DIAL platform API (`aidial-client` on PyPI). Provides both sync (`Dial`) and async (`AsyncDial`) clients with typed Pydantic models. Supports Python 3.10-3.13.
+Python client library for the AI DIAL platform API (`aidial-client` on PyPI). Provides both sync (`Dial`) and async (`AsyncDial`) clients with typed Pydantic models. Supports Python 3.11-3.13.
 
 ## Useful Resources
 
@@ -19,7 +19,7 @@ Python client library for the AI DIAL platform API (`aidial-client` on PyPI). Pr
 make install              # Install dependencies via Poetry
 
 # Testing
-make test                 # Run unit tests across Python 3.10-3.13 via nox
+make test                 # Run unit tests across Python 3.11-3.13 via nox
 make test PYTHON=3.12     # Run tests for a specific Python version
 make integration_test     # Run integration tests (requires real API)
 make coverage             # Run tests with coverage report

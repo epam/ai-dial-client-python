@@ -43,7 +43,7 @@ def format(session: nox.Session):
     session.run("ruff", "format", *SRC)
 
 
-@nox.session(python=["3.10", "3.11", "3.12", "3.13"])
+@nox.session(python=["3.11", "3.12", "3.13"])
 @nox.parametrize("pydantic", ["1.10.17", "2.8.2"])
 @nox.parametrize("httpx", ["0.25.0", "0.27.0"])
 @nox.parametrize("openai", ["1.109.1", "2.26.0"])
