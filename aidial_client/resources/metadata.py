@@ -1,7 +1,5 @@
-from typing import Literal, overload
+from typing import Literal, assert_never, overload
 from urllib.parse import urljoin
-
-from typing_extensions import assert_never
 
 from aidial_client._constants import METADATA_PREFIX_V1
 from aidial_client._internal_types._http_request import FinalRequestOptions

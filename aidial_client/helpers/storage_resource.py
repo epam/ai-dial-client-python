@@ -1,9 +1,8 @@
 from pathlib import PurePosixPath
-from typing import Literal, cast, get_args
+from typing import Literal, assert_never, cast, get_args
 from urllib.parse import quote, unquote, urljoin, urlparse, urlsplit
 
 import httpx
-from typing_extensions import assert_never
 
 from aidial_client._compatibility.pydantic_v1 import BaseModel
 from aidial_client._constants import API_PREFIX_V1, API_PREFIX_V2
