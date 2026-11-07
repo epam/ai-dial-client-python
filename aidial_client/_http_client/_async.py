@@ -126,6 +126,9 @@ class AsyncHTTPClient(BaseHTTPClient[httpx.AsyncClient, AsyncAuthValue]):
             raise DialException(message=f"Request failed: {err}") from err
 
         try:
+            if response.is_error:
+                with suppress(httpx.HTTPError):
+                    await response.aread()
             self._raise_for_status(response, on_http_error)
             yield response
         finally:
